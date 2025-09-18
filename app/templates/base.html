@@ -8,16 +8,30 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Configuração de cores da clínica -->
+    <!-- Configuração de cores reais da Clínica Dr. Raimundo Nunes -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'clinic-blue': '#1e40af',
-                        'clinic-light-blue': '#3b82f6',
-                        'clinic-gray': '#6b7280',
-                        'clinic-light-gray': '#f3f4f6'
+                        // Cores extraídas do site original
+                        'clinic-primary': '#2563eb',      // Azul principal da clínica
+                        'clinic-primary-dark': '#1d4ed8', // Azul escuro para hover
+                        'clinic-secondary': '#64748b',     // Cinza azulado para textos
+                        'clinic-accent': '#0ea5e9',       // Azul claro para destaques
+                        'clinic-light': '#f8fafc',        // Fundo claro
+                        'clinic-gray': '#64748b',          // Cinza para textos secundários
+                        'clinic-success': '#10b981',       // Verde para confirmações
+                        'clinic-warning': '#f59e0b',       // Laranja para avisos
+                        
+                        // Paleta médica profissional
+                        'medical-blue': '#2563eb',
+                        'medical-teal': '#0d9488',
+                        'medical-navy': '#1e293b'
+                    },
+                    fontFamily: {
+                        'medical': ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        'heading': ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
                     }
                 }
             }
@@ -25,8 +39,33 @@
     </script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        /* Tipografia baseada no site original - clean e profissional */
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        
+        /* Estilo dos botões para combinar com o site */
+        .btn-clinic-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-clinic-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+        }
+        
+        /* Gradientes como no site original */
+        .clinic-gradient {
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+        }
+        
+        .clinic-gradient-light {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -35,16 +74,29 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-clinic-blue">
-                        Clínica Dr. Raimundo Nunes
+                    <a href="{{ url_for('main.index') }}" class="flex items-center space-x-3">
+                        <!-- Logo/Ícone da clínica -->
+                        <div class="w-10 h-10 bg-gradient-to-br from-clinic-primary to-clinic-accent rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-clinic-primary">
+                                Clínica Dr. Raimundo Nunes
+                            </div>
+                            <div class="text-xs text-clinic-secondary font-medium">
+                                Ginecologia e Obstetrícia
+                            </div>
+                        </div>
                     </a>
                 </div>
                 
                 <div class="flex items-center space-x-6">
-                    <a href="{{ url_for('main.index') }}" class="text-gray-700 hover:text-clinic-blue">Início</a>
-                    <a href="{{ url_for('main.especialidades') }}" class="text-gray-700 hover:text-clinic-blue">Especialidades</a>
-                    <a href="{{ url_for('main.medicos') }}" class="text-gray-700 hover:text-clinic-blue">Médicos</a>
-                    <a href="{{ url_for('appointments.agendar') }}" class="bg-clinic-blue text-white px-4 py-2 rounded-lg hover:bg-clinic-light-blue transition">
+                    <a href="{{ url_for('main.index') }}" class="text-clinic-secondary hover:text-clinic-primary transition-colors duration-200">Início</a>
+                    <a href="{{ url_for('main.especialidades') }}" class="text-clinic-secondary hover:text-clinic-primary transition-colors duration-200">Especialidades</a>
+                    <a href="{{ url_for('main.medicos') }}" class="text-clinic-secondary hover:text-clinic-primary transition-colors duration-200">Médicos</a>
+                    <a href="{{ url_for('appointments.agendar') }}" class="btn-clinic-primary text-white px-6 py-2.5 rounded-lg font-medium shadow-lg">
                         Agendar Consulta
                     </a>
                     
@@ -60,8 +112,8 @@
                             </div>
                         </div>
                     {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="text-gray-700 hover:text-clinic-blue">Login</a>
-                        <a href="{{ url_for('auth.register') }}" class="text-clinic-blue hover:text-clinic-light-blue">Cadastro</a>
+                        <a href="{{ url_for('auth.login') }}" class="text-clinic-secondary hover:text-clinic-primary transition-colors duration-200">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="text-clinic-primary hover:text-clinic-primary-dark font-medium transition-colors duration-200">Cadastro</a>
                     {% endif %}
                 </div>
             </div>

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Médicos - {{ especialidade.nome }} - Clínica Dr. Raimundo Nunes{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="clinic-gradient text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold mb-4">{{ especialidade.nome }}</h1>
+            <p class="text-xl text-blue-100">Escolha o médico para sua consulta</p>
+        </div>
+    </div>
+</section>
+
+<!-- Progresso -->
+<div class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-center">
+            <div class="flex items-center">
+                <div class="bg-clinic-success text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">✓</div>
+                <span class="ml-2 text-clinic-success font-medium">Especialidade</span>
+            </div>
+            <div class="mx-4 h-px bg-clinic-success/30 w-16"></div>
+            <div class="flex items-center">
+                <div class="bg-clinic-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                <span class="ml-2 text-clinic-primary font-medium">Médico</span>
+            </div>
+            <div class="mx-4 h-px bg-gray-300 w-16"></div>
+            <div class="flex items-center">
+                <div class="bg-gray-300 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                <span class="ml-2 text-gray-500">Confirmação</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Médicos Disponíveis -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Médicos Especializados</h2>
+            <p class="text-lg text-gray-600">Escolha o profissional e veja os próximos horários disponíveis</p>
+        </div>
+
+        {% if medicos %}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {% for medico in medicos %}
+                <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-start space-x-4">
+                            <!-- Foto do médico -->
+                            <div class="flex-shrink-0">
+                                {% if medico.foto_url %}
+                                    <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-20 h-20 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-20 h-20 rounded-full bg-clinic-light flex items-center justify-center">
+                                        <svg class="w-10 h-10 text-clinic-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Informações do médico -->
+                            <div class="flex-grow">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-1">{{ medico.usuario.nome }}</h3>
+                                <p class="text-clinic-primary font-medium mb-2">{{ medico.crm }}</p>
+                                
+                                {% if medico.bio %}
+                                    <p class="text-gray-600 text-sm mb-4">{{ medico.bio[:150] }}{% if medico.bio|length > 150 %}...{% endif %}</p>
+                                {% endif %}
+                                
+                                <!-- Especialidades -->
+                                {% if medico.especialidades %}
+                                    <div class="mb-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-2">Especialidades:</h4>
+                                        <div class="flex flex-wrap gap-1">
+                                            {% for esp in medico.especialidades %}
+                                                <span class="inline-block bg-clinic-light text-clinic-primary text-xs px-2 py-1 rounded-full">
+                                                    {{ esp.nome }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Próximos horários disponíveis -->
+                        {% if medico.proximos_horarios %}
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h4 class="text-sm font-medium text-gray-700 mb-3">Próximos horários disponíveis:</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {% for horario in medico.proximos_horarios[:3] %}
+                                        <a href="{{ url_for('appointments.confirmar', medico_id=medico.id, data_hora=horario.data.strftime('%Y-%m-%d') + 'T' + horario.hora.strftime('%H:%M')) }}" 
+                                           class="block bg-clinic-light hover:bg-clinic-primary hover:text-white text-center py-2 px-3 rounded-md text-sm font-medium transition-colors duration-200">
+                                            <div class="font-semibold">{{ horario.data.strftime('%d/%m') }}</div>
+                                            <div class="text-xs">{{ horario.hora.strftime('%H:%M') }}</div>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
+                                       class="w-full btn-clinic-primary text-white py-2 px-4 rounded-md text-sm font-medium text-center block">
+                                        Ver todos os horários disponíveis
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <p class="text-gray-500 text-sm mb-4">Nenhum horário disponível nos próximos dias.</p>
+                                <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
+                                   class="w-full bg-gray-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors duration-200 text-center block">
+                                    Verificar agenda completa
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 mb-4">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum médico disponível</h3>
+                <p class="text-gray-600 mb-6">No momento não temos médicos disponíveis para esta especialidade.</p>
+                <a href="{{ url_for('appointments.agendar') }}" class="text-clinic-primary hover:text-clinic-accent font-medium">
+                    ← Escolher outra especialidade
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Informações da Especialidade -->
+<section class="py-16 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-clinic-light p-8 rounded-lg">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">Sobre {{ especialidade.nome }}</h3>
+            
+            {% if especialidade.descricao %}
+                <p class="text-gray-700 mb-6">{{ especialidade.descricao }}</p>
+            {% endif %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-2">Informações da consulta:</h4>
+                    <ul class="text-gray-600 space-y-1">
+                        <li>• Duração: {{ especialidade.duracao_padrao }} minutos</li>
+                        <li>• Atendimento presencial</li>
+                        <li>• Equipamentos de última geração</li>
+                        <li>• Ambiente acolhedor e humanizado</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-2">Localização:</h4>
+                    <ul class="text-gray-600 space-y-1">
+                        <li>• Unidade Itaim Bibi</li>
+                        <li>• Unidade Itapeva</li>
+                        <li>• Fácil acesso e estacionamento</li>
+                        <li>• Transporte público próximo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Botão voltar -->
+<div class="bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <a href="{{ url_for('appointments.agendar') }}" 
+           class="inline-flex items-center text-clinic-primary hover:text-clinic-accent font-medium">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Voltar para escolha de especialidade
+        </a>
+    </div>
+</div>
+{% endblock %}

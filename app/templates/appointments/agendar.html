@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Agendar Consulta - Clínica Dr. Raimundo Nunes{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="clinic-gradient text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl font-bold mb-4">Agendar Consulta</h1>
+        <p class="text-xl text-blue-100">Em apenas 3 cliques você agenda sua consulta</p>
+    </div>
+</section>
+
+<!-- Progresso -->
+<div class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-center">
+            <div class="flex items-center">
+                <div class="bg-clinic-primary text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                <span class="ml-2 text-clinic-primary font-medium">Especialidade</span>
+            </div>
+            <div class="mx-4 h-px bg-gray-300 w-16"></div>
+            <div class="flex items-center">
+                <div class="bg-gray-300 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                <span class="ml-2 text-gray-500">Médico</span>
+            </div>
+            <div class="mx-4 h-px bg-gray-300 w-16"></div>
+            <div class="flex items-center">
+                <div class="bg-gray-300 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                <span class="ml-2 text-gray-500">Confirmação</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Seleção de Especialidade -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Escolha a Especialidade</h2>
+            <p class="text-lg text-gray-600">Selecione a área médica para sua consulta</p>
+        </div>
+
+        {% if especialidades %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for especialidade in especialidades %}
+                <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" 
+                   class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border-2 border-transparent hover:border-clinic-accent group">
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-clinic-light rounded-full flex items-center justify-center group-hover:bg-clinic-primary group-hover:text-white transition-colors duration-200">
+                            <svg class="w-8 h-8 text-clinic-primary group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-clinic-primary transition-colors duration-200">
+                            {{ especialidade.nome }}
+                        </h3>
+                        <p class="text-gray-600 mb-4 text-sm">
+                            {{ especialidade.descricao if especialidade.descricao else 'Especialidade médica com atendimento de qualidade.' }}
+                        </p>
+                        <div class="text-sm text-clinic-primary font-medium">
+                            Duração: {{ especialidade.duracao_padrao }} minutos
+                        </div>
+                        <div class="mt-4 text-clinic-primary group-hover:text-clinic-accent font-medium">
+                            Selecionar →
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 mb-4">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhuma especialidade disponível</h3>
+                <p class="text-gray-600 mb-6">No momento não temos especialidades cadastradas.</p>
+                <a href="{{ url_for('main.index') }}" class="text-clinic-primary hover:text-clinic-accent font-medium">
+                    ← Voltar ao início
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Informações Adicionais -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Como funciona o agendamento?</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="bg-gradient-to-br from-clinic-primary to-clinic-accent text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 shadow-md">1</div>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-gray-900">Escolha a especialidade</h3>
+                            <p class="text-gray-600">Selecione a área médica que precisa</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-gradient-to-br from-clinic-primary to-clinic-accent text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 shadow-md">2</div>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-gray-900">Veja os médicos disponíveis</h3>
+                            <p class="text-gray-600">Escolha o profissional e horário ideal</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-gradient-to-br from-clinic-primary to-clinic-accent text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 mt-1 shadow-md">3</div>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-gray-900">Confirme seus dados</h3>
+                            <p class="text-gray-600">Finalize o agendamento rapidamente</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-clinic-light-gray p-8 rounded-lg">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Informações importantes</h3>
+                <ul class="space-y-3 text-gray-600">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Agendamento gratuito e sem taxa
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Confirmação por email automática
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Lembretes 24h e 1h antes da consulta
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Cancelamento até 24h antes (gratuito)
+                    </li>
+                </ul>
+                
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-clinic-primary">
+                        <strong>Dúvidas?</strong> Entre em contato conosco pelo telefone 
+                        <span class="font-semibold">(11) 3000-0000</span> ou pelo WhatsApp.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

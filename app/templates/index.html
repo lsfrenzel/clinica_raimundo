@@ -2,19 +2,41 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="bg-gradient-to-b from-clinic-blue to-clinic-light-blue text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+<section class="clinic-gradient text-white relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"2\" fill=\"white\" opacity=\"0.3\"/></svg>'); background-size: 50px 50px;"></div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
         <div class="text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+            <div class="mb-6">
+                <div class="inline-flex items-center bg-white/10 rounded-full px-4 py-2 text-sm font-medium backdrop-blur-sm">
+                    <span class="w-2 h-2 bg-clinic-success rounded-full mr-2"></span>
+                    Mais de 30 anos de experiência
+                </div>
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
                 Humanização, excelência e<br>
-                dedicação à saúde da mulher
+                <span class="text-clinic-accent">dedicação à saúde da mulher</span>
             </h1>
-            <p class="text-xl mb-8 text-blue-100 max-w-3xl mx-auto">
+            
+            <p class="text-xl mb-8 text-blue-100 max-w-3xl mx-auto leading-relaxed">
                 Com mais de 30 anos de experiência em medicina, o Dr. Raimundo Nunes é especialista em ginecologia e obstetrícia, oferecendo atendimento humanizado e de alta qualidade.
             </p>
-            <a href="{{ url_for('appointments.agendar') }}" class="bg-white text-clinic-blue px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition">
-                Agendar Consulta
-            </a>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="{{ url_for('appointments.agendar') }}" class="bg-white text-clinic-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all duration-300 shadow-xl border-2 border-white hover:border-clinic-accent">
+                    Agendar Consulta
+                </a>
+                <a href="{{ url_for('main.sobre') }}" class="text-white hover:text-clinic-accent font-medium flex items-center transition-colors duration-200">
+                    Conheça nossa história
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
         </div>
     </div>
 </section>
@@ -30,28 +52,28 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Passo 1: Especialidade -->
             <div class="text-center">
-                <div class="bg-clinic-blue text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4">1</div>
+                <div class="bg-gradient-to-br from-clinic-primary to-clinic-accent text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4 shadow-lg">1</div>
                 <h3 class="text-xl font-semibold mb-2">Escolha a Especialidade</h3>
                 <p class="text-gray-600">Selecione a área médica de sua consulta</p>
             </div>
             
             <!-- Passo 2: Médico -->
             <div class="text-center">
-                <div class="bg-clinic-blue text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4">2</div>
+                <div class="bg-gradient-to-br from-clinic-primary to-clinic-accent text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4 shadow-lg">2</div>
                 <h3 class="text-xl font-semibold mb-2">Escolha o Médico</h3>
                 <p class="text-gray-600">Veja os próximos horários disponíveis</p>
             </div>
             
             <!-- Passo 3: Confirmação -->
             <div class="text-center">
-                <div class="bg-clinic-blue text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4">3</div>
+                <div class="bg-gradient-to-br from-clinic-primary to-clinic-accent text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4 shadow-lg">3</div>
                 <h3 class="text-xl font-semibold mb-2">Confirme os Dados</h3>
                 <p class="text-gray-600">Finalize seu agendamento</p>
             </div>
         </div>
         
         <div class="text-center mt-8">
-            <a href="{{ url_for('appointments.agendar') }}" class="bg-clinic-blue text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-clinic-light-blue transition">
+            <a href="{{ url_for('appointments.agendar') }}" class="btn-clinic-primary text-white px-8 py-3 rounded-lg text-lg font-semibold shadow-lg">
                 Começar Agendamento
             </a>
         </div>
@@ -73,7 +95,7 @@
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ especialidade.nome }}</h3>
                 <p class="text-gray-600 mb-4">{{ especialidade.descricao or 'Especialidade médica com atendimento de qualidade.' }}</p>
                 <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" 
-                   class="text-clinic-blue hover:text-clinic-light-blue font-medium">
+                   class="text-clinic-primary hover:text-clinic-primary-dark font-medium transition-colors duration-200">
                     Agendar consulta →
                 </a>
             </div>
@@ -122,7 +144,7 @@
                     {% endif %}
                     
                     <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
-                       class="bg-clinic-blue text-white px-4 py-2 rounded hover:bg-clinic-light-blue transition">
+                       class="btn-clinic-primary text-white px-4 py-2 rounded shadow-md">
                         Agendar
                     </a>
                 </div>

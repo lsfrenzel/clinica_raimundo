@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Clínica Dr. Raimundo Nunes{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
+            Acesse sua conta
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Ou 
+            <a href="{{ url_for('auth.register') }}" class="font-medium text-clinic-primary hover:text-clinic-accent">
+                crie uma nova conta
+            </a>
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <form class="space-y-6" method="POST">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        Email
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            id="email" 
+                            name="email" 
+                            type="email" 
+                            autocomplete="email" 
+                            required 
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            placeholder="seu@email.com"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        Senha
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            id="password" 
+                            name="password" 
+                            type="password" 
+                            autocomplete="current-password" 
+                            required 
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            placeholder="••••••••"
+                        >
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input 
+                            id="remember" 
+                            name="remember" 
+                            type="checkbox" 
+                            class="h-4 w-4 text-clinic-primary focus:ring-clinic-primary border-gray-300 rounded"
+                        >
+                        <label for="remember" class="ml-2 block text-sm text-gray-900">
+                            Lembrar de mim
+                        </label>
+                    </div>
+
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-clinic-primary hover:text-clinic-accent">
+                            Esqueceu a senha?
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <button 
+                        type="submit" 
+                        class="w-full btn-clinic-primary text-white py-2 px-4 rounded-md font-medium"
+                    >
+                        Entrar
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300" />
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Credenciais de teste</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
+                    <p class="font-medium mb-2">Contas de teste disponíveis:</p>
+                    <ul class="space-y-1 text-xs">
+                        <li><strong>Admin:</strong> admin@clinicadrraimundonunes.com.br / admin123</li>
+                        <li><strong>Médico:</strong> raimundo@clinicadrraimundonunes.com.br / medico123</li>
+                        <li><strong>Paciente:</strong> ana.silva@email.com / paciente123</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

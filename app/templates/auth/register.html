@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro - Clínica Dr. Raimundo Nunes{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
+            Criar nova conta
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Ou 
+            <a href="{{ url_for('auth.login') }}" class="font-medium text-clinic-primary hover:text-clinic-accent">
+                acesse sua conta existente
+            </a>
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <form class="space-y-6" method="POST">
+                <div>
+                    <label for="nome" class="block text-sm font-medium text-gray-700">
+                        Nome completo
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            id="nome" 
+                            name="nome" 
+                            type="text" 
+                            autocomplete="name" 
+                            required 
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            placeholder="Seu nome completo"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        Email
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            id="email" 
+                            name="email" 
+                            type="email" 
+                            autocomplete="email" 
+                            required 
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            placeholder="seu@email.com"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label for="telefone" class="block text-sm font-medium text-gray-700">
+                        Telefone (opcional)
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            id="telefone" 
+                            name="telefone" 
+                            type="tel" 
+                            autocomplete="tel" 
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            placeholder="(11) 99999-9999"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        Senha
+                    </label>
+                    <div class="mt-1">
+                        <input 
+                            id="password" 
+                            name="password" 
+                            type="password" 
+                            autocomplete="new-password" 
+                            required 
+                            minlength="6"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            placeholder="••••••••"
+                        >
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Mínimo de 6 caracteres</p>
+                </div>
+
+                <div>
+                    <button 
+                        type="submit" 
+                        class="w-full btn-clinic-primary text-white py-2 px-4 rounded-md font-medium"
+                    >
+                        Criar conta
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300" />
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Informação</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-sm text-gray-600 bg-blue-50 p-4 rounded-md">
+                    <p>
+                        <strong>Agendamento sem cadastro:</strong> Você também pode agendar consultas 
+                        como convidado, sem necessidade de criar uma conta. 
+                        <a href="{{ url_for('appointments.agendar') }}" class="text-clinic-primary hover:text-clinic-accent">
+                            Agendar agora →
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
