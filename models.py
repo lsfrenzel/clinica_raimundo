@@ -109,7 +109,7 @@ class Medico(db.Model):
         return horarios_livres
     
     def __repr__(self):
-        return f'<Medico {self.usuario.nome if self.usuario else "Unknown"} - CRM: {self.crm}>'
+        return f'<Medico {self.usuario.nome if hasattr(self, "usuario") and self.usuario else "Unknown"} - CRM: {self.crm}>'
 
 class Agenda(db.Model):
     """Agenda dos médicos - define quando estão disponíveis"""
@@ -125,7 +125,7 @@ class Agenda(db.Model):
     ativo = db.Column(db.Boolean, default=True)
     
     def __repr__(self):
-        return f'<Agenda {self.medico.usuario.nome if self.medico and self.medico.usuario else "Unknown"} - {self.data} {self.hora_inicio}>'
+        return f'<Agenda Medico ID: {self.medico_id} - {self.data} {self.hora_inicio}>'
 
 class Agendamento(db.Model):
     """Agendamentos de consultas"""
@@ -162,21 +162,21 @@ class Agendamento(db.Model):
     @property
     def nome_paciente(self):
         """Retorna o nome do paciente (registrado ou convidado)"""
-        if self.paciente:
+        if hasattr(self, 'paciente') and self.paciente:
             return self.paciente.nome
         return self.nome_convidado
     
     @property
     def email_paciente(self):
         """Retorna o email do paciente (registrado ou convidado)"""
-        if self.paciente:
+        if hasattr(self, 'paciente') and self.paciente:
             return self.paciente.email
         return self.email_convidado
     
     @property
     def telefone_paciente(self):
         """Retorna o telefone do paciente (registrado ou convidado)"""
-        if self.paciente:
+        if hasattr(self, 'paciente') and self.paciente:
             return self.paciente.telefone
         return self.telefone_convidado
     

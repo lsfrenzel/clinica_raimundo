@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "bcrypt>=4.3.0",
+    "email-validator>=2.3.0",
     "flask>=3.1.2",
     "flask-cors>=6.0.1",
     "flask-login>=0.6.3",
@@ -16,4 +17,6 @@ dependencies = [
     "gunicorn>=23.0.0",
     "psycopg2-binary>=2.9.10",
     "python-dotenv>=1.1.1",
+    "sqlalchemy>=2.0.43",
+    "werkzeug>=3.1.3",
 ]
