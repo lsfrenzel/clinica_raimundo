@@ -12,11 +12,24 @@
                 <span class="text-dark-gray font-semibold">Assistente Virtual Online</span>
             </div>
             <h1 class="text-heading font-display font-bold text-dark-gray mb-4">
-                Olá, {{ current_user.nome }}! 👋
+                {% if current_user.is_authenticated %}
+                    Olá, {{ current_user.nome }}! 👋
+                {% else %}
+                    Bem-vindo(a)! 👋
+                {% endif %}
             </h1>
             <p class="text-body-lg text-gray-700 font-body">
                 Estou aqui para te ajudar a agendar sua consulta de forma rápida e fácil.
             </p>
+            {% if not current_user.is_authenticated %}
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4 max-w-2xl mx-auto">
+                <p class="text-sm text-blue-800 mb-2">💡 <strong>Dica:</strong> Para agendar consultas, você precisa fazer login ou criar uma conta.</p>
+                <div class="flex gap-2 justify-center">
+                    <a href="/auth/login" class="btn-teal px-4 py-2 text-sm">Login</a>
+                    <a href="/auth/register" class="btn-emerald px-4 py-2 text-sm">Criar Conta</a>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Chat Container -->

@@ -201,7 +201,6 @@ def api_health():
 
 # Endpoint para chatbot (não REST, endpoint direto)
 @bp.route('/chatbot', methods=['POST'])
-@login_required
 def chatbot():
     """Endpoint para interação com chatbot inteligente"""
     try:
@@ -214,10 +213,15 @@ def chatbot():
         user_message = data['message']
         context = data.get('context', {})
         
-        # Adicionar informações do usuário logado ao contexto
-        context['user_id'] = current_user.id
-        context['user_name'] = current_user.nome
-        context['user_email'] = current_user.email
+        # Adicionar informações do usuário logado ao contexto (se autenticado)
+        if current_user.is_authenticated:
+            context['user_id'] = current_user.id
+            context['user_name'] = current_user.nome
+            context['user_email'] = current_user.email
+            context['authenticated'] = True
+        else:
+            context['authenticated'] = False
+            context['user_name'] = 'Visitante'
         
         # Processar mensagem no chatbot
         response = chatbot_service.chat_response(user_message, context)
