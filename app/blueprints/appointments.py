@@ -7,12 +7,17 @@ from extensions import db
 bp = Blueprint('appointments', __name__)
 
 @bp.route('/agendar')
-@login_required
 def agendar():
     """Página principal de agendamento - Passo 1: Escolher especialidade"""
     from models import Especialidade
     especialidades = Especialidade.query.filter_by(ativo=True).all()
     return render_template('appointments/agendar.html', especialidades=especialidades)
+
+@bp.route('/agendar-logado')
+@login_required
+def agendar_logado():
+    """Página de agendamento após login"""
+    return redirect(url_for('appointments.agendar'))
 
 @bp.route('/medicos/<int:especialidade_id>')
 @login_required

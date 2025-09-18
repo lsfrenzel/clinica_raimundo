@@ -108,38 +108,43 @@ def create_seed_data():
                 'telefone': '(11) 98765-4321',
                 'crm': 'CRM/SP 12345',
                 'bio': 'Mais de 30 anos de experiência em ginecologia e obstetrícia. Especialista em pré-natal de alto risco e cirurgia ginecológica. Reconhecido por sua atuação em casos de alta complexidade.',
+                'foto_url': '/static/images/dr-carlos-oliveira.jpg',
                 'especialidades': ['DIU e Implanon', 'Pré-Natal de Alto Risco', 'Hipertensão e Diabetes Gestacional']
             },
             {
-                'nome': 'Dra. Carolina Nunes',
-                'email': 'carolina@clinicadrraimundonunes.com.br', 
+                'nome': 'Dra. Ana Carolina Silva',
+                'email': 'ana@clinicadrraimundonunes.com.br', 
                 'telefone': '(11) 98765-4322',
                 'crm': 'CRM/SP 67890',
                 'bio': 'Ginecologista e obstetra formada pela Febrasgo. Especialização em laparoscopia e endometriose. Atendimento humanizado focado na saúde integral da mulher.',
+                'foto_url': '/static/images/dra-ana-silva.jpg',
                 'especialidades': ['Mastologia', 'Uroginecologia', 'Sexualidade']
             },
             {
-                'nome': 'Dr. Rafael Nunes',
-                'email': 'rafael@clinicadrraimundonunes.com.br',
+                'nome': 'Dr. Ricardo Mendes',
+                'email': 'ricardo@clinicadrraimundonunes.com.br',
                 'telefone': '(11) 98765-4323', 
                 'crm': 'CRM/SP 54321',
                 'bio': 'Médico ginecologista especialista em reprodução humana e climatério. Formação complementar em medicina reprodutiva e endocrinologia ginecológica.',
+                'foto_url': '/static/images/dr-ricardo-mendes.jpg',
                 'especialidades': ['Climatério e Menopausa', 'Reprodução Humana', 'PTGI']
             },
             {
-                'nome': 'Dra. Maria Fernanda Silva',
-                'email': 'mariafernanda@clinicadrraimundonunes.com.br',
+                'nome': 'Dra. Maria Santos',
+                'email': 'maria@clinicadrraimundonunes.com.br',
                 'telefone': '(11) 98765-4324',
                 'crm': 'CRM/SP 98765',
                 'bio': 'Especialista em ginecologia preventiva e mastologia. Ampla experiência em rastreamento de câncer ginecológico e acompanhamento de pacientes oncológicas.',
+                'foto_url': '/static/images/dra-maria-santos.jpg',
                 'especialidades': ['Mastologia', 'DIU e Implanon']
             },
             {
-                'nome': 'Dr. João Carlos Santos',
-                'email': 'joaocarlos@clinicadrraimundonunes.com.br',
+                'nome': 'Dra. Patrícia Lima',
+                'email': 'patricia@clinicadrraimundonunes.com.br',
                 'telefone': '(11) 98765-4325',
                 'crm': 'CRM/SP 11111',
                 'bio': 'Ginecologista e obstetra com especialização em uroginecologia. Experiência em cirurgias minimamente invasivas para correção de incontinência urinária.',
+                'foto_url': '/static/images/dra-patricia-lima.jpg',
                 'especialidades': ['Uroginecologia', 'Pré-Natal de Alto Risco']
             }
         ]
@@ -164,6 +169,7 @@ def create_seed_data():
             medico.user_id = user.id
             medico.crm = medico_data['crm']
             medico.bio = medico_data['bio']
+            medico.foto_url = medico_data.get('foto_url')
             medico.ativo = True
             
             # Associar especialidades
