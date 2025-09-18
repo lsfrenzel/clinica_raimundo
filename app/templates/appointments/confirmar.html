@@ -67,7 +67,9 @@
                     <div class="flex justify-between">
                         <span class="text-gray-600">Data e horário:</span>
                         <span class="font-medium text-gray-900">
-                            {{ data_hora.split('T')[0] | strftime('%d/%m/%Y') }} às {{ data_hora.split('T')[1] }}
+                            {% set date_parts = data_hora.split('T') %}
+                            {% set date_formatted = date_parts[0].split('-') %}
+                            {{ date_formatted[2] }}/{{ date_formatted[1] }}/{{ date_formatted[0] }} às {{ date_parts[1] }}
                         </span>
                     </div>
                     

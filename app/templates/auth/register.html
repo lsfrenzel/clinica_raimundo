@@ -10,7 +10,7 @@
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
             Ou 
-            <a href="{{ url_for('auth.login') }}" class="font-medium text-clinic-primary hover:text-clinic-accent">
+            <a href="{{ url_for('auth.login') }}" class="font-medium text-teal hover:text-teal-light">
                 acesse sua conta existente
             </a>
         </p>
@@ -30,7 +30,7 @@
                             type="text" 
                             autocomplete="name" 
                             required 
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-teal focus:border-teal sm:text-sm"
                             placeholder="Seu nome completo"
                         >
                     </div>
@@ -47,7 +47,7 @@
                             type="email" 
                             autocomplete="email" 
                             required 
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-teal focus:border-teal sm:text-sm"
                             placeholder="seu@email.com"
                         >
                     </div>
@@ -63,7 +63,7 @@
                             name="telefone" 
                             type="tel" 
                             autocomplete="tel" 
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-teal focus:border-teal sm:text-sm"
                             placeholder="(11) 99999-9999"
                         >
                     </div>
@@ -81,7 +81,7 @@
                             autocomplete="new-password" 
                             required 
                             minlength="6"
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary sm:text-sm"
+                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-teal focus:border-teal sm:text-sm"
                             placeholder="••••••••"
                         >
                     </div>
@@ -91,7 +91,7 @@
                 <div>
                     <button 
                         type="submit" 
-                        class="w-full btn-clinic-primary text-white py-2 px-4 rounded-md font-medium"
+                        class="w-full btn-teal text-white py-2 px-4 rounded-md font-medium"
                     >
                         Criar conta
                     </button>
@@ -112,7 +112,7 @@
                     <p>
                         <strong>Agendamento sem cadastro:</strong> Você também pode agendar consultas 
                         como convidado, sem necessidade de criar uma conta. 
-                        <a href="{{ url_for('appointments.agendar') }}" class="text-clinic-primary hover:text-clinic-accent">
+                        <a href="{{ url_for('appointments.agendar') }}" class="text-teal hover:text-teal-light">
                             Agendar agora →
                         </a>
                     </p>
