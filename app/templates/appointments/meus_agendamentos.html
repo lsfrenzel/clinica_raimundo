@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Agendamentos - Clínica Dr. Raimundo Nunes{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="bg-gradient-to-r from-clinic-primary to-clinic-accent text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Meus Agendamentos</h1>
+            <p class="text-xl text-blue-100">
+                Gerencie suas consultas agendadas
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Agendamentos -->
+<section class="py-12 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% if agendamentos %}
+            <!-- Próximas Consultas -->
+            {% set proximos = agendamentos | selectattr('inicio', 'greaterthan', moment.utcnow()) | list %}
+            {% if proximos %}
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Próximas Consultas</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for agendamento in proximos %}
+                    <div class="bg-white rounded-lg shadow-sm border-l-4 border-green-500 p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">
+                                    {{ agendamento.medico.usuario.nome }}
+                                </h3>
+                                <p class="text-clinic-primary">{{ agendamento.especialidade.nome }}</p>
+                            </div>
+                            <span class="inline-block bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full">
+                                {{ agendamento.status.title() }}
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2 text-gray-600 mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>{{ agendamento.inicio.strftime('%d/%m/%Y às %H:%M') }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{{ ((agendamento.fim - agendamento.inicio).total_seconds() / 60) | int }} minutos</span>
+                            </div>
+                        </div>
+                        
+                        {% if agendamento.observacoes %}
+                        <div class="bg-gray-50 p-3 rounded mb-4">
+                            <p class="text-sm text-gray-700">
+                                <strong>Observações:</strong> {{ agendamento.observacoes }}
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="flex gap-2">
+                            {% if agendamento.pode_ser_cancelado() %}
+                            <form method="POST" action="{{ url_for('appointments.cancelar', agendamento_id=agendamento.id) }}" 
+                                  onsubmit="return confirm('Tem certeza que deseja cancelar este agendamento?')">
+                                <button type="submit" 
+                                        class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                    Cancelar
+                                </button>
+                            </form>
+                            {% endif %}
+                            <a href="{{ url_for('appointments.detalhes', agendamento_id=agendamento.id) }}" 
+                               class="text-clinic-primary hover:text-clinic-primary-dark text-sm font-medium">
+                                Ver Detalhes
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Histórico -->
+            {% set historico = agendamentos | rejectattr('inicio', 'greaterthan', moment.utcnow()) | list %}
+            {% if historico %}
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Histórico de Consultas</h2>
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Data/Hora
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Médico
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Especialidade
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for agendamento in historico %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ agendamento.inicio.strftime('%d/%m/%Y às %H:%M') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ agendamento.medico.usuario.nome }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ agendamento.especialidade.nome }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% if agendamento.status == 'realizado' %}
+                                            <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                                Realizado
+                                            </span>
+                                        {% elif agendamento.status == 'cancelado' %}
+                                            <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                                Cancelado
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">
+                                                {{ agendamento.status.title() }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <a href="{{ url_for('appointments.detalhes', agendamento_id=agendamento.id) }}" 
+                                           class="text-clinic-primary hover:text-clinic-primary-dark">
+                                            Ver Detalhes
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <!-- Nenhum agendamento -->
+            <div class="text-center py-12">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Nenhum agendamento encontrado</h3>
+                <p class="text-gray-600 mb-8">Você ainda não possui consultas agendadas conosco.</p>
+                <a href="{{ url_for('appointments.agendar') }}" 
+                   class="bg-clinic-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-clinic-primary-dark transition-colors duration-200">
+                    Agendar Primeira Consulta
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Ações Rápidas -->
+<section class="py-8 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ url_for('appointments.agendar') }}" 
+               class="bg-clinic-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-clinic-primary-dark transition-colors duration-200">
+                Agendar Nova Consulta
+            </a>
+            <a href="{{ url_for('main.index') }}" 
+               class="border border-clinic-primary text-clinic-primary px-6 py-3 rounded-lg font-semibold hover:bg-clinic-primary hover:text-white transition-colors duration-200">
+                Voltar ao Início
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

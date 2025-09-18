@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Especialidades - Clínica Dr. Raimundo Nunes{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-clinic-primary to-clinic-accent text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">Nossas Especialidades</h1>
+            <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+                Cuidado completo e especializado para todas as fases da vida da mulher
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Especialidades -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {% if especialidades %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for especialidade in especialidades %}
+                <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow duration-300">
+                    <div class="text-center mb-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-clinic-primary to-clinic-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">{{ especialidade.nome }}</h3>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-6 text-center">
+                        {{ especialidade.descricao or 'Especialidade médica com atendimento personalizado e de alta qualidade.' }}
+                    </p>
+                    
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500 mb-4">Duração média: {{ especialidade.duracao_padrao or 30 }} minutos</p>
+                        <a href="{{ url_for('appointments.agendar') }}?especialidade_id={{ especialidade.id }}" 
+                           class="inline-block bg-clinic-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-clinic-primary-dark transition-colors duration-200">
+                            Agendar Consulta
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Nenhuma especialidade cadastrada ainda</h3>
+                <p class="text-gray-600">Em breve teremos mais informações sobre nossas especialidades.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Principais Serviços -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Principais Serviços</h2>
+            <p class="text-lg text-gray-600">Alguns dos nossos serviços mais procurados</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                <h4 class="font-semibold text-clinic-primary mb-2">DIU Hormonal</h4>
+                <p class="text-sm text-gray-600">Inserção especializada Mirena e Kyleena</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                <h4 class="font-semibold text-clinic-primary mb-2">Pré-natal</h4>
+                <p class="text-sm text-gray-600">Acompanhamento completo da gestação</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                <h4 class="font-semibold text-clinic-primary mb-2">Ginecologia Geral</h4>
+                <p class="text-sm text-gray-600">Consultas preventivas e tratamentos</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                <h4 class="font-semibold text-clinic-primary mb-2">Planejamento Familiar</h4>
+                <p class="text-sm text-gray-600">Orientação em contracepção</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-16 bg-clinic-primary text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold mb-4">Precisa de atendimento especializado?</h2>
+        <p class="text-xl text-blue-100 mb-8">
+            Nossa equipe está pronta para oferecer o melhor cuidado para sua saúde
+        </p>
+        <a href="{{ url_for('appointments.agendar') }}" 
+           class="bg-white text-clinic-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all duration-300 shadow-xl">
+            Agendar Consulta
+        </a>
+    </div>
+</section>
+{% endblock %}
