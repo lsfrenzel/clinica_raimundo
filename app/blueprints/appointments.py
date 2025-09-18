@@ -2,19 +2,21 @@
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import current_user
 from datetime import datetime, timedelta
-from models import Especialidade, Medico, Agendamento, db
+from extensions import db
 
 bp = Blueprint('appointments', __name__)
 
 @bp.route('/agendar')
 def agendar():
     """Página principal de agendamento - Passo 1: Escolher especialidade"""
+    from models import Especialidade
     especialidades = Especialidade.query.filter_by(ativo=True).all()
     return render_template('appointments/agendar.html', especialidades=especialidades)
 
 @bp.route('/medicos/<int:especialidade_id>')
 def medicos_por_especialidade(especialidade_id):
     """Passo 2: Escolher médico da especialidade"""
+    from models import Especialidade
     especialidade = Especialidade.query.get_or_404(especialidade_id)
     medicos = especialidade.medicos.filter_by(ativo=True).all()
     
@@ -28,6 +30,7 @@ def medicos_por_especialidade(especialidade_id):
 @bp.route('/horarios/<int:medico_id>')
 def horarios_medico(medico_id):
     """Passo 3: Escolher horário específico do médico"""
+    from models import Medico
     medico = Medico.query.get_or_404(medico_id)
     data_param = request.args.get('data')
     
@@ -59,20 +62,22 @@ def confirmar():
         telefone = request.form.get('telefone')
         
         try:
+            if not data_hora:
+                raise ValueError("data_hora é obrigatório")
             inicio = datetime.fromisoformat(data_hora)
             fim = inicio + timedelta(minutes=30)  # Duração padrão
             
+            from models import Agendamento
             # Criar agendamento
-            agendamento = Agendamento(
-                medico_id=medico_id,
-                especialidade_id=especialidade_id,
-                inicio=inicio,
-                fim=fim,
-                nome_convidado=nome,
-                email_convidado=email,
-                telefone_convidado=telefone,
-                paciente_id=current_user.id if current_user.is_authenticated else None
-            )
+            agendamento = Agendamento()
+            agendamento.medico_id = medico_id
+            agendamento.especialidade_id = especialidade_id
+            agendamento.inicio = inicio
+            agendamento.fim = fim
+            agendamento.nome_convidado = nome
+            agendamento.email_convidado = email
+            agendamento.telefone_convidado = telefone
+            agendamento.paciente_id = current_user.id if current_user.is_authenticated else None
             
             db.session.add(agendamento)
             db.session.commit()
@@ -91,6 +96,7 @@ def confirmar():
     if not medico_id or not data_hora:
         return redirect(url_for('appointments.agendar'))
     
+    from models import Medico
     medico = Medico.query.get_or_404(medico_id)
     
     return render_template('appointments/confirmar.html', 
@@ -99,6 +105,7 @@ def confirmar():
 @bp.route('/sucesso/<int:agendamento_id>')
 def sucesso(agendamento_id):
     """Página de sucesso após agendamento"""
+    from models import Agendamento
     agendamento = Agendamento.query.get_or_404(agendamento_id)
     return render_template('appointments/sucesso.html', agendamento=agendamento)
 
@@ -108,6 +115,7 @@ def meus_agendamentos():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
     
+    from models import Agendamento
     agendamentos = Agendamento.query.filter_by(paciente_id=current_user.id)\
                                    .order_by(Agendamento.inicio.desc()).all()
     

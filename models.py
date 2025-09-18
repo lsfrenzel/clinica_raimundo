@@ -1,9 +1,8 @@
 # Medical clinic management system - Database models
 from datetime import datetime, timedelta
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from main import db
+from extensions import db
 import bcrypt
 
 # Association table for many-to-many relationship between medicos and especialidades
@@ -110,7 +109,7 @@ class Medico(db.Model):
         return horarios_livres
     
     def __repr__(self):
-        return f'<Medico {self.usuario.nome} - CRM: {self.crm}>'
+        return f'<Medico {self.usuario.nome if self.usuario else "Unknown"} - CRM: {self.crm}>'
 
 class Agenda(db.Model):
     """Agenda dos médicos - define quando estão disponíveis"""
@@ -126,7 +125,7 @@ class Agenda(db.Model):
     ativo = db.Column(db.Boolean, default=True)
     
     def __repr__(self):
-        return f'<Agenda {self.medico.usuario.nome} - {self.data} {self.hora_inicio}>'
+        return f'<Agenda {self.medico.usuario.nome if self.medico and self.medico.usuario else "Unknown"} - {self.data} {self.hora_inicio}>'
 
 class Agendamento(db.Model):
     """Agendamentos de consultas"""

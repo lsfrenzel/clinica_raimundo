@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 from flask_restful import Api, Resource
 from datetime import datetime, timedelta
-from models import Especialidade, Medico, Agendamento, User, db
+from extensions import db
 
 bp = Blueprint('api', __name__)
 api = Api(bp)
@@ -10,6 +10,7 @@ api = Api(bp)
 class EspecialidadesAPI(Resource):
     def get(self):
         """Lista todas as especialidades ativas"""
+        from models import Especialidade
         especialidades = Especialidade.query.filter_by(ativo=True).all()
         return {
             'especialidades': [
@@ -26,6 +27,7 @@ class EspecialidadesAPI(Resource):
 class MedicosAPI(Resource):
     def get(self):
         """Lista médicos por especialidade"""
+        from models import Especialidade, Medico
         especialidade_id = request.args.get('especialidade_id')
         
         if especialidade_id:
@@ -65,6 +67,7 @@ class DisponibilidadeAPI(Resource):
         else:
             data_inicio = datetime.now()
         
+        from models import Medico, Especialidade
         if medico_id:
             medico = Medico.query.get_or_404(medico_id)
             horarios = medico.get_proximos_horarios_livres(data_inicio, limite)
@@ -108,6 +111,7 @@ class AgendamentoAPI(Resource):
             email = data['email']
             telefone = data.get('telefone')
             
+            from models import Agendamento
             # Verificar se horário ainda está disponível
             agendamento_existente = Agendamento.query.filter_by(
                 medico_id=medico_id,
@@ -118,16 +122,15 @@ class AgendamentoAPI(Resource):
                 return {'error': 'Horário não está mais disponível'}, 409
             
             # Criar agendamento
-            agendamento = Agendamento(
-                medico_id=medico_id,
-                especialidade_id=especialidade_id,
-                inicio=inicio,
-                fim=fim,
-                nome_convidado=nome,
-                email_convidado=email,
-                telefone_convidado=telefone,
-                origem='mobile'
-            )
+            agendamento = Agendamento()
+            agendamento.medico_id = medico_id
+            agendamento.especialidade_id = especialidade_id
+            agendamento.inicio = inicio
+            agendamento.fim = fim
+            agendamento.nome_convidado = nome
+            agendamento.email_convidado = email
+            agendamento.telefone_convidado = telefone
+            agendamento.origem = 'mobile'
             
             db.session.add(agendamento)
             db.session.commit()
@@ -147,6 +150,7 @@ class ConfirmarAgendamentoAPI(Resource):
     def post(self):
         """Confirma agendamento com OTP (mock)"""
         data = request.get_json()
+        from models import Agendamento
         agendamento_id = data.get('agendamento_id')
         otp = data.get('otp')
         
@@ -169,6 +173,7 @@ class CancelarAgendamentoAPI(Resource):
     def post(self):
         """Cancela agendamento"""
         data = request.get_json()
+        from models import Agendamento
         agendamento_id = data.get('agendamento_id')
         motivo = data.get('motivo', '')
         

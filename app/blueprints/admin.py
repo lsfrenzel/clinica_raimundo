@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, redirect,
 from flask_login import login_required, current_user
 from functools import wraps
 from datetime import datetime, timedelta
-from models import User, Medico, Especialidade, Agendamento, Agenda, db
+from extensions import db
 
 bp = Blueprint('admin', __name__)
 
@@ -22,6 +22,7 @@ def admin_required(f):
 @admin_required
 def dashboard():
     """Dashboard principal do admin"""
+    from models import User, Medico, Agendamento
     # Estatísticas básicas
     total_agendamentos = Agendamento.query.count()
     agendamentos_hoje = Agendamento.query.filter(
@@ -57,6 +58,7 @@ def agenda():
     else:
         data_selecionada = datetime.now().date()
     
+    from models import Agendamento
     # Buscar agendamentos do dia
     agendamentos = Agendamento.query.filter(
         db.func.date(Agendamento.inicio) == data_selecionada
@@ -71,6 +73,7 @@ def agenda():
 @admin_required
 def medicos():
     """Gerenciamento de médicos"""
+    from models import Medico
     medicos = Medico.query.all()
     return render_template('admin/medicos.html', medicos=medicos)
 
@@ -87,20 +90,28 @@ def criar_medico():
         crm = request.form.get('crm')
         bio = request.form.get('bio')
         
+        from models import User, Medico
         # Verificar se email já existe
         if User.query.filter_by(email=email).first():
             flash('Este email já está cadastrado.', 'error')
             return render_template('admin/criar_medico.html')
         
         # Criar usuário
-        user = User(nome=nome, email=email, telefone=telefone, role='medico')
+        user = User()
+        user.nome = nome
+        user.email = email
+        user.telefone = telefone
+        user.role = 'medico'
         user.set_password('123456')  # Senha temporária
         
         db.session.add(user)
         db.session.flush()  # Para obter o ID
         
         # Criar médico
-        medico = Medico(user_id=user.id, crm=crm, bio=bio)
+        medico = Medico()
+        medico.user_id = user.id
+        medico.crm = crm
+        medico.bio = bio
         
         db.session.add(medico)
         db.session.commit()
@@ -108,6 +119,7 @@ def criar_medico():
         flash(f'Médico {nome} criado com sucesso! Senha temporária: 123456', 'success')
         return redirect(url_for('admin.medicos'))
     
+    from models import Especialidade
     especialidades = Especialidade.query.filter_by(ativo=True).all()
     return render_template('admin/criar_medico.html', especialidades=especialidades)
 
@@ -116,6 +128,7 @@ def criar_medico():
 @admin_required
 def especialidades():
     """Gerenciamento de especialidades"""
+    from models import Especialidade
     especialidades = Especialidade.query.all()
     return render_template('admin/especialidades.html', especialidades=especialidades)
 
@@ -124,6 +137,7 @@ def especialidades():
 @admin_required
 def agendamentos():
     """Lista todos os agendamentos"""
+    from models import Agendamento
     page = request.args.get('page', 1, type=int)
     agendamentos = Agendamento.query.order_by(Agendamento.inicio.desc())\
                                    .paginate(page=page, per_page=20, error_out=False)

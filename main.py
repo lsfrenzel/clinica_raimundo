@@ -3,26 +3,11 @@
 
 import os
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
-from flask_mail import Mail
-from flask_cors import CORS
-from sqlalchemy.orm import DeclarativeBase
-
-
-class Base(DeclarativeBase):
-    pass
-
-
-db = SQLAlchemy(model_class=Base)
-migrate = Migrate()
-login_manager = LoginManager()
-mail = Mail()
+from extensions import db, migrate, login_manager, mail, cors
 
 def create_app():
     # create the app
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
     
     # Load configuration
     app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET') or 'dev-secret-key-change-in-production'
@@ -48,7 +33,7 @@ def create_app():
     migrate.init_app(app, db)
     login_manager.init_app(app)
     mail.init_app(app)
-    CORS(app)
+    cors.init_app(app)
     
     # Login manager configuration
     login_manager.login_view = 'auth.login'  # type: ignore[assignment]
@@ -77,8 +62,9 @@ def create_app():
     app.register_blueprint(api_bp, url_prefix='/api')
     
     with app.app_context():
-        # Make sure to import the models here or their tables won't be created
+        # Import all models to register them
         import models  # noqa: F401
+        
         db.create_all()
     
     return app
