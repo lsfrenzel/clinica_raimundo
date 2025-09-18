@@ -260,7 +260,11 @@
                         <div class="relative group">
                             <span class="text-dark-gray font-heading font-medium">{{ current_user.nome }}</span>
                             <div class="absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-xl border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                                <a href="{{ url_for('appointments.meus_agendamentos') }}" class="block px-6 py-3 text-sm link-elegant hover:bg-cream rounded-t-2xl">Meus Agendamentos</a>
+                                <a href="{{ url_for('main.chatbot') }}" class="block px-6 py-3 text-sm link-elegant hover:bg-cream rounded-t-2xl">🤖 Assistente Virtual</a>
+                                <a href="{{ url_for('appointments.meus_agendamentos') }}" class="block px-6 py-3 text-sm link-elegant hover:bg-cream">Meus Agendamentos</a>
+                                {% if current_user.is_medico() %}
+                                    <a href="{{ url_for('main.painel_medico') }}" class="block px-6 py-3 text-sm link-elegant hover:bg-cream">👨‍⚕️ Painel Médico</a>
+                                {% endif %}
                                 {% if current_user.is_admin() %}
                                     <a href="{{ url_for('admin.dashboard') }}" class="block px-6 py-3 text-sm link-elegant hover:bg-cream">Painel Admin</a>
                                 {% endif %}

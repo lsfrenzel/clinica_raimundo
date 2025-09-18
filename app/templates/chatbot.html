@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Assistente Virtual - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-cream pt-8 pb-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8 fade-in">
+            <div class="inline-flex items-center bg-white/30 rounded-full px-6 py-3 mb-4 backdrop-blur-sm border border-white/20">
+                <div class="w-3 h-3 bg-emerald rounded-full mr-3 animate-pulse"></div>
+                <span class="text-dark-gray font-semibold">Assistente Virtual Online</span>
+            </div>
+            <h1 class="text-heading font-display font-bold text-dark-gray mb-4">
+                Olá, {{ current_user.nome }}! 👋
+            </h1>
+            <p class="text-body-lg text-gray-700 font-body">
+                Estou aqui para te ajudar a agendar sua consulta de forma rápida e fácil.
+            </p>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="card-elegant bg-white rounded-3xl shadow-2xl overflow-hidden max-w-3xl mx-auto">
+            <!-- Chat Header -->
+            <div class="gradient-teal text-white px-8 py-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold font-heading">Assistente Virtual</h2>
+                        <p class="text-white/80 font-body">Clínica Dr. Raimundo Nunes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50 to-white">
+                <!-- Mensagem inicial do bot -->
+                <div class="flex space-x-3">
+                    <div class="w-8 h-8 gradient-emerald rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 003.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 00-3.09 3.091z" />
+                        </svg>
+                    </div>
+                    <div class="bg-white rounded-2xl rounded-tl-sm px-6 py-4 shadow-sm max-w-md">
+                        <p class="text-gray-800 font-body leading-relaxed">
+                            Olá! Sou seu assistente virtual da Clínica Dr. Raimundo Nunes. 
+                            Posso te ajudar a agendar uma consulta. Como posso ajudá-lo hoje?
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="border-t border-gray-100 p-6">
+                <form id="chatForm" class="flex space-x-4">
+                    <input 
+                        type="text" 
+                        id="messageInput"
+                        placeholder="Digite sua mensagem aqui..."
+                        class="flex-1 border border-gray-300 rounded-2xl px-6 py-4 font-body focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all duration-200"
+                        autocomplete="off"
+                    >
+                    <button 
+                        type="submit" 
+                        id="sendButton"
+                        class="btn-emerald px-8 py-4 rounded-2xl flex items-center space-x-2 transition-all duration-200 hover:scale-105"
+                    >
+                        <span class="font-cta font-semibold">Enviar</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 text-center">
+            <p class="text-sm text-gray-600 mb-4 font-body">Ações Rápidas:</p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <button class="quick-action btn-teal px-4 py-2 text-sm" data-message="Quero agendar uma consulta">
+                    📅 Agendar Consulta
+                </button>
+                <button class="quick-action btn-gold px-4 py-2 text-sm" data-message="Quais especialidades vocês atendem?">
+                    🩺 Ver Especialidades
+                </button>
+                <button class="quick-action btn-emerald px-4 py-2 text-sm" data-message="Quem são os médicos disponíveis?">
+                    👨‍⚕️ Ver Médicos
+                </button>
+                <button class="quick-action link-elegant px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50" data-message="Preciso remarcar um agendamento">
+                    🔄 Reagendar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading indicator -->
+<div id="loadingIndicator" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+    <div class="bg-white rounded-2xl p-6 shadow-2xl">
+        <div class="flex items-center space-x-3">
+            <div class="animate-spin w-6 h-6 border-2 border-teal border-t-transparent rounded-full"></div>
+            <span class="text-gray-700 font-body">Processando...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+let chatHistory = [];
+
+// Elementos DOM
+const chatMessages = document.getElementById('chatMessages');
+const messageInput = document.getElementById('messageInput');
+const chatForm = document.getElementById('chatForm');
+const sendButton = document.getElementById('sendButton');
+const loadingIndicator = document.getElementById('loadingIndicator');
+const quickActions = document.querySelectorAll('.quick-action');
+
+// Event listeners
+chatForm.addEventListener('submit', handleSubmit);
+messageInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+    }
+});
+
+quickActions.forEach(button => {
+    button.addEventListener('click', function() {
+        const message = this.dataset.message;
+        messageInput.value = message;
+        handleSubmit(new Event('submit'));
+    });
+});
+
+// Função principal de envio de mensagem
+async function handleSubmit(e) {
+    e.preventDefault();
+    
+    const message = messageInput.value.trim();
+    if (!message) return;
+    
+    // Adicionar mensagem do usuário
+    addUserMessage(message);
+    messageInput.value = '';
+    
+    // Mostrar loading
+    showLoading(true);
+    
+    try {
+        // Enviar para o backend
+        const response = await fetch('/api/chatbot', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                context: {
+                    user_id: {% if current_user.is_authenticated %}{{ current_user.id }}{% else %}null{% endif %},
+                    history: chatHistory.slice(-10) // Últimas 10 mensagens
+                }
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Adicionar resposta do bot
+            addBotMessage(data.response.message, data.response.data);
+            
+            // Atualizar histórico
+            chatHistory.push({
+                user: message,
+                bot: data.response.message,
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            addBotMessage("Desculpe, ocorreu um erro. Tente novamente.", {});
+        }
+        
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+        addBotMessage("Desculpe, não foi possível processar sua mensagem. Verifique sua conexão e tente novamente.", {});
+    }
+    
+    showLoading(false);
+}
+
+// Adicionar mensagem do usuário
+function addUserMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'flex justify-end space-x-3';
+    messageDiv.innerHTML = `
+        <div class="bg-teal text-white rounded-2xl rounded-tr-sm px-6 py-4 shadow-sm max-w-md">
+            <p class="font-body leading-relaxed">${escapeHtml(message)}</p>
+        </div>
+        <div class="w-8 h-8 gradient-gold rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Adicionar mensagem do bot
+function addBotMessage(message, data = {}) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'flex space-x-3';
+    
+    let extraContent = '';
+    
+    // Renderizar dados especiais baseado na ação
+    if (data.specialties) {
+        extraContent += renderSpecialties(data.specialties);
+    }
+    
+    if (data.doctors) {
+        extraContent += renderDoctors(data.doctors);
+    }
+    
+    if (data.schedules) {
+        extraContent += renderSchedules(data.schedules);
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="w-8 h-8 gradient-emerald rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 003.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 00-3.09 3.091z" />
+            </svg>
+        </div>
+        <div class="bg-white rounded-2xl rounded-tl-sm px-6 py-4 shadow-sm max-w-md">
+            <p class="text-gray-800 font-body leading-relaxed mb-3">${escapeHtml(message)}</p>
+            ${extraContent}
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Renderizar especialidades
+function renderSpecialties(specialties) {
+    if (!specialties || specialties.length === 0) return '';
+    
+    let html = '<div class="mt-3"><h4 class="font-semibold text-sm text-gray-700 mb-2">Especialidades Disponíveis:</h4>';
+    html += '<div class="space-y-2">';
+    
+    specialties.forEach(spec => {
+        html += `
+            <div class="bg-emerald/10 rounded-lg p-3">
+                <div class="font-medium text-emerald-dark text-sm">${escapeHtml(spec.nome)}</div>
+                <div class="text-xs text-gray-600 mt-1">${escapeHtml(spec.descricao)}</div>
+            </div>
+        `;
+    });
+    
+    html += '</div></div>';
+    return html;
+}
+
+// Renderizar médicos
+function renderDoctors(doctors) {
+    if (!doctors || doctors.length === 0) return '';
+    
+    let html = '<div class="mt-3"><h4 class="font-semibold text-sm text-gray-700 mb-2">Médicos Disponíveis:</h4>';
+    html += '<div class="space-y-2">';
+    
+    doctors.forEach(doctor => {
+        html += `
+            <div class="bg-teal/10 rounded-lg p-3">
+                <div class="font-medium text-teal-dark text-sm">${escapeHtml(doctor.nome)} - CRM: ${escapeHtml(doctor.crm)}</div>
+                <div class="text-xs text-gray-600 mt-1">${escapeHtml(doctor.bio)}</div>
+                ${doctor.especialidades ? `<div class="text-xs text-emerald font-medium mt-1">${doctor.especialidades.join(', ')}</div>` : ''}
+            </div>
+        `;
+    });
+    
+    html += '</div></div>';
+    return html;
+}
+
+// Renderizar horários
+function renderSchedules(schedules) {
+    if (!schedules || schedules.length === 0) return '';
+    
+    let html = '<div class="mt-3"><h4 class="font-semibold text-sm text-gray-700 mb-2">Horários Disponíveis:</h4>';
+    html += '<div class="grid grid-cols-2 gap-2">';
+    
+    schedules.slice(0, 8).forEach(schedule => {
+        html += `
+            <div class="bg-gold/10 rounded-lg p-2">
+                <div class="font-medium text-gold-dark text-xs">${escapeHtml(schedule.data)}</div>
+                <div class="text-xs text-gray-600">${escapeHtml(schedule.hora)} (${schedule.duracao}min)</div>
+            </div>
+        `;
+    });
+    
+    if (schedules.length > 8) {
+        html += `<div class="col-span-2 text-center text-xs text-gray-500 py-2">+${schedules.length - 8} horários disponíveis</div>`;
+    }
+    
+    html += '</div></div>';
+    return html;
+}
+
+// Funções utilitárias
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function showLoading(show) {
+    loadingIndicator.classList.toggle('hidden', !show);
+    sendButton.disabled = show;
+}
+
+function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Auto-scroll suave ao carregar
+window.addEventListener('load', () => {
+    setTimeout(scrollToBottom, 100);
+});
+</script>
+{% endblock %}

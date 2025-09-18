@@ -24,7 +24,8 @@ def login():
             next_page = request.args.get('next')
             if next_page:
                 return redirect(next_page)
-            return redirect(url_for('main.index'))
+            # Redirecionar para chatbot após login
+            return redirect(url_for('main.chatbot'))
         else:
             flash('Email ou senha inválidos.', 'error')
     
@@ -60,7 +61,7 @@ def register():
         
         login_user(user)
         flash('Cadastro realizado com sucesso!', 'success')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.chatbot'))
     
     return render_template('auth/register.html')
 

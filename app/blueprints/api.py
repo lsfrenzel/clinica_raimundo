@@ -1,6 +1,7 @@
 # API blueprint - REST endpoints for mobile integration
 from flask import Blueprint, request, jsonify
 from flask_restful import Api, Resource
+from flask_login import current_user, login_required
 from datetime import datetime, timedelta
 from extensions import db
 
@@ -191,6 +192,47 @@ class CancelarAgendamentoAPI(Resource):
             'status': 'cancelado',
             'mensagem': 'Agendamento cancelado com sucesso'
         }
+
+# Endpoint de health check para evitar 404s
+@bp.route('/', methods=['HEAD', 'GET'])
+def api_health():
+    """Health check da API"""
+    return jsonify({'status': 'ok', 'service': 'Medical Clinic API'})
+
+# Endpoint para chatbot (não REST, endpoint direto)
+@bp.route('/chatbot', methods=['POST'])
+@login_required
+def chatbot():
+    """Endpoint para interação com chatbot inteligente"""
+    try:
+        from chatbot_service import chatbot_service
+        
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({'success': False, 'error': 'Mensagem é obrigatória'}), 400
+        
+        user_message = data['message']
+        context = data.get('context', {})
+        
+        # Adicionar informações do usuário logado ao contexto
+        context['user_id'] = current_user.id
+        context['user_name'] = current_user.nome
+        context['user_email'] = current_user.email
+        
+        # Processar mensagem no chatbot
+        response = chatbot_service.chat_response(user_message, context)
+        
+        return jsonify({
+            'success': True,
+            'response': response
+        })
+        
+    except Exception as e:
+        print(f"Erro no chatbot: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Erro interno do servidor'
+        }), 500
 
 # Registrar recursos da API
 api.add_resource(EspecialidadesAPI, '/especialidades')
