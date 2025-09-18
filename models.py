@@ -109,7 +109,9 @@ class Medico(db.Model):
         return horarios_livres
     
     def __repr__(self):
-        return f'<Medico {self.usuario.nome if hasattr(self, "usuario") and self.usuario else "Unknown"} - CRM: {self.crm}>'
+        # Access the user via the relationship
+        user = User.query.get(self.user_id) if self.user_id else None
+        return f'<Medico {user.nome if user else "Unknown"} - CRM: {self.crm}>'
 
 class Agenda(db.Model):
     """Agenda dos médicos - define quando estão disponíveis"""
@@ -162,22 +164,25 @@ class Agendamento(db.Model):
     @property
     def nome_paciente(self):
         """Retorna o nome do paciente (registrado ou convidado)"""
-        if hasattr(self, 'paciente') and self.paciente:
-            return self.paciente.nome
+        if self.paciente_id:
+            user = User.query.get(self.paciente_id)
+            return user.nome if user else None
         return self.nome_convidado
     
     @property
     def email_paciente(self):
         """Retorna o email do paciente (registrado ou convidado)"""
-        if hasattr(self, 'paciente') and self.paciente:
-            return self.paciente.email
+        if self.paciente_id:
+            user = User.query.get(self.paciente_id)
+            return user.email if user else None
         return self.email_convidado
     
     @property
     def telefone_paciente(self):
         """Retorna o telefone do paciente (registrado ou convidado)"""
-        if hasattr(self, 'paciente') and self.paciente:
-            return self.paciente.telefone
+        if self.paciente_id:
+            user = User.query.get(self.paciente_id)
+            return user.telefone if user else None
         return self.telefone_convidado
     
     def pode_ser_cancelado(self):
