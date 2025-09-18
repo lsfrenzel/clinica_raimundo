@@ -2,41 +2,44 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="gradient-teal text-white relative overflow-hidden section-spacing">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"2\" fill=\"white\" opacity=\"0.3\"/></svg>'); background-size: 50px 50px;"></div>
+<section class="relative overflow-hidden section-spacing min-h-screen flex items-center">
+    <!-- Background Image -->
+    <div class="absolute inset-0">
+        <img src="{{ url_for('static', filename='images/consultorio.jpg') }}" 
+             alt="Consultório médico" 
+             class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-r from-teal-dark/90 via-teal/80 to-emerald-dark/85"></div>
     </div>
     
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
         <div class="text-center">
             <div class="mb-6">
-                <div class="inline-flex items-center bg-white/10 rounded-full px-4 py-2 text-sm font-medium backdrop-blur-sm">
-                    <span class="w-2 h-2 bg-emerald rounded-full mr-2"></span>
-                    Mais de 30 anos de experiência
+                <div class="inline-flex items-center bg-white/20 rounded-full px-6 py-3 text-sm font-medium backdrop-blur-sm border border-white/30">
+                    <span class="w-2 h-2 bg-white rounded-full mr-3"></span>
+                    <span class="text-white font-semibold">Mais de 30 anos de experiência</span>
                 </div>
             </div>
             
-            <h1 class="text-display md:text-6xl font-display font-bold mb-8 leading-tight text-white fade-in">
+            <h1 class="text-display md:text-6xl font-display font-bold mb-8 leading-tight text-white fade-in drop-shadow-lg">
                 Humanização, excelência e<br>
-                <span class="text-gold-light">dedicação à saúde da mulher</span>
+                <span class="text-white drop-shadow-lg">dedicação à saúde da mulher</span>
             </h1>
             
-            <p class="text-body-lg mb-10 text-teal-light max-w-3xl mx-auto leading-relaxed font-body">
+            <p class="text-body-lg mb-10 text-white/95 max-w-3xl mx-auto leading-relaxed font-body drop-shadow-sm font-medium">
                 Com mais de 30 anos de experiência em medicina, o Dr. Raimundo Nunes é especialista em ginecologia e obstetrícia, oferecendo atendimento humanizado e de alta qualidade.
             </p>
             
             <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <a href="{{ url_for('appointments.agendar') }}" class="btn-gold text-lg px-10 py-4 shadow-2xl">
+                <a href="{{ url_for('appointments.agendar') }}" class="btn-gold text-lg px-12 py-5 shadow-2xl font-bold">
                     Agendar Consulta
                 </a>
-                <a href="{{ url_for('auth.register') }}" class="btn-teal text-lg px-10 py-4 shadow-2xl">
+                <a href="{{ url_for('auth.register') }}" class="bg-white text-teal font-bold text-lg px-12 py-5 rounded-xl shadow-2xl hover:bg-gray-50 transition-all duration-300">
                     Criar Conta
                 </a>
             </div>
             
-            <div class="flex justify-center mt-6">
-                <a href="{{ url_for('main.sobre') }}" class="link-elegant text-white hover:text-gold-light font-heading font-medium flex items-center">
+            <div class="flex justify-center mt-8">
+                <a href="{{ url_for('main.sobre') }}" class="text-white hover:text-white/80 font-heading font-semibold flex items-center drop-shadow-sm text-lg">
                     Conheça nossa história
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -52,7 +55,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16 slide-up">
             <h2 class="text-heading font-display font-bold text-dark-gray mb-6">Agendamento Rápido</h2>
-            <p class="text-body-lg text-light-gray font-body">Agende sua consulta em apenas 3 cliques</p>
+            <p class="text-body-lg text-gray-700 font-body font-medium">Agende sua consulta em apenas 3 cliques</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -60,21 +63,21 @@
             <div class="text-center card-elegant bg-white p-8">
                 <div class="gradient-emerald text-white w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-cta font-bold mx-auto mb-6 shadow-lg">1</div>
                 <h3 class="text-heading-sm font-heading font-semibold mb-4 text-dark-gray">Escolha a Especialidade</h3>
-                <p class="text-light-gray font-body">Selecione a área médica de sua consulta</p>
+                <p class="text-gray-600 font-body font-medium">Selecione a área médica de sua consulta</p>
             </div>
             
             <!-- Passo 2: Médico -->
             <div class="text-center card-elegant bg-white p-8">
                 <div class="gradient-gold text-white w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-cta font-bold mx-auto mb-6 shadow-lg">2</div>
                 <h3 class="text-heading-sm font-heading font-semibold mb-4 text-dark-gray">Escolha o Médico</h3>
-                <p class="text-light-gray font-body">Veja os próximos horários disponíveis</p>
+                <p class="text-gray-600 font-body font-medium">Veja os próximos horários disponíveis</p>
             </div>
             
             <!-- Passo 3: Confirmação -->
             <div class="text-center card-elegant bg-white p-8">
                 <div class="gradient-teal text-white w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-cta font-bold mx-auto mb-6 shadow-lg">3</div>
                 <h3 class="text-heading-sm font-heading font-semibold mb-4 text-dark-gray">Confirme os Dados</h3>
-                <p class="text-light-gray font-body">Finalize seu agendamento</p>
+                <p class="text-gray-600 font-body font-medium">Finalize seu agendamento</p>
             </div>
         </div>
         
@@ -92,14 +95,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16 fade-in">
             <h2 class="text-heading font-display font-bold text-dark-gray mb-6">Nossas Especialidades</h2>
-            <p class="text-body-lg text-light-gray font-body">Atendimento completo para a saúde da mulher</p>
+            <p class="text-body-lg text-gray-700 font-body font-medium">Atendimento completo para a saúde da mulher</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for especialidade in especialidades %}
             <div class="card-elegant bg-white p-8 border-l-4 border-teal">
                 <h3 class="text-heading-sm font-heading font-semibold text-dark-gray mb-4">{{ especialidade.nome }}</h3>
-                <p class="text-light-gray mb-6 font-body">{{ especialidade.descricao or 'Especialidade médica com atendimento de qualidade.' }}</p>
+                <p class="text-gray-600 mb-6 font-body font-medium">{{ especialidade.descricao or 'Especialidade médica com atendimento de qualidade.' }}</p>
                 <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" 
                    class="link-teal font-heading font-medium inline-flex items-center">
                     Agendar consulta
@@ -120,7 +123,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16 slide-up">
             <h2 class="text-heading font-display font-bold text-dark-gray mb-6">Nossa Equipe</h2>
-            <p class="text-body-lg text-light-gray font-body">Médicos especializados e experientes</p>
+            <p class="text-body-lg text-gray-700 font-body font-medium">Médicos especializados e experientes</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -151,7 +154,7 @@
                     {% endif %}
                     
                     {% if medico.bio %}
-                        <p class="text-light-gray text-sm mb-6 font-body leading-relaxed">{{ medico.bio[:120] }}{% if medico.bio|length > 120 %}...{% endif %}</p>
+                        <p class="text-gray-600 text-sm mb-6 font-body leading-relaxed font-medium">{{ medico.bio[:120] }}{% if medico.bio|length > 120 %}...{% endif %}</p>
                     {% endif %}
                     
                     <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
@@ -181,13 +184,13 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div class="fade-in">
                 <h2 class="text-heading font-display font-bold text-dark-gray mb-8">Referência em DIU Hormonal</h2>
-                <p class="text-body-lg text-light-gray mb-6 font-body leading-relaxed">
+                <p class="text-body-lg text-gray-700 mb-6 font-body leading-relaxed font-medium">
                     A Clínica Dr. Raimundo é referência nacional na inserção de DIU hormonal, 
                     especialmente os modelos Mirena e Kyleena. Desde o lançamento do DIU hormonal no Brasil, 
                     em 2000, a clínica acumula anos de experiência e se destaca como uma das mais 
                     especializadas nesse procedimento.
                 </p>
-                <p class="text-body-lg text-light-gray mb-10 font-body leading-relaxed">
+                <p class="text-body-lg text-gray-700 mb-10 font-body leading-relaxed font-medium">
                     Se você busca um ginecologista experiente e humanizado em São Paulo, 
                     o Dr. Raimundo Nunes e sua equipe estão prontos para oferecer o melhor em saúde feminina.
                 </p>
@@ -199,19 +202,19 @@
             <div class="grid grid-cols-2 gap-6 slide-up">
                 <div class="card-elegant bg-cream p-8 text-center">
                     <div class="text-4xl font-bold text-teal mb-3 font-display">30+</div>
-                    <div class="text-light-gray font-body">Anos de Experiência</div>
+                    <div class="text-gray-600 font-body font-medium">Anos de Experiência</div>
                 </div>
                 <div class="card-elegant bg-cream p-8 text-center">
                     <div class="text-4xl font-bold text-gold mb-3 font-display">2</div>
-                    <div class="text-light-gray font-body">Unidades</div>
+                    <div class="text-gray-600 font-body font-medium">Unidades</div>
                 </div>
                 <div class="card-elegant bg-cream p-8 text-center">
                     <div class="text-4xl font-bold text-emerald mb-3 font-display">9</div>
-                    <div class="text-light-gray font-body">Especialidades</div>
+                    <div class="text-gray-600 font-body font-medium">Especialidades</div>
                 </div>
                 <div class="card-elegant bg-cream p-8 text-center">
                     <div class="text-4xl font-bold text-teal mb-3 font-display">5</div>
-                    <div class="text-light-gray font-body">Especialistas</div>
+                    <div class="text-gray-600 font-body font-medium">Especialistas</div>
                 </div>
             </div>
         </div>
