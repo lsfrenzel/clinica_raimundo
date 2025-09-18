@@ -7,12 +7,15 @@ from openai import OpenAI
 from models import Especialidade, Medico, Agendamento, User
 from extensions import db
 
-# Using GPT-4o-mini for reliable JSON response format support
+# Using GPT-5 - the newest OpenAI model released August 7, 2025
+# do not change this unless explicitly requested by the user
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 class ChatbotService:
     def __init__(self):
+        if not openai_client:
+            raise Exception("OPENAI_API_KEY não configurada")
         self.client = openai_client
         
     def get_system_prompt(self):
@@ -68,7 +71,7 @@ Responda sempre em formato JSON com esta estrutura:
             messages.append({"role": "user", "content": user_message})
             
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-5",
                 messages=messages,
                 response_format={"type": "json_object"},
                 max_tokens=1000
