@@ -1,12 +1,13 @@
 # Appointments blueprint - Sistema de agendamento
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
-from flask_login import current_user
+from flask_login import current_user, login_required
 from datetime import datetime, timedelta
 from extensions import db
 
 bp = Blueprint('appointments', __name__)
 
 @bp.route('/agendar')
+@login_required
 def agendar():
     """Página principal de agendamento - Passo 1: Escolher especialidade"""
     from models import Especialidade
@@ -14,6 +15,7 @@ def agendar():
     return render_template('appointments/agendar.html', especialidades=especialidades)
 
 @bp.route('/medicos/<int:especialidade_id>')
+@login_required
 def medicos_por_especialidade(especialidade_id):
     """Passo 2: Escolher médico da especialidade"""
     from models import Especialidade
@@ -28,6 +30,7 @@ def medicos_por_especialidade(especialidade_id):
                          especialidade=especialidade, medicos=medicos)
 
 @bp.route('/horarios/<int:medico_id>')
+@login_required
 def horarios_medico(medico_id):
     """Passo 3: Escolher horário específico do médico"""
     from models import Medico
@@ -48,6 +51,7 @@ def horarios_medico(medico_id):
                          medico=medico, horarios=horarios)
 
 @bp.route('/confirmar', methods=['GET', 'POST'])
+@login_required
 def confirmar():
     """Confirmação de agendamento"""
     if request.method == 'POST':
@@ -56,10 +60,8 @@ def confirmar():
         especialidade_id = request.form.get('especialidade_id')
         data_hora = request.form.get('data_hora')
         
-        # Dados do paciente
-        nome = request.form.get('nome')
-        email = request.form.get('email')
-        telefone = request.form.get('telefone')
+        # Observações opcionais
+        observacoes = request.form.get('observacoes', '')
         
         try:
             if not data_hora:
@@ -68,16 +70,14 @@ def confirmar():
             fim = inicio + timedelta(minutes=30)  # Duração padrão
             
             from models import Agendamento
-            # Criar agendamento
+            # Criar agendamento (apenas para usuários logados)
             agendamento = Agendamento()
             agendamento.medico_id = medico_id
             agendamento.especialidade_id = especialidade_id
             agendamento.inicio = inicio
             agendamento.fim = fim
-            agendamento.nome_convidado = nome
-            agendamento.email_convidado = email
-            agendamento.telefone_convidado = telefone
-            agendamento.paciente_id = current_user.id if current_user.is_authenticated else None
+            agendamento.paciente_id = current_user.id
+            agendamento.observacoes = observacoes
             
             db.session.add(agendamento)
             db.session.commit()
@@ -103,13 +103,21 @@ def confirmar():
                          medico=medico, data_hora=data_hora)
 
 @bp.route('/sucesso/<int:agendamento_id>')
+@login_required
 def sucesso(agendamento_id):
     """Página de sucesso após agendamento"""
     from models import Agendamento
     agendamento = Agendamento.query.get_or_404(agendamento_id)
+    
+    # Verificar se o agendamento pertence ao usuário logado
+    if agendamento.paciente_id != current_user.id:
+        flash('Agendamento não encontrado.', 'error')
+        return redirect(url_for('main.index'))
+    
     return render_template('appointments/sucesso.html', agendamento=agendamento)
 
 @bp.route('/meus-agendamentos')
+@login_required
 def meus_agendamentos():
     """Lista agendamentos do usuário logado"""
     if not current_user.is_authenticated:

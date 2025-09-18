@@ -90,7 +90,7 @@
                 </div>
 
                 <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <h4 class="font-semibold text-clinic-primary mb-2">Informações importantes:</h4>
+                    <h4 class="font-semibold text-teal mb-2">Informações importantes:</h4>
                     <ul class="text-sm text-gray-600 space-y-1">
                         <li>• Chegue 15 minutos antes do horário</li>
                         <li>• Traga documento com foto</li>
@@ -102,9 +102,11 @@
 
             <!-- Formulário de Dados -->
             <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-xl font-semibold text-gray-900 mb-4">Seus Dados</h3>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Confirmação dos Seus Dados</h3>
+                <p class="text-sm text-gray-600 mb-4">Dados automáticos da sua conta:</p>
                 
                 <form method="POST" class="space-y-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <!-- Campos hidden para dados do agendamento -->
                     <input type="hidden" name="medico_id" value="{{ medico.id }}">
                     <input type="hidden" name="especialidade_id" value="{{ medico.especialidades[0].id if medico.especialidades else '' }}">
@@ -119,10 +121,9 @@
                             type="text" 
                             id="nome" 
                             name="nome" 
-                            required 
-                            value="{{ current_user.nome if current_user.is_authenticated else '' }}"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary"
-                            placeholder="Seu nome completo"
+                            readonly 
+                            value="{{ current_user.nome }}"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700"
                         >
                     </div>
 
@@ -135,10 +136,9 @@
                             type="email" 
                             id="email" 
                             name="email" 
-                            required 
-                            value="{{ current_user.email if current_user.is_authenticated else '' }}"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary"
-                            placeholder="seu@email.com"
+                            readonly 
+                            value="{{ current_user.email }}"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700"
                         >
                         <p class="text-xs text-gray-500 mt-1">Enviaremos a confirmação por email</p>
                     </div>
@@ -152,10 +152,9 @@
                             type="tel" 
                             id="telefone" 
                             name="telefone" 
-                            required 
-                            value="{{ current_user.telefone if current_user.is_authenticated else '' }}"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary"
-                            placeholder="(11) 99999-9999"
+                            readonly 
+                            value="{{ current_user.telefone or 'Não informado' }}"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700"
                         >
                         <p class="text-xs text-gray-500 mt-1">Para lembretes via WhatsApp</p>
                     </div>
@@ -169,7 +168,7 @@
                             id="observacoes" 
                             name="observacoes" 
                             rows="3"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-clinic-primary focus:border-clinic-primary"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-teal focus:border-teal"
                             placeholder="Alguma informação adicional que o médico deve saber..."
                         ></textarea>
                     </div>
@@ -181,11 +180,11 @@
                             id="aceito_termos" 
                             name="aceito_termos" 
                             required
-                            class="mt-1 h-4 w-4 text-clinic-primary focus:ring-clinic-primary border-gray-300 rounded"
+                            class="mt-1 h-4 w-4 text-teal focus:ring-teal border-gray-300 rounded"
                         >
                         <label for="aceito_termos" class="ml-2 text-sm text-gray-600">
-                            Aceito os <a href="#" class="text-clinic-primary hover:text-clinic-accent">termos de uso</a> 
-                            e <a href="#" class="text-clinic-primary hover:text-clinic-accent">política de privacidade</a> *
+                            Aceito os <a href="#" class="text-teal hover:text-teal-light">termos de uso</a> 
+                            e <a href="#" class="text-teal hover:text-teal-light">política de privacidade</a> *
                         </label>
                     </div>
 
@@ -195,7 +194,7 @@
                             type="checkbox" 
                             id="newsletter" 
                             name="newsletter"
-                            class="mt-1 h-4 w-4 text-clinic-primary focus:ring-clinic-primary border-gray-300 rounded"
+                            class="mt-1 h-4 w-4 text-teal focus:ring-teal border-gray-300 rounded"
                         >
                         <label for="newsletter" class="ml-2 text-sm text-gray-600">
                             Desejo receber informações sobre saúde da mulher por email
@@ -213,7 +212,7 @@
                         </button>
                         <button 
                             type="submit" 
-                            class="w-full sm:flex-1 btn-clinic-primary text-white px-6 py-2 rounded-md font-medium"
+                            class="w-full sm:flex-1 btn-teal text-white px-6 py-2 rounded-md font-medium"
                         >
                             Confirmar Agendamento
                         </button>

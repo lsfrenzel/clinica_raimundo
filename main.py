@@ -3,14 +3,14 @@
 
 import os
 from flask import Flask
-from extensions import db, migrate, login_manager, mail, cors
+from extensions import db, migrate, login_manager, mail, cors, csrf
 
 def create_app():
     # create the app
     app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
     
     # Load configuration
-    app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET') or 'dev-secret-key-change-in-production'
+    app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET')
     
     # configure the database, relative to the app instance folder
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
@@ -34,6 +34,7 @@ def create_app():
     login_manager.init_app(app)
     mail.init_app(app)
     cors.init_app(app)
+    csrf.init_app(app)
     
     # Login manager configuration
     login_manager.login_view = 'auth.login'  # type: ignore[assignment]

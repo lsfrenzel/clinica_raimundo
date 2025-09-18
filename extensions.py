@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 
 class Base(DeclarativeBase):
@@ -15,3 +16,4 @@ migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
 cors = CORS()
+csrf = CSRFProtect()
