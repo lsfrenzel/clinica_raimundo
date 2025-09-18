@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-b from-clinic-blue to-clinic-light-blue text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                Humanização, excelência e<br>
+                dedicação à saúde da mulher
+            </h1>
+            <p class="text-xl mb-8 text-blue-100 max-w-3xl mx-auto">
+                Com mais de 30 anos de experiência em medicina, o Dr. Raimundo Nunes é especialista em ginecologia e obstetrícia, oferecendo atendimento humanizado e de alta qualidade.
+            </p>
+            <a href="{{ url_for('appointments.agendar') }}" class="bg-white text-clinic-blue px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition">
+                Agendar Consulta
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Agendamento Rápido -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Agendamento Rápido</h2>
+            <p class="text-lg text-gray-600">Agende sua consulta em apenas 3 cliques</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Passo 1: Especialidade -->
+            <div class="text-center">
+                <div class="bg-clinic-blue text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4">1</div>
+                <h3 class="text-xl font-semibold mb-2">Escolha a Especialidade</h3>
+                <p class="text-gray-600">Selecione a área médica de sua consulta</p>
+            </div>
+            
+            <!-- Passo 2: Médico -->
+            <div class="text-center">
+                <div class="bg-clinic-blue text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4">2</div>
+                <h3 class="text-xl font-semibold mb-2">Escolha o Médico</h3>
+                <p class="text-gray-600">Veja os próximos horários disponíveis</p>
+            </div>
+            
+            <!-- Passo 3: Confirmação -->
+            <div class="text-center">
+                <div class="bg-clinic-blue text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-4">3</div>
+                <h3 class="text-xl font-semibold mb-2">Confirme os Dados</h3>
+                <p class="text-gray-600">Finalize seu agendamento</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-8">
+            <a href="{{ url_for('appointments.agendar') }}" class="bg-clinic-blue text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-clinic-light-blue transition">
+                Começar Agendamento
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Especialidades -->
+{% if especialidades %}
+<section class="py-16 bg-clinic-light-gray">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Nossas Especialidades</h2>
+            <p class="text-lg text-gray-600">Atendimento completo para a saúde da mulher</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for especialidade in especialidades %}
+            <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ especialidade.nome }}</h3>
+                <p class="text-gray-600 mb-4">{{ especialidade.descricao or 'Especialidade médica com atendimento de qualidade.' }}</p>
+                <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" 
+                   class="text-clinic-blue hover:text-clinic-light-blue font-medium">
+                    Agendar consulta →
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Nossos Médicos -->
+{% if medicos %}
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Nossa Equipe</h2>
+            <p class="text-lg text-gray-600">Médicos especializados e experientes</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for medico in medicos %}
+            <div class="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+                {% if medico.foto_url %}
+                    <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-48 object-cover">
+                {% else %}
+                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-500">Foto do médico</span>
+                    </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-1">{{ medico.usuario.nome }}</h3>
+                    <p class="text-clinic-blue mb-2">CRM: {{ medico.crm }}</p>
+                    
+                    {% if medico.especialidades %}
+                        <div class="mb-3">
+                            {% for especialidade in medico.especialidades %}
+                                <span class="inline-block bg-clinic-light-gray text-clinic-blue text-sm px-2 py-1 rounded mr-1 mb-1">
+                                    {{ especialidade.nome }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if medico.bio %}
+                        <p class="text-gray-600 text-sm mb-4">{{ medico.bio[:100] }}{% if medico.bio|length > 100 %}...{% endif %}</p>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
+                       class="bg-clinic-blue text-white px-4 py-2 rounded hover:bg-clinic-light-blue transition">
+                        Agendar
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-8">
+            <a href="{{ url_for('main.medicos') }}" class="text-clinic-blue hover:text-clinic-light-blue font-medium">
+                Ver todos os médicos →
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Sobre a Clínica -->
+<section class="py-16 bg-clinic-light-gray">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Referência em DIU Hormonal</h2>
+                <p class="text-lg text-gray-600 mb-6">
+                    A Clínica Dr. Raimundo é referência nacional na inserção de DIU hormonal, 
+                    especialmente os modelos Mirena e Kyleena. Desde o lançamento do DIU hormonal no Brasil, 
+                    em 2000, a clínica acumula anos de experiência e se destaca como uma das mais 
+                    especializadas nesse procedimento.
+                </p>
+                <p class="text-lg text-gray-600 mb-8">
+                    Se você busca um ginecologista experiente e humanizado em São Paulo, 
+                    o Dr. Raimundo Nunes e sua equipe estão prontos para oferecer o melhor em saúde feminina.
+                </p>
+                <a href="{{ url_for('main.sobre') }}" class="bg-clinic-blue text-white px-6 py-3 rounded-lg hover:bg-clinic-light-blue transition">
+                    Saiba Mais
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-clinic-blue mb-2">30+</div>
+                    <div class="text-gray-600">Anos de Experiência</div>
+                </div>
+                <div class="bg-white p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-clinic-blue mb-2">2</div>
+                    <div class="text-gray-600">Unidades</div>
+                </div>
+                <div class="bg-white p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-clinic-blue mb-2">9</div>
+                    <div class="text-gray-600">Especialidades</div>
+                </div>
+                <div class="bg-white p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-clinic-blue mb-2">30+</div>
+                    <div class="text-gray-600">Especialistas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

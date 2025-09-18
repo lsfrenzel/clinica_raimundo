@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Clínica Dr. Raimundo Nunes{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuração de cores da clínica -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'clinic-blue': '#1e40af',
+                        'clinic-light-blue': '#3b82f6',
+                        'clinic-gray': '#6b7280',
+                        'clinic-light-gray': '#f3f4f6'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('main.index') }}" class="text-2xl font-bold text-clinic-blue">
+                        Clínica Dr. Raimundo Nunes
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                    <a href="{{ url_for('main.index') }}" class="text-gray-700 hover:text-clinic-blue">Início</a>
+                    <a href="{{ url_for('main.especialidades') }}" class="text-gray-700 hover:text-clinic-blue">Especialidades</a>
+                    <a href="{{ url_for('main.medicos') }}" class="text-gray-700 hover:text-clinic-blue">Médicos</a>
+                    <a href="{{ url_for('appointments.agendar') }}" class="bg-clinic-blue text-white px-4 py-2 rounded-lg hover:bg-clinic-light-blue transition">
+                        Agendar Consulta
+                    </a>
+                    
+                    {% if current_user.is_authenticated %}
+                        <div class="relative group">
+                            <span class="text-gray-700">{{ current_user.nome }}</span>
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <a href="{{ url_for('appointments.meus_agendamentos') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Meus Agendamentos</a>
+                                {% if current_user.is_admin() %}
+                                    <a href="{{ url_for('admin.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Painel Admin</a>
+                                {% endif %}
+                                <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sair</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="text-gray-700 hover:text-clinic-blue">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="text-clinic-blue hover:text-clinic-light-blue">Cadastro</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} bg-{{ 'red' if category == 'error' else 'green' if category == 'success' else 'blue' }}-100 border border-{{ 'red' if category == 'error' else 'green' if category == 'success' else 'blue' }}-400 text-{{ 'red' if category == 'error' else 'green' if category == 'success' else 'blue' }}-700 px-4 py-3 rounded mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Main content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Clínica Dr. Raimundo Nunes</h3>
+                    <p class="text-gray-300">Mais de 30 anos de experiência em ginecologia e obstetrícia.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contato</h3>
+                    <p class="text-gray-300">São Paulo - SP</p>
+                    <p class="text-gray-300">clinica@drraimundonunes.com.br</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Unidades</h3>
+                    <p class="text-gray-300">Itapeva</p>
+                    <p class="text-gray-300">Itaim Bibi</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2025 Clínica Dr. Raimundo Nunes. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
