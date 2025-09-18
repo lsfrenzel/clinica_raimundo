@@ -1,4 +1,4 @@
-modules = ["web", "python-3.11", "postgresql-16"]
+modules = ["web", "python-3.11"]
 [agent]
 expertMode = true
 integrations = ["python_database:1.0.0"]
@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Medical Clinic App"
+args = "Medical Clinic Frontend"
 
 [[workflows.workflow]]
-name = "Medical Clinic App"
+name = "Medical Clinic Frontend"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -36,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 41979
+localPort = 45723
 externalPort = 3000
 
 [deployment]
