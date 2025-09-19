@@ -115,67 +115,127 @@ Responda sempre em formato JSON com esta estrutura:
     def _rule_based_response(self, user_message, context=None):
         """Resposta baseada em regras (quando OpenAI não está disponível)"""
         message_lower = user_message.lower()
+        user_name = context.get('user_name', 'Paciente') if context else 'Paciente'
         
         # Cumprimentos e saudações
-        if any(word in message_lower for word in ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hello']):
+        if any(word in message_lower for word in ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hello', 'alo', 'alô']):
             return {
-                "message": "Olá! Bem-vindo à Clínica Dr. Raimundo Nunes! 👋\n\nSou seu assistente virtual e estou aqui para ajudar você a agendar sua consulta.\n\nComo posso ajudá-lo hoje?\n- Ver nossas especialidades\n- Conhecer nossos médicos\n- Agendar uma consulta",
+                "message": f"Olá, {user_name}! Seja muito bem-vindo(a) à Clínica Dr. Raimundo Nunes! 👋\n\n🏥 **Especialista em Ginecologia e Obstetrícia**\n\nSou seu assistente virtual e estou aqui para tornar seu atendimento mais ágil e conveniente.\n\n📋 **Como posso ajudar você hoje?**\n\n🔹 **Agendar uma consulta** - Vamos encontrar o melhor horário para você\n🔹 **Conhecer especialidades** - Descubra todos os nossos serviços\n🔹 **Ver nossos médicos** - Conheça nossa equipe especializada\n🔹 **Horários disponíveis** - Consulte as próximas vagas\n\nDigite sua necessidade ou escolha uma das opções acima! ✨",
                 "action": "general_chat",
                 "data": {}
             }
         
         # Perguntas sobre especialidades
-        elif any(word in message_lower for word in ['especialidade', 'especialidades', 'atendimento', 'área', 'tipo']):
+        elif any(word in message_lower for word in ['especialidade', 'especialidades', 'atendimento', 'área', 'area', 'tipo', 'serviço', 'servico', 'tratamento']):
+            especialidades_data = self.get_specialties()
+            especialidades_text = "\n".join([f"🔹 **{esp['nome']}** - {esp.get('descricao', 'Atendimento especializado')}" for esp in especialidades_data])
             return {
-                "message": "Essas são nossas especialidades disponíveis:\n\n🔹 Ginecologia\n🔹 Obstetrícia\n🔹 Consulta Pré-natal\n🔹 Planejamento Familiar\n🔹 Medicina Preventiva\n\nQual especialidade te interessa?",
+                "message": f"🏥 **Especialidades da Clínica Dr. Raimundo Nunes:**\n\n{especialidades_text}\n\n✨ **Todos os nossos atendimentos são realizados por profissionais altamente qualificados!**\n\n💬 Qual especialidade você precisa? Posso te ajudar a encontrar o médico ideal e agendar sua consulta!",
                 "action": "get_specialties",
-                "data": self.get_specialties()
+                "data": especialidades_data
             }
         
         # Perguntas sobre médicos
-        elif any(word in message_lower for word in ['médico', 'medico', 'doutor', 'doutora', 'profissional']):
-            return {
-                "message": "Temos uma equipe médica especializada! Aqui estão nossos profissionais:\n\nPara qual especialidade você gostaria de ver os médicos disponíveis?",
-                "action": "show_doctors", 
-                "data": self.get_doctors_by_specialty()
-            }
+        elif any(word in message_lower for word in ['médico', 'medico', 'doutor', 'doutora', 'profissional', 'equipe', 'staff']):
+            doctors_data = self.get_doctors_by_specialty()
+            if doctors_data:
+                doctors_text = "\n".join([f"👨‍⚕️ **Dr(a). {doc['nome']}** - CRM: {doc['crm']}\n   📋 {', '.join(doc['especialidades'])}\n   📝 {doc.get('bio', 'Médico especialista em ginecologia e obstetrícia')}\n" for doc in doctors_data[:3]])
+                return {
+                    "message": f"👨‍⚕️ **Nossa Equipe Médica Especializada:**\n\n{doctors_text}\n✨ **E temos mais profissionais disponíveis!**\n\n🎯 **Para ver médicos de uma especialidade específica**, me diga qual área você precisa:\n🔹 Ginecologia\n🔹 Obstetrícia\n🔹 Consulta Pré-natal\n🔹 Planejamento Familiar\n🔹 Medicina Preventiva\n\n📅 Quer agendar com algum médico específico?",
+                    "action": "show_doctors", 
+                    "data": doctors_data
+                }
+            else:
+                return {
+                    "message": "👨‍⚕️ **Nossa equipe médica especializada está pronta para atendê-lo!**\n\n🎯 Para mostrar os médicos disponíveis, me diga qual especialidade você precisa:\n🔹 Ginecologia\n🔹 Obstetrícia\n🔹 Consulta Pré-natal\n🔹 Planejamento Familiar\n🔹 Medicina Preventiva",
+                    "action": "show_doctors", 
+                    "data": []
+                }
         
         # Agendamento
-        elif any(word in message_lower for word in ['agendar', 'consulta', 'horário', 'horario', 'marcar', 'appointment']):
+        elif any(word in message_lower for word in ['agendar', 'consulta', 'horário', 'horario', 'marcar', 'appointment', 'reservar', 'agendar']):
             return {
-                "message": "Perfeito! Vou ajudar você a agendar sua consulta. 📅\n\nPrimeiro, me diga: qual especialidade você precisa?\n\n🔹 Ginecologia\n🔹 Obstetrícia\n🔹 Consulta Pré-natal\n🔹 Planejamento Familiar\n🔹 Medicina Preventiva",
+                "message": f"🎉 **Ótimo, {user_name}! Vou ajudar você a agendar sua consulta de forma rápida e fácil!**\n\n📋 **Primeiro passo**: Qual especialidade você precisa?\n\n🔹 **Ginecologia** - Consultas preventivas, exames, tratamentos\n🔹 **Obstetrícia** - Acompanhamento da gravidez\n🔹 **Consulta Pré-natal** - Cuidados durante a gestação\n🔹 **Planejamento Familiar** - Métodos contraceptivos, orientações\n🔹 **Medicina Preventiva** - Check-ups e prevenção\n\n💬 **Digite o nome da especialidade** ou **clique em uma das opções** acima!\n\n⚡ Em seguida, vou mostrar nossos médicos e horários disponíveis para você escolher o que for mais conveniente!",
                 "action": "get_specialties",
                 "data": self.get_specialties()
             }
         
         # Horários
-        elif any(word in message_lower for word in ['horário', 'horario', 'disponível', 'disponivel', 'livre']):
+        elif any(word in message_lower for word in ['horário', 'horario', 'disponível', 'disponivel', 'livre', 'vaga', 'vagas', 'quando']):
             return {
-                "message": "Para ver os horários disponíveis, primeiro preciso saber:\n\n1. Qual especialidade você precisa?\n2. Tem preferência por algum médico?\n\nMe ajude com essas informações para encontrar os melhores horários para você!",
+                "message": "⏰ **Vamos encontrar o melhor horário para você!**\n\n📋 Para mostrar os horários mais adequados, preciso de algumas informações rápidas:\n\n1️⃣ **Qual especialidade você precisa?**\n   🔹 Ginecologia | 🔹 Obstetrícia | 🔹 Pré-natal\n   🔹 Planejamento Familiar | 🔹 Medicina Preventiva\n\n2️⃣ **Tem preferência por algum médico específico?**\n   (ou posso sugerir o próximo disponível)\n\n3️⃣ **Prefere que período?**\n   🌅 Manhã | 🌞 Tarde | 🌙 Qualquer horário\n\n💬 **Me conte essas informações** e vou buscar as melhores opções de horários para você!",
                 "action": "general_chat",
                 "data": {}
             }
         
         # Perguntas sobre preços/valores
-        elif any(word in message_lower for word in ['preço', 'preco', 'valor', 'custo', 'quanto']):
+        elif any(word in message_lower for word in ['preço', 'preco', 'valor', 'custo', 'quanto', 'custa', 'pagamento', 'convênio', 'convenio', 'plano']):
             return {
-                "message": "Para informações sobre valores e formas de pagamento, recomendo entrar em contato diretamente com nossa recepção.\n\nPosso ajudar você a agendar uma consulta. Qual especialidade você precisa?",
+                "message": "💰 **Informações sobre Valores e Pagamento:**\n\n🏥 Para informações detalhadas sobre:\n   • Valores das consultas\n   • Formas de pagamento aceitas\n   • Convênios médicos\n   • Promoções especiais\n\n📞 **Recomendo entrar em contato com nossa recepção**, onde nossa equipe pode dar informações atualizadas e personalizadas para seu caso.\n\n✨ **Enquanto isso, posso ajudar você a:**\n🔹 Agendar sua consulta\n🔹 Conhecer nossas especialidades\n🔹 Ver horários disponíveis\n\n💬 O que você gostaria de fazer?",
                 "action": "general_chat", 
                 "data": {}
             }
         
         # Localização
-        elif any(word in message_lower for word in ['onde', 'endereço', 'endereco', 'localização', 'localizacao']):
+        elif any(word in message_lower for word in ['onde', 'endereço', 'endereco', 'localização', 'localizacao', 'local', 'chegar', 'fica']):
             return {
-                "message": "Nossa clínica está localizada em um endereço de fácil acesso.\n\nPara informações detalhadas sobre localização e como chegar, entre em contato conosco.\n\nPosso ajudar você a agendar uma consulta?",
+                "message": "📍 **Localização da Clínica Dr. Raimundo Nunes:**\n\n🏥 Nossa clínica está estrategicamente localizada em um **endereço de fácil acesso**, pensando no seu conforto e conveniência.\n\n🚗 **Facilidades:**\n   • Estacionamento disponível\n   • Transporte público próximo\n   • Fácil acesso para pessoas com mobilidade reduzida\n\n📞 **Para informações detalhadas sobre:**\n   • Endereço completo\n   • Como chegar de sua região\n   • Pontos de referência\n   • Estacionamento\n\n**Entre em contato com nossa recepção** - eles terão prazer em orientá-lo!\n\n📅 **Enquanto isso, quer agendar sua consulta?**",
                 "action": "general_chat",
                 "data": {}
             }
         
-        # Mensagem padrão
+        # Informações sobre exames
+        elif any(word in message_lower for word in ['exame', 'exames', 'ultrassom', 'papanicolau', 'preventivo', 'laboratório', 'laboratorio']):
+            return {
+                "message": "🔬 **Exames e Procedimentos:**\n\nNossa clínica realiza diversos exames importantes para sua saúde:\n\n🔹 **Exame Preventivo (Papanicolau)**\n🔹 **Ultrassom Ginecológico/Obstétrico**\n🔹 **Exames de rotina ginecológica**\n🔹 **Acompanhamento pré-natal completo**\n\n📋 **Para informações específicas sobre:**\n   • Preparação para exames\n   • Procedimentos realizados\n   • Agendamento de exames\n\n💬 **Me diga qual exame você precisa** ou posso ajudar você a agendar uma consulta para avaliação médica!\n\n🎯 Qual especialidade você gostaria de consultar?",
+                "action": "general_chat",
+                "data": {}
+            }
+        
+        # Urgência e emergência
+        elif any(word in message_lower for word in ['urgente', 'urgência', 'urgencia', 'emergência', 'emergencia', 'rápido', 'rapido', 'hoje']):
+            return {
+                "message": "🚨 **Atendimento Urgente:**\n\n⚠️ **Para emergências médicas**, procure imediatamente:\n   • Pronto Socorro mais próximo\n   • SAMU: 192\n   • Hospital de referência\n\n🏥 **Para consultas com urgência** (não emergência):\n   • Entre em contato diretamente com nossa recepção\n   • Podemos verificar encaixes na agenda\n   • Orientação por telefone se necessário\n\n📞 **Nossa equipe pode te orientar** sobre a melhor forma de atendimento para seu caso específico.\n\n💬 **Se não for emergência**, posso ajudar você a agendar uma consulta. Qual especialidade você precisa?",
+                "action": "general_chat",
+                "data": {}
+            }
+        
+        # Gravidez e pré-natal
+        elif any(word in message_lower for word in ['grávida', 'gravida', 'gravidez', 'gestante', 'bebê', 'bebe', 'pré-natal', 'prenatal', 'gestação', 'gestacao']):
+            return {
+                "message": "🤱 **Acompanhamento da Gravidez - Bem-vinda!**\n\n💖 **Parabéns por essa fase especial!** Nossa equipe está preparada para cuidar de você e seu bebê com todo carinho e expertise.\n\n🏥 **Nossos serviços incluem:**\n\n🔹 **Consultas de Pré-natal**\n   • Acompanhamento completo da gestação\n   • Orientações nutricionais e de cuidados\n   • Exames de rotina\n\n🔹 **Obstetrícia Especializada**\n   • Médicos experientes em gestação\n   • Ultrassom obstétrico\n   • Preparação para o parto\n\n🔹 **Consultas Preventivas**\n   • Planejamento da gravidez\n   • Cuidados pós-parto\n\n📅 **Quer agendar sua consulta de pré-natal?** Posso te ajudar a encontrar o melhor horário com nossos obstetras!\n\n💬 Me diga se prefere algum médico específico ou posso sugerir o próximo disponível!",
+                "action": "get_specialties",
+                "data": self.get_specialties()
+            }
+        
+        # Primeira consulta
+        elif any(word in message_lower for word in ['primeira', 'primeiro', 'primeira vez', 'nunca', 'novo', 'nova', 'paciente novo']):
+            return {
+                "message": "🌟 **Seja muito bem-vindo(a) como novo(a) paciente!**\n\n✨ **Para sua primeira consulta**, vamos tornar tudo mais fácil e acolhedor:\n\n📋 **O que trazer:**\n   • Documento de identidade\n   • Cartão do convênio (se tiver)\n   • Exames anteriores (se houver)\n   • Lista de medicamentos em uso\n\n⏰ **Recomendamos chegar 15 minutos antes** para fazer seu cadastro tranquilamente.\n\n🏥 **Nossas especialidades principais:**\n🔹 **Ginecologia** - Consultas preventivas e tratamentos\n🔹 **Obstetrícia** - Acompanhamento da gravidez\n🔹 **Pré-natal** - Cuidados durante a gestação\n🔹 **Planejamento Familiar** - Orientações contraceptivas\n🔹 **Medicina Preventiva** - Check-ups e prevenção\n\n💬 **Qual especialidade você precisa para sua primeira consulta?**\n\n📅 Posso te ajudar a agendar no melhor horário para você!",
+                "action": "get_specialties",
+                "data": self.get_specialties()
+            }
+        
+        # Cancelar/remarcar
+        elif any(word in message_lower for word in ['cancelar', 'remarcar', 'mudar', 'alterar', 'trocar', 'adiar']):
+            return {
+                "message": "📅 **Alteração de Consulta:**\n\n🔄 **Para cancelar ou remarcar sua consulta:**\n\n📞 **Entre em contato diretamente com nossa recepção** - eles podem:\n   • Cancelar sua consulta atual\n   • Remarcar para nova data/horário\n   • Verificar disponibilidade\n   • Fazer alterações no seu agendamento\n\n⚠️ **Importante:**\n   • Cancelamentos com 24h de antecedência são mais fáceis\n   • Nossa equipe pode encontrar novos horários rapidamente\n   • Evite faltas para não prejudicar outros pacientes\n\n💬 **Se quiser agendar uma nova consulta**, posso te ajudar agora mesmo!\n\n🎯 Qual especialidade você precisa?",
+                "action": "general_chat",
+                "data": {}
+            }
+        
+        # Agradecimento
+        elif any(word in message_lower for word in ['obrigado', 'obrigada', 'obrigadão', 'valeu', 'brigado', 'brigada', 'thanks']):
+            return {
+                "message": "💖 **Por nada! Foi um prazer ajudar você!**\n\n🌟 **Estou sempre aqui quando precisar:**\n   • Agendar consultas\n   • Tirar dúvidas sobre especialidades\n   • Conhecer nossos médicos\n   • Ver horários disponíveis\n\n🏥 **Clínica Dr. Raimundo Nunes** está sempre pronta para cuidar da sua saúde com excelência e carinho.\n\n💬 **Tem mais alguma coisa que posso ajudar?**\n\n✨ Ou se quiser, pode voltar a qualquer momento - estarei aqui para você!",
+                "action": "general_chat",
+                "data": {}
+            }
+        
+        # Mensagem padrão melhorada
         else:
             return {
-                "message": "Entendi! Estou aqui para ajudar você com agendamentos de consultas na Clínica Dr. Raimundo Nunes.\n\nPosso ajudar você com:\n🔹 Informações sobre especialidades\n🔹 Conhecer nossos médicos\n🔹 Agendar uma consulta\n🔹 Ver horários disponíveis\n\nO que você gostaria de saber?",
+                "message": f"💬 **Olá, {user_name}! Entendi sua mensagem.**\n\n🤖 Sou o assistente virtual da **Clínica Dr. Raimundo Nunes** e estou aqui para tornar seu atendimento mais ágil e conveniente!\n\n🎯 **Posso ajudar você com:**\n\n🔹 **Agendar consultas** - Vamos encontrar o melhor horário\n🔹 **Informações sobre especialidades** - Conheça nossos serviços\n🔹 **Conhecer nossos médicos** - Equipe especializada\n🔹 **Ver horários disponíveis** - Consulte as próximas vagas\n🔹 **Informações gerais** - Localização, valores, exames\n\n💡 **Dicas rápidas:**\n   • Digite \"agendar\" para marcar uma consulta\n   • Digite \"especialidades\" para ver nossos serviços\n   • Digite \"médicos\" para conhecer nossa equipe\n\n💬 **O que você gostaria de fazer hoje?**",
                 "action": "general_chat",
                 "data": {}
             }
@@ -327,4 +387,26 @@ Responda sempre em formato JSON com esta estrutura:
             return {"success": False, "message": "Erro interno. Tente novamente."}
 
 # Instância global do serviço
-chatbot_service = ChatbotService()
+try:
+    chatbot_service = ChatbotService()
+except Exception as e:
+    print(f"Aviso: Chatbot inicializando sem OpenAI: {e}")
+    # Criar instância básica mesmo sem OpenAI
+    class BasicChatbotService:
+        def __init__(self):
+            self.use_openai = False
+            self.client = None
+        
+        def chat_response(self, user_message, context=None):
+            return ChatbotService._rule_based_response(self, user_message, context)
+        
+        def get_specialties(self):
+            return ChatbotService.get_specialties(self)
+        
+        def get_doctors_by_specialty(self, specialty_id=None):
+            return ChatbotService.get_doctors_by_specialty(self, specialty_id)
+        
+        def get_doctor_schedules(self, doctor_id, days_ahead=14):
+            return ChatbotService.get_doctor_schedules(self, doctor_id, days_ahead)
+    
+    chatbot_service = BasicChatbotService()
