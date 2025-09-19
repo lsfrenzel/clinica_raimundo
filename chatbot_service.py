@@ -59,9 +59,8 @@ Responda sempre em formato JSON com esta estrutura:
     def chat_response(self, user_message, context=None):
         """Gera resposta do chatbot baseada na mensagem do usuário"""
         try:
-            messages = [
-                {"role": "system", "content": self.get_system_prompt()}
-            ]
+            messages = []
+            messages.append({"role": "system", "content": self.get_system_prompt()})
             
             # Adicionar contexto se fornecido
             if context:
@@ -72,7 +71,7 @@ Responda sempre em formato JSON com esta estrutura:
             
             response = self.client.chat.completions.create(
                 model="gpt-4",
-                messages=messages,
+                messages=messages,  # type: ignore
                 response_format={"type": "json_object"},
                 max_tokens=1000
             )
