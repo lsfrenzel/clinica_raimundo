@@ -70,7 +70,7 @@ Responda sempre em formato JSON com esta estrutura:
             messages.append({"role": "user", "content": user_message})
             
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=messages,  # type: ignore
                 response_format={"type": "json_object"},
                 max_tokens=1000
