@@ -33,7 +33,7 @@ class ChatbotService:
         """Define o contexto e comportamento do chatbot"""
         return """Você é um assistente virtual inteligente da Clínica Dr. Raimundo Nunes, especializada em ginecologia e obstetrícia.
 
-Seu objetivo é ajudar pacientes a agendarem consultas de forma natural e eficiente.
+Seu objetivo é ajudar pacientes a agendarem consultas de forma natural e eficiente, guiando-os através de todo o processo.
 
 DIRETRIZES:
 1. Seja sempre cordial, empático e profissional
@@ -45,25 +45,35 @@ DIRETRIZES:
 7. Responda SEMPRE em português brasileiro
 8. Use JSON estruturado conforme especificado para ações específicas
 
-FLUXO DE AGENDAMENTO:
-1. Cumprimente e pergunte como pode ajudar
-2. Identifique a especialidade desejada
-3. Apresente os médicos disponíveis
-4. Mostre os horários disponíveis
-5. Colete dados do paciente se necessário
-6. Confirme o agendamento
+FLUXO COMPLETO DE AGENDAMENTO:
+1. Cumprimente e identifique a necessidade de agendamento
+2. Mostre especialidades disponíveis se solicitado
+3. Colete especialidade desejada
+4. Apresente médicos da especialidade escolhida
+5. Colete médico desejado
+6. Mostre horários disponíveis do médico
+7. Colete horário desejado
+8. Colete dados do paciente (nome, email, telefone)
+9. Confirme todos os dados
+10. Crie o agendamento no sistema
+11. Confirme o sucesso do agendamento
 
-ESPECIALIDADES DISPONÍVEIS:
-- Ginecologia
-- Obstetrícia
-- Consulta Pré-natal
-- Planejamento Familiar
-- Medicina Preventiva
+AÇÕES DISPONÍVEIS:
+- get_specialties: Mostrar especialidades disponíveis
+- select_specialty: Processar especialidade escolhida
+- show_doctors: Mostrar médicos de uma especialidade
+- select_doctor: Processar médico escolhido
+- show_schedules: Mostrar horários disponíveis
+- select_schedule: Processar horário escolhido
+- collect_patient_data: Coletar dados do paciente
+- confirm_booking: Confirmar todos os dados antes do agendamento
+- create_booking: Criar agendamento no sistema
+- general_chat: Conversa geral
 
 Responda sempre em formato JSON com esta estrutura:
 {
     "message": "sua resposta amigável",
-    "action": "get_specialties|show_doctors|show_schedules|collect_data|confirm_booking|general_chat",
+    "action": "uma das ações acima",
     "data": {objeto com dados específicos da ação, se aplicável}
 }"""
 
@@ -114,14 +124,7 @@ Responda sempre em formato JSON com esta estrutura:
             raise Exception("Resposta vazia do modelo")
         
         # Processar ações específicas
-        if result.get("action") == "get_specialties":
-            result["data"] = self.get_specialties()
-        elif result.get("action") == "show_doctors":
-            specialty_id = result.get("data", {}).get("specialty_id")
-            result["data"] = self.get_doctors_by_specialty(specialty_id)
-        elif result.get("action") == "show_schedules":
-            doctor_id = result.get("data", {}).get("doctor_id")
-            result["data"] = self.get_doctor_schedules(doctor_id)
+        result = self._process_action(result, context)
         
         return result
 
@@ -157,14 +160,7 @@ Responda sempre em formato JSON com esta estrutura:
             result = json.loads(response.text)
             
             # Processar ações específicas
-            if result.get("action") == "get_specialties":
-                result["data"] = self.get_specialties()
-            elif result.get("action") == "show_doctors":
-                specialty_id = result.get("data", {}).get("specialty_id")
-                result["data"] = self.get_doctors_by_specialty(specialty_id)
-            elif result.get("action") == "show_schedules":
-                doctor_id = result.get("data", {}).get("doctor_id")
-                result["data"] = self.get_doctor_schedules(doctor_id)
+            result = self._process_action(result, context)
             
             return result
             
@@ -174,6 +170,94 @@ Responda sempre em formato JSON com esta estrutura:
                 return self._openai_response(user_message, context)
             else:
                 raise e
+
+    def _process_action(self, result, context=None):
+        """Processa as ações específicas do chatbot"""
+        action = result.get("action")
+        
+        if action == "get_specialties":
+            result["data"] = self.get_specialties()
+        elif action == "show_doctors":
+            specialty_id = result.get("data", {}).get("specialty_id")
+            result["data"] = self.get_doctors_by_specialty(specialty_id)
+        elif action == "show_schedules":
+            doctor_id = result.get("data", {}).get("doctor_id")
+            result["data"] = self.get_doctor_schedules(doctor_id)
+        elif action == "create_booking":
+            booking_data = result.get("data", {})
+            result["data"] = self.create_appointment(booking_data, context)
+            
+        return result
+
+    def create_appointment(self, booking_data, context=None):
+        """Cria um agendamento no banco de dados"""
+        try:
+            from models import Agendamento
+            from datetime import datetime, timedelta
+            
+            # Validar dados obrigatórios
+            required_fields = ['medico_id', 'especialidade_id', 'data_hora', 'nome', 'email']
+            for field in required_fields:
+                if field not in booking_data or not booking_data[field]:
+                    return {
+                        'success': False,
+                        'error': f'Campo obrigatório ausente: {field}'
+                    }
+            
+            # Converter data_hora para datetime
+            try:
+                inicio = datetime.fromisoformat(booking_data['data_hora'])
+                fim = inicio + timedelta(minutes=30)  # Duração padrão
+            except ValueError:
+                return {
+                    'success': False,
+                    'error': 'Formato de data/hora inválido'
+                }
+            
+            # Verificar se horário ainda está disponível
+            agendamento_existente = Agendamento.query.filter_by(
+                medico_id=booking_data['medico_id'],
+                inicio=inicio
+            ).first()
+            
+            if agendamento_existente:
+                return {
+                    'success': False,
+                    'error': 'Horário não está mais disponível'
+                }
+            
+            # Criar agendamento
+            agendamento = Agendamento()
+            agendamento.medico_id = booking_data['medico_id']
+            agendamento.especialidade_id = booking_data['especialidade_id']
+            agendamento.inicio = inicio
+            agendamento.fim = fim
+            agendamento.origem = 'chatbot'
+            agendamento.observacoes = booking_data.get('observacoes', '')
+            
+            # Verificar se é usuário autenticado ou visitante
+            if context and context.get('authenticated') and context.get('user_id'):
+                agendamento.paciente_id = context['user_id']
+            else:
+                agendamento.nome_convidado = booking_data['nome']
+                agendamento.email_convidado = booking_data['email']
+                agendamento.telefone_convidado = booking_data.get('telefone', '')
+            
+            db.session.add(agendamento)
+            db.session.commit()
+            
+            return {
+                'success': True,
+                'agendamento_id': agendamento.id,
+                'message': 'Agendamento criado com sucesso!'
+            }
+            
+        except Exception as e:
+            db.session.rollback()
+            return {
+                'success': False,
+                'error': f'Erro ao criar agendamento: {str(e)}'
+            }
 
     def _rule_based_response(self, user_message, context=None):
         """Resposta baseada em regras (quando OpenAI não está disponível)"""
