@@ -206,6 +206,7 @@ def chatbot():
     """Endpoint para interação com chatbot inteligente"""
     try:
         from chatbot_service import chatbot_service
+        from flask import session
         
         data = request.get_json()
         if not data or 'message' not in data:
@@ -214,7 +215,13 @@ def chatbot():
         user_message = data['message']
         context = data.get('context', {})
         
-        # Adicionar informações do usuário logado ao contexto (se autenticado)
+        # Carregar contexto mínimo da sessão (apenas IDs essenciais)
+        chat_context = session.get('chat_context', {})
+        
+        # Mesclar contexto da sessão primeiro
+        context.update(chat_context)
+        
+        # Sobrescrever com informações do usuário atual
         if current_user.is_authenticated:
             context['user_id'] = current_user.id
             context['user_name'] = current_user.nome
@@ -226,6 +233,20 @@ def chatbot():
         
         # Processar mensagem no chatbot
         response = chatbot_service.chat_response(user_message, context)
+        
+        # Extrair contexto atualizado da resposta
+        updated_context = response.pop('_updated_context', {})
+        
+        # Minimizar PII na sessão - manter apenas IDs essenciais
+        minimal_context = {
+            'especialidade_id': updated_context.get('especialidade_id'),
+            'medico_id': updated_context.get('medico_id'),
+            'datetime_slot': updated_context.get('datetime_slot')
+        }
+        
+        # Filtrar valores None/vazios
+        session['chat_context'] = {k: v for k, v in minimal_context.items() if v is not None}
+        session.permanent = True
         
         return jsonify({
             'success': True,

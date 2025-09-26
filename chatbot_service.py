@@ -82,21 +82,36 @@ Responda sempre em formato JSON com esta estrutura:
         """Gera resposta do chatbot baseada na mensagem do usuário"""
         try:
             if self.use_gemini and self.gemini_client:
-                return self._gemini_response(user_message, context)
+                result = self._gemini_response(user_message, context)
             elif self.use_openai and self.openai_client:
-                return self._openai_response(user_message, context)
+                result = self._openai_response(user_message, context)
             else:
-                return self._rule_based_response(user_message, context)
+                result = self._rule_based_response(user_message, context)
+            
+            # Sempre processar ações específicas, independente do engine usado
+            result, updated_context = self._process_action(result, context)
+            
+            # Retornar resultado e contexto atualizado
+            return {
+                **result,
+                '_updated_context': updated_context
+            }
             
         except Exception as e:
             # Se Gemini ou OpenAI falharem, usar versão baseada em regras
             if any(error in str(e).lower() for error in ["insufficient_quota", "429", "quota", "rate_limit"]):
-                return self._rule_based_response(user_message, context)
+                result = self._rule_based_response(user_message, context)
+                result, updated_context = self._process_action(result, context)
+                return {
+                    **result,
+                    '_updated_context': updated_context
+                }
             
             return {
                 "message": f"Desculpe, ocorreu um erro inesperado. Tente novamente. Erro: {str(e)}",
                 "action": "error",
-                "data": {}
+                "data": {},
+                "_updated_context": context or {}
             }
 
     def _openai_response(self, user_message, context=None):
@@ -123,9 +138,6 @@ Responda sempre em formato JSON com esta estrutura:
             result = json.loads(content)
         else:
             raise Exception("Resposta vazia do modelo")
-        
-        # Processar ações específicas
-        result = self._process_action(result, context)
         
         return result
 
@@ -166,9 +178,6 @@ Responda sempre em formato JSON com esta estrutura:
             # Parse da resposta JSON
             result = json.loads(response.text)
             
-            # Processar ações específicas
-            result = self._process_action(result, context)
-            
             return result
             
         except Exception as e:
@@ -182,19 +191,87 @@ Responda sempre em formato JSON com esta estrutura:
         """Processa as ações específicas do chatbot"""
         action = result.get("action")
         
+        # Inicializar contexto se necessário
+        if context is None:
+            context = {}
+        
+        # Criar cópia do contexto para atualização
+        updated_context = context.copy()
+        
         if action == "get_specialties":
             result["data"] = self.get_specialties()
-        elif action == "show_doctors":
-            specialty_id = result.get("data", {}).get("specialty_id")
-            result["data"] = self.get_doctors_by_specialty(specialty_id)
-        elif action == "show_schedules":
-            doctor_id = result.get("data", {}).get("doctor_id")
-            result["data"] = self.get_doctor_schedules(doctor_id)
+            
+        elif action == "show_doctors" or action == "select_specialty":
+            # Verificar se data é dict ou list  
+            data = result.get("data", {})
+            if isinstance(data, dict):
+                specialty_id = data.get("specialty_id")
+                specialty_name = data.get("specialty_name")
+                
+                # Salvar especialidade selecionada no contexto
+                if specialty_id:
+                    updated_context['especialidade_id'] = specialty_id
+                    updated_context['especialidade_nome'] = specialty_name
+                
+                result["data"] = self.get_doctors_by_specialty(specialty_id)
+            # Se data já é uma lista, não processar IDs
+            
+        elif action == "show_schedules" or action == "select_doctor":
+            # Verificar se data é dict ou list
+            data = result.get("data", {})
+            if isinstance(data, dict):
+                doctor_id = data.get("doctor_id")
+                doctor_name = data.get("doctor_name")
+                
+                # Salvar médico selecionado no contexto
+                if doctor_id:
+                    updated_context['medico_id'] = doctor_id
+                    updated_context['medico_nome'] = doctor_name
+                    
+                result["data"] = self.get_doctor_schedules(doctor_id)
+            # Se data já é uma lista, não processar IDs
+            
+        elif action == "select_schedule":
+            # Salvar horário selecionado no contexto
+            schedule_data = result.get("data", {})
+            if schedule_data.get('datetime'):
+                updated_context['datetime_slot'] = schedule_data['datetime']
+            
+        elif action == "confirm_booking" or action == "collect_patient_data":
+            # Salvar dados do paciente no contexto
+            booking_data = result.get("data", {})
+            if booking_data.get('patient_name'):
+                updated_context['patient_name'] = booking_data['patient_name']
+            if booking_data.get('patient_email'):
+                updated_context['patient_email'] = booking_data['patient_email']
+            if booking_data.get('patient_phone'):
+                updated_context['patient_phone'] = booking_data['patient_phone']
+            if booking_data.get('datetime'):
+                updated_context['datetime_slot'] = booking_data['datetime']
+                
         elif action == "create_booking":
             booking_data = result.get("data", {})
-            result["data"] = self.create_appointment(booking_data, context)
             
-        return result
+            # Mesclar dados do booking com contexto salvado
+            merged_booking_data = {
+                'medico_id': updated_context.get('medico_id'),
+                'especialidade_id': updated_context.get('especialidade_id'),
+                'data_hora': updated_context.get('datetime_slot'),
+                'nome': updated_context.get('patient_name'),
+                'email': updated_context.get('patient_email'),
+                'telefone': updated_context.get('patient_phone', ''),
+            }
+            
+            # Sobrescrever com dados do booking se disponíveis
+            merged_booking_data.update({k: v for k, v in booking_data.items() if v})
+            
+            result["data"] = self.create_appointment(merged_booking_data, context)
+            
+            # Limpar contexto após agendamento bem-sucedido
+            if result["data"].get("success"):
+                updated_context = {'user_id': context.get('user_id'), 'authenticated': context.get('authenticated'), 'user_name': context.get('user_name')}
+            
+        return result, updated_context
 
     def create_appointment(self, booking_data, context=None):
         """Cria um agendamento no banco de dados"""
@@ -202,14 +279,31 @@ Responda sempre em formato JSON com esta estrutura:
             from models import Agendamento
             from datetime import datetime, timedelta
             
+            # Auto-preencher dados do usuário autenticado se necessário
+            if context and context.get('authenticated') and context.get('user_id'):
+                if not booking_data.get('nome'):
+                    booking_data['nome'] = context.get('user_name', '')
+                if not booking_data.get('email'):
+                    booking_data['email'] = context.get('user_email', '')
+            
             # Validar dados obrigatórios
-            required_fields = ['medico_id', 'especialidade_id', 'data_hora', 'nome', 'email']
+            required_fields = ['medico_id', 'especialidade_id', 'data_hora']
             for field in required_fields:
                 if field not in booking_data or not booking_data[field]:
                     return {
                         'success': False,
                         'error': f'Campo obrigatório ausente: {field}'
                     }
+            
+            # Para usuários não autenticados, nome e email são obrigatórios
+            if not context or not context.get('authenticated'):
+                guest_fields = ['nome', 'email']
+                for field in guest_fields:
+                    if field not in booking_data or not booking_data[field]:
+                        return {
+                            'success': False,
+                            'error': f'Campo obrigatório para visitantes: {field}'
+                        }
             
             # Converter data_hora para datetime
             try:
