@@ -185,7 +185,7 @@ async function handleSubmit(e) {
         
         if (data.success) {
             // Adicionar resposta do bot
-            addBotMessage(data.response.message, data.response.data);
+            addBotMessage(data.response.message, data.response.data, data.response.action);
             
             // Atualizar histórico
             chatHistory.push({
@@ -225,23 +225,39 @@ function addUserMessage(message) {
 }
 
 // Adicionar mensagem do bot
-function addBotMessage(message, data = {}) {
+function addBotMessage(message, data = {}, action = '') {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'flex space-x-3';
     
     let extraContent = '';
     
-    // Renderizar dados especiais baseado na ação
-    if (data.specialties) {
-        extraContent += renderSpecialties(data.specialties);
-    }
-    
-    if (data.doctors) {
-        extraContent += renderDoctors(data.doctors);
-    }
-    
-    if (data.schedules) {
-        extraContent += renderSchedules(data.schedules);
+    // Renderizar dados especiais baseado na ação ou tipo de dados
+    if (data && Array.isArray(data) && data.length > 0) {
+        // Se data é um array, detectar tipo pelos campos
+        const firstItem = data[0];
+        if (firstItem.nome && firstItem.descricao) {
+            // É uma lista de especialidades
+            extraContent += renderSpecialties(data);
+        } else if (firstItem.nome && firstItem.crm) {
+            // É uma lista de médicos
+            extraContent += renderDoctors(data);
+        } else if (firstItem.data && firstItem.hora) {
+            // É uma lista de horários
+            extraContent += renderSchedules(data);
+        }
+    } else if (data && typeof data === 'object') {
+        // Verificar campos específicos
+        if (data.specialties) {
+            extraContent += renderSpecialties(data.specialties);
+        }
+        
+        if (data.doctors) {
+            extraContent += renderDoctors(data.doctors);
+        }
+        
+        if (data.schedules) {
+            extraContent += renderSchedules(data.schedules);
+        }
     }
     
     messageDiv.innerHTML = `
@@ -269,9 +285,9 @@ function renderSpecialties(specialties) {
     
     specialties.forEach(spec => {
         html += `
-            <div class="bg-emerald/10 rounded-lg p-3">
+            <div class="bg-emerald/10 rounded-lg p-3 cursor-pointer hover:bg-emerald/20 transition-colors" onclick="selectSpecialty('${spec.id}', '${escapeHtml(spec.nome)}')">
                 <div class="font-medium text-emerald-dark text-sm">${escapeHtml(spec.nome)}</div>
-                <div class="text-xs text-gray-600 mt-1">${escapeHtml(spec.descricao)}</div>
+                <div class="text-xs text-gray-600 mt-1">${escapeHtml(spec.descricao || 'Especialidade médica')}</div>
             </div>
         `;
     });
@@ -289,10 +305,10 @@ function renderDoctors(doctors) {
     
     doctors.forEach(doctor => {
         html += `
-            <div class="bg-teal/10 rounded-lg p-3">
-                <div class="font-medium text-teal-dark text-sm">${escapeHtml(doctor.nome)} - CRM: ${escapeHtml(doctor.crm)}</div>
-                <div class="text-xs text-gray-600 mt-1">${escapeHtml(doctor.bio)}</div>
-                ${doctor.especialidades ? `<div class="text-xs text-emerald font-medium mt-1">${doctor.especialidades.join(', ')}</div>` : ''}
+            <div class="bg-teal/10 rounded-lg p-3 cursor-pointer hover:bg-teal/20 transition-colors" onclick="selectDoctor('${doctor.id}', '${escapeHtml(doctor.nome)}')">
+                <div class="font-medium text-teal-dark text-sm">${escapeHtml(doctor.nome)} - CRM: ${escapeHtml(doctor.crm || 'N/A')}</div>
+                <div class="text-xs text-gray-600 mt-1">${escapeHtml(doctor.bio || 'Médico especialista')}</div>
+                ${doctor.especialidades && doctor.especialidades.length > 0 ? `<div class="text-xs text-emerald font-medium mt-1">${doctor.especialidades.join(', ')}</div>` : ''}
             </div>
         `;
     });
@@ -309,10 +325,11 @@ function renderSchedules(schedules) {
     html += '<div class="grid grid-cols-2 gap-2">';
     
     schedules.slice(0, 8).forEach(schedule => {
+        const datetime = schedule.datetime || schedule.data + 'T' + schedule.hora;
         html += `
-            <div class="bg-gold/10 rounded-lg p-2">
+            <div class="bg-gold/10 rounded-lg p-2 cursor-pointer hover:bg-gold/20 transition-colors" onclick="selectSchedule('${datetime}', '${escapeHtml(schedule.data)}', '${escapeHtml(schedule.hora)}')">
                 <div class="font-medium text-gold-dark text-xs">${escapeHtml(schedule.data)}</div>
-                <div class="text-xs text-gray-600">${escapeHtml(schedule.hora)} (${schedule.duracao}min)</div>
+                <div class="text-xs text-gray-600">${escapeHtml(schedule.hora)} (${schedule.duracao || 60}min)</div>
             </div>
         `;
     });
@@ -344,6 +361,25 @@ function showLoading(show) {
 
 function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Funções para seleção interativa
+function selectSpecialty(specialtyId, specialtyName) {
+    const message = `Especialidade: ${specialtyName}`;
+    messageInput.value = message;
+    handleSubmit(new Event('submit'));
+}
+
+function selectDoctor(doctorId, doctorName) {
+    const message = `Médico: ${doctorName}`;
+    messageInput.value = message;
+    handleSubmit(new Event('submit'));
+}
+
+function selectSchedule(datetime, data, hora) {
+    const message = `Horário: ${data} às ${hora}`;
+    messageInput.value = message;
+    handleSubmit(new Event('submit'));
 }
 
 // Auto-scroll suave ao carregar
