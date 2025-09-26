@@ -208,6 +208,29 @@ Responda sempre em formato JSON com esta estrutura:
                 specialty_id = data.get("specialty_id")
                 specialty_name = data.get("specialty_name")
                 
+                # Se o Gemini retornou um nome em vez de ID, tentar encontrar o ID
+                if specialty_name and not specialty_id:
+                    try:
+                        from models import Especialidade
+                        especialidade = Especialidade.query.filter(Especialidade.nome.ilike(f"%{specialty_name}%")).first()
+                        if especialidade:
+                            specialty_id = especialidade.id
+                            specialty_name = especialidade.nome
+                    except Exception as e:
+                        print(f"Erro ao buscar especialidade por nome: {e}")
+                
+                # Se recebeu um valor que não é numérico como specialty_id, tentar converter nome
+                if specialty_id and isinstance(specialty_id, str) and not specialty_id.isdigit():
+                    try:
+                        from models import Especialidade
+                        especialidade = Especialidade.query.filter(Especialidade.nome.ilike(f"%{specialty_id}%")).first()
+                        if especialidade:
+                            specialty_id = especialidade.id
+                            specialty_name = especialidade.nome
+                    except Exception as e:
+                        print(f"Erro ao converter nome da especialidade para ID: {e}")
+                        specialty_id = None
+                
                 # Salvar especialidade selecionada no contexto
                 if specialty_id:
                     updated_context['especialidade_id'] = specialty_id
@@ -223,12 +246,43 @@ Responda sempre em formato JSON com esta estrutura:
                 doctor_id = data.get("doctor_id")
                 doctor_name = data.get("doctor_name")
                 
+                # Se o Gemini retornou um nome em vez de ID, tentar encontrar o ID
+                if doctor_name and not doctor_id:
+                    try:
+                        from models import Medico, User
+                        # Buscar médico pelo nome
+                        user = User.query.filter(User.nome.ilike(f"%{doctor_name}%")).first()
+                        if user:
+                            medico = Medico.query.filter_by(user_id=user.id).first()
+                            if medico:
+                                doctor_id = medico.id
+                                doctor_name = user.nome
+                    except Exception as e:
+                        print(f"Erro ao buscar médico por nome: {e}")
+                
+                # Se recebeu um valor que não é numérico como doctor_id, tentar converter nome
+                if doctor_id and isinstance(doctor_id, str) and not doctor_id.isdigit():
+                    try:
+                        from models import Medico, User
+                        # Buscar médico pelo nome
+                        user = User.query.filter(User.nome.ilike(f"%{doctor_id}%")).first()
+                        if user:
+                            medico = Medico.query.filter_by(user_id=user.id).first()
+                            if medico:
+                                doctor_id = medico.id
+                                doctor_name = user.nome
+                    except Exception as e:
+                        print(f"Erro ao converter nome para ID: {e}")
+                        doctor_id = None
+                
                 # Salvar médico selecionado no contexto
                 if doctor_id:
                     updated_context['medico_id'] = doctor_id
                     updated_context['medico_nome'] = doctor_name
                     
-                result["data"] = self.get_doctor_schedules(doctor_id)
+                    result["data"] = self.get_doctor_schedules(doctor_id)
+                else:
+                    result["data"] = []
             # Se data já é uma lista, não processar IDs
             
         elif action == "select_schedule":
