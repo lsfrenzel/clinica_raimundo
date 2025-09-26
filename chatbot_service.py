@@ -111,7 +111,7 @@ Responda sempre em formato JSON com esta estrutura:
         
         messages.append({"role": "user", "content": user_message})
         
-        response = self.client.chat.completions.create(  # type: ignore
+        response = self.openai_client.chat.completions.create(  # type: ignore
             model="gpt-3.5-turbo",
             messages=messages,  # type: ignore
             response_format={"type": "json_object"},
@@ -144,6 +144,12 @@ Responda sempre em formato JSON com esta estrutura:
             full_prompt = f"{system_prompt}{context_info}\n\nUsuário: {user_message}\n\nResponda em formato JSON conforme especificado:"
             
             # Fazer chamada para Gemini
+            if not types:
+                raise Exception("Gemini types não disponível")
+                
+            if not self.gemini_client:
+                raise Exception("Gemini client não disponível")
+                
             response = self.gemini_client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=full_prompt,
@@ -478,61 +484,6 @@ Responda sempre em formato JSON com esta estrutura:
             print(f"Erro ao buscar horários: {e}")
             return []
 
-    def create_appointment(self, appointment_data, user_id=None):
-        """Cria um novo agendamento"""
-        try:
-            # Validar dados obrigatórios
-            required_fields = ['medico_id', 'especialidade_id', 'datetime_inicio', 'duracao']
-            for field in required_fields:
-                if field not in appointment_data:
-                    return {"success": False, "message": f"Campo obrigatório: {field}"}
-            
-            # Converter datetime
-            inicio = datetime.fromisoformat(appointment_data['datetime_inicio'].replace('Z', '+00:00'))
-            fim = inicio + timedelta(minutes=appointment_data['duracao'])
-            
-            # Verificar se horário ainda está disponível
-            conflito = Agendamento.query.filter(
-                Agendamento.medico_id == appointment_data['medico_id'],
-                Agendamento.inicio <= inicio,
-                Agendamento.fim > inicio
-            ).first()
-            
-            if conflito:
-                return {"success": False, "message": "Este horário não está mais disponível."}
-            
-            # Criar agendamento
-            agendamento = Agendamento()
-            agendamento.medico_id = appointment_data['medico_id']
-            agendamento.especialidade_id = appointment_data['especialidade_id']
-            agendamento.inicio = inicio
-            agendamento.fim = fim
-            agendamento.origem = 'chatbot'
-            
-            # Dados do paciente
-            if user_id:
-                agendamento.paciente_id = user_id
-            else:
-                agendamento.nome_convidado = appointment_data.get('nome')
-                agendamento.email_convidado = appointment_data.get('email')
-                agendamento.telefone_convidado = appointment_data.get('telefone')
-            
-            if appointment_data.get('observacoes'):
-                agendamento.observacoes = appointment_data['observacoes']
-            
-            db.session.add(agendamento)
-            db.session.commit()
-            
-            return {
-                "success": True, 
-                "message": "Agendamento realizado com sucesso!",
-                "agendamento_id": agendamento.id
-            }
-            
-        except Exception as e:
-            db.session.rollback()
-            print(f"Erro ao criar agendamento: {e}")
-            return {"success": False, "message": "Erro interno. Tente novamente."}
 
 # Instância global do serviço
 try:
