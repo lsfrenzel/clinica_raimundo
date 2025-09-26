@@ -1,5 +1,5 @@
-# Medical clinic chatbot service - OpenAI integration
-# Based on blueprint:python_openai integration
+# Medical clinic chatbot service - Gemini and OpenAI integration
+# Based on blueprint:python_gemini and python_openai integrations
 import json
 import os
 from datetime import datetime, timedelta
@@ -7,16 +7,27 @@ from openai import OpenAI
 from models import Especialidade, Medico, Agendamento, User
 from extensions import db
 
-# Using GPT-5 - the newest OpenAI model released August 7, 2025
-# do not change this unless explicitly requested by the user
+# Gemini integration - using blueprint:python_gemini
+try:
+    from google import genai
+    from google.genai import types
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+    gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+except ImportError:
+    gemini_client = None
+    GEMINI_API_KEY = None
+
+# OpenAI fallback integration
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 class ChatbotService:
     def __init__(self):
-        # Usar OpenAI se disponível, senão usar versão baseada em regras
-        self.client = openai_client
-        self.use_openai = openai_client is not None
+        # Preferir Gemini, depois OpenAI, senão usar versão baseada em regras
+        self.gemini_client = gemini_client
+        self.openai_client = openai_client
+        self.use_gemini = gemini_client is not None
+        self.use_openai = openai_client is not None and not self.use_gemini
         
     def get_system_prompt(self):
         """Define o contexto e comportamento do chatbot"""
@@ -59,14 +70,16 @@ Responda sempre em formato JSON com esta estrutura:
     def chat_response(self, user_message, context=None):
         """Gera resposta do chatbot baseada na mensagem do usuário"""
         try:
-            if self.use_openai and self.client:
+            if self.use_gemini and self.gemini_client:
+                return self._gemini_response(user_message, context)
+            elif self.use_openai and self.openai_client:
                 return self._openai_response(user_message, context)
             else:
                 return self._rule_based_response(user_message, context)
             
         except Exception as e:
-            # Se OpenAI falhar (quota excedida), usar versão baseada em regras
-            if "insufficient_quota" in str(e) or "429" in str(e):
+            # Se Gemini ou OpenAI falharem, usar versão baseada em regras
+            if any(error in str(e).lower() for error in ["insufficient_quota", "429", "quota", "rate_limit"]):
                 return self._rule_based_response(user_message, context)
             
             return {
@@ -111,6 +124,56 @@ Responda sempre em formato JSON com esta estrutura:
             result["data"] = self.get_doctor_schedules(doctor_id)
         
         return result
+
+    def _gemini_response(self, user_message, context=None):
+        """Resposta usando Gemini API (preferida quando disponível)"""
+        try:
+            # Preparar o prompt do sistema para Gemini
+            system_prompt = self.get_system_prompt()
+            
+            # Adicionar contexto se fornecido
+            context_info = ""
+            if context:
+                context_info = f"\n\nContexto da conversa: {json.dumps(context, ensure_ascii=False)}"
+            
+            # Criar prompt completo
+            full_prompt = f"{system_prompt}{context_info}\n\nUsuário: {user_message}\n\nResponda em formato JSON conforme especificado:"
+            
+            # Fazer chamada para Gemini
+            response = self.gemini_client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=full_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.7,
+                    max_output_tokens=1000,
+                    response_mime_type="application/json"
+                )
+            )
+            
+            if not response.text:
+                raise Exception("Resposta vazia do Gemini")
+            
+            # Parse da resposta JSON
+            result = json.loads(response.text)
+            
+            # Processar ações específicas
+            if result.get("action") == "get_specialties":
+                result["data"] = self.get_specialties()
+            elif result.get("action") == "show_doctors":
+                specialty_id = result.get("data", {}).get("specialty_id")
+                result["data"] = self.get_doctors_by_specialty(specialty_id)
+            elif result.get("action") == "show_schedules":
+                doctor_id = result.get("data", {}).get("doctor_id")
+                result["data"] = self.get_doctor_schedules(doctor_id)
+            
+            return result
+            
+        except Exception as e:
+            # Em caso de erro no Gemini, tentar OpenAI como fallback
+            if self.use_openai and self.openai_client:
+                return self._openai_response(user_message, context)
+            else:
+                raise e
 
     def _rule_based_response(self, user_message, context=None):
         """Resposta baseada em regras (quando OpenAI não está disponível)"""

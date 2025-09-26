@@ -1,9 +1,11 @@
 modules = ["web", "python-3.11"]
 [agent]
 expertMode = true
+integrations = ["python_gemini:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
+packages = ["cargo", "libiconv", "rustc"]
 
 [workflows]
 runButton = "Project"
@@ -34,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 44911
+localPort = 36301
 externalPort = 3000
 
 [deployment]

@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from flask_restful import Api, Resource
 from flask_login import current_user, login_required
 from datetime import datetime, timedelta
-from extensions import db
+from extensions import db, csrf
 
 bp = Blueprint('api', __name__)
 api = Api(bp)
@@ -201,6 +201,7 @@ def api_health():
 
 # Endpoint para chatbot (não REST, endpoint direto)
 @bp.route('/chatbot', methods=['POST'])
+@csrf.exempt
 def chatbot():
     """Endpoint para interação com chatbot inteligente"""
     try:
