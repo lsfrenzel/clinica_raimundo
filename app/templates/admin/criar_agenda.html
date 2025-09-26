@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Horários - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-cream pt-8 pb-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-heading font-display font-bold text-dark-gray mb-2">
+                Criar Horários na Agenda
+            </h1>
+            <p class="text-body text-gray-600">
+                Configure os horários disponíveis para agendamento
+            </p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="card-elegant bg-white rounded-3xl shadow-lg p-8">
+            <form method="POST">
+                <div class="space-y-8">
+                    <!-- Seleção do Médico -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Médico</h3>
+                        
+                        {% if medicos %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for medico in medicos %}
+                            <label class="flex items-center space-x-3 p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                <input type="radio" 
+                                       name="medico_id" 
+                                       value="{{ medico.id }}"
+                                       required
+                                       class="form-radio h-5 w-5 text-gold focus:ring-gold focus:ring-offset-0">
+                                <div class="flex items-center">
+                                    {% if medico.foto_url %}
+                                    <img class="w-10 h-10 rounded-full object-cover" 
+                                         src="{{ medico.foto_url }}" 
+                                         alt="{{ medico.usuario.nome }}">
+                                    {% else %}
+                                    <div class="w-10 h-10 gradient-teal rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold text-sm">
+                                            {{ medico.usuario.nome.split()[0][0] }}{{ medico.usuario.nome.split()[-1][0] if medico.usuario.nome.split()|length > 1 else '' }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            Dr(a). {{ medico.usuario.nome }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            CRM: {{ medico.crm }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-8 bg-gray-50 rounded-xl">
+                            <p class="text-gray-500 mb-4">Nenhum médico ativo encontrado</p>
+                            <a href="{{ url_for('admin.criar_medico') }}" 
+                               class="text-teal hover:text-teal-dark transition-colors">
+                                Criar primeiro médico →
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Período -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Período</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="data_inicio" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Data Início *
+                                </label>
+                                <input type="date" 
+                                       id="data_inicio" 
+                                       name="data_inicio" 
+                                       required
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all">
+                            </div>
+
+                            <div>
+                                <label for="data_fim" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Data Fim *
+                                </label>
+                                <input type="date" 
+                                       id="data_fim" 
+                                       name="data_fim" 
+                                       required
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Horários -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Horários de Atendimento</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="hora_inicio" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Hora Início *
+                                </label>
+                                <input type="time" 
+                                       id="hora_inicio" 
+                                       name="hora_inicio" 
+                                       value="08:00"
+                                       required
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all">
+                            </div>
+
+                            <div>
+                                <label for="hora_fim" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Hora Fim *
+                                </label>
+                                <input type="time" 
+                                       id="hora_fim" 
+                                       name="hora_fim" 
+                                       value="17:00"
+                                       required
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all">
+                            </div>
+
+                            <div>
+                                <label for="intervalo" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Intervalo (minutos) *
+                                </label>
+                                <select id="intervalo" 
+                                        name="intervalo" 
+                                        required
+                                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all">
+                                    <option value="15">15 minutos</option>
+                                    <option value="30" selected>30 minutos</option>
+                                    <option value="45">45 minutos</option>
+                                    <option value="60">60 minutos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dias da Semana -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Dias da Semana</h3>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                            {% set dias = [('0', 'Segunda'), ('1', 'Terça'), ('2', 'Quarta'), ('3', 'Quinta'), ('4', 'Sexta'), ('5', 'Sábado'), ('6', 'Domingo')] %}
+                            {% for valor, nome in dias %}
+                            <label class="flex flex-col items-center p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                <input type="checkbox" 
+                                       name="dias_semana" 
+                                       value="{{ valor }}"
+                                       {% if valor in ['0', '1', '2', '3', '4'] %}checked{% endif %}
+                                       class="form-checkbox h-5 w-5 text-gold rounded focus:ring-gold focus:ring-offset-0">
+                                <span class="text-sm font-medium text-gray-700 mt-2">{{ nome }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <p class="text-xs text-gray-500 mt-3">
+                            Por padrão, dias úteis estão selecionados. Ajuste conforme necessário.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                    <a href="{{ url_for('admin.gerenciar_agenda') }}" 
+                       class="link-elegant px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                        ← Cancelar
+                    </a>
+                    <button type="submit" 
+                            class="btn-gold px-8 py-3 rounded-xl">
+                        📅 Criar Horários
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Informações -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="card-elegant bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                <h3 class="text-sm font-semibold text-blue-800 mb-2">💡 Como Funciona</h3>
+                <p class="text-sm text-blue-700 mb-2">
+                    O sistema criará automaticamente todos os horários no período selecionado.
+                </p>
+                <p class="text-sm text-blue-700">
+                    Horários já existentes não serão duplicados.
+                </p>
+            </div>
+            
+            <div class="card-elegant bg-green-50 border border-green-200 rounded-2xl p-6">
+                <h3 class="text-sm font-semibold text-green-800 mb-2">⚡ Exemplo</h3>
+                <p class="text-sm text-green-700">
+                    Das 08:00 às 17:00 com intervalos de 30 minutos = 18 horários por dia.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validar que data fim não seja menor que data início
+document.getElementById('data_inicio').addEventListener('change', function() {
+    document.getElementById('data_fim').min = this.value;
+});
+
+// Validar que hora fim não seja menor que hora início
+document.getElementById('hora_inicio').addEventListener('change', function() {
+    const inicio = this.value;
+    const fim = document.getElementById('hora_fim');
+    if (fim.value <= inicio) {
+        // Adicionar 1 hora ao horário de início
+        const [horas, minutos] = inicio.split(':');
+        const novaHora = String(parseInt(horas) + 1).padStart(2, '0');
+        fim.value = `${novaHora}:${minutos}`;
+    }
+});
+
+// Definir data mínima como hoje
+document.addEventListener('DOMContentLoaded', function() {
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('data_inicio').min = hoje;
+    document.getElementById('data_inicio').value = hoje;
+    
+    // Data fim como uma semana depois
+    const proxSemana = new Date();
+    proxSemana.setDate(proxSemana.getDate() + 7);
+    document.getElementById('data_fim').value = proxSemana.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

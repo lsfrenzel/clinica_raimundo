@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Médicos - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-cream pt-8 pb-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-heading font-display font-bold text-dark-gray mb-2">
+                    Gerenciar Médicos
+                </h1>
+                <p class="text-body text-gray-600">
+                    Gerencie os médicos e suas especialidades
+                </p>
+            </div>
+            <div class="flex space-x-4">
+                <a href="{{ url_for('admin.dashboard') }}" class="link-elegant px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                    ← Voltar ao Dashboard
+                </a>
+                <a href="{{ url_for('admin.criar_medico') }}" class="btn-teal px-6 py-3 rounded-xl">
+                    👨‍⚕️ Novo Médico
+                </a>
+            </div>
+        </div>
+
+        <!-- Lista de Médicos -->
+        <div class="card-elegant bg-white rounded-3xl shadow-lg overflow-hidden">
+            {% if medicos %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Médico
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                CRM
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Especialidades
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Contato
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Ações
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for medico in medicos %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    {% if medico.foto_url %}
+                                    <img class="w-12 h-12 rounded-full object-cover" 
+                                         src="{{ medico.foto_url }}" 
+                                         alt="{{ medico.usuario.nome }}">
+                                    {% else %}
+                                    <div class="w-12 h-12 gradient-teal rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold">
+                                            {{ medico.usuario.nome.split()[0][0] }}{{ medico.usuario.nome.split()[-1][0] if medico.usuario.nome.split()|length > 1 else '' }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            Dr(a). {{ medico.usuario.nome }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ medico.usuario.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ medico.crm }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-wrap gap-1">
+                                    {% for especialidade in medico.especialidades %}
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold bg-emerald/10 text-emerald-dark rounded-full">
+                                        {{ especialidade.nome }}
+                                    </span>
+                                    {% endfor %}
+                                    {% if not medico.especialidades %}
+                                    <span class="text-xs text-gray-400 italic">Nenhuma especialidade</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-500">
+                                    {% if medico.usuario.telefone %}
+                                        📱 {{ medico.usuario.telefone }}
+                                    {% else %}
+                                        <span class="text-gray-400">Sem telefone</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    {% if medico.ativo %}bg-green-100 text-green-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {% if medico.ativo %}Ativo{% else %}Inativo{% endif %}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                <a href="{{ url_for('admin.editar_medico', id=medico.id) }}" 
+                                   class="text-teal hover:text-teal-dark transition-colors">
+                                    ✏️ Editar
+                                </a>
+                                <form method="POST" action="{{ url_for('admin.excluir_medico', id=medico.id) }}" 
+                                      class="inline" 
+                                      onsubmit="return confirm('Tem certeza que deseja excluir este médico? Esta ação não pode ser desfeita.')">
+                                    <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
+                                        🗑️ Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <div class="w-24 h-24 mx-auto gradient-teal rounded-3xl flex items-center justify-center mb-4">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <h3 class="text-heading-sm font-bold text-gray-900 mb-2">
+                    Nenhum médico cadastrado
+                </h3>
+                <p class="text-gray-500 mb-6">
+                    Comece adicionando o primeiro médico da sua clínica
+                </p>
+                <a href="{{ url_for('admin.criar_medico') }}" class="btn-teal px-6 py-3 rounded-xl">
+                    👨‍⚕️ Adicionar Primeiro Médico
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

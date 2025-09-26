@@ -16,6 +16,7 @@ try:
 except ImportError:
     gemini_client = None
     GEMINI_API_KEY = None
+    types = None
 
 # OpenAI fallback integration
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -545,15 +546,20 @@ except Exception as e:
             self.client = None
         
         def chat_response(self, user_message, context=None):
-            return ChatbotService._rule_based_response(self, user_message, context)
+            # Instanciar temporariamente para usar os métodos
+            temp_service = ChatbotService()
+            return temp_service._rule_based_response(user_message, context)
         
         def get_specialties(self):
-            return ChatbotService.get_specialties(self)
+            temp_service = ChatbotService()
+            return temp_service.get_specialties()
         
         def get_doctors_by_specialty(self, specialty_id=None):
-            return ChatbotService.get_doctors_by_specialty(self, specialty_id)
+            temp_service = ChatbotService()
+            return temp_service.get_doctors_by_specialty(specialty_id)
         
         def get_doctor_schedules(self, doctor_id, days_ahead=14):
-            return ChatbotService.get_doctor_schedules(self, doctor_id, days_ahead)
+            temp_service = ChatbotService()
+            return temp_service.get_doctor_schedules(doctor_id, days_ahead)
     
     chatbot_service = BasicChatbotService()

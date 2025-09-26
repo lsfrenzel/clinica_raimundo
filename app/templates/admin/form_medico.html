@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if medico %}Editar Médico{% else %}Novo Médico{% endif %} - {{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-cream pt-8 pb-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-heading font-display font-bold text-dark-gray mb-2">
+                {% if medico %}
+                    Editar Médico
+                {% else %}
+                    Novo Médico
+                {% endif %}
+            </h1>
+            <p class="text-body text-gray-600">
+                Preencha as informações do profissional médico
+            </p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="card-elegant bg-white rounded-3xl shadow-lg p-8">
+            <form method="POST">
+                <div class="space-y-6">
+                    <!-- Informações Pessoais -->
+                    <div class="border-b border-gray-200 pb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Informações Pessoais</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="nome" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nome Completo *
+                                </label>
+                                <input type="text" 
+                                       id="nome" 
+                                       name="nome" 
+                                       value="{{ medico.usuario.nome if medico else '' }}"
+                                       required
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 font-body focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all">
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Email *
+                                </label>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ medico.usuario.email if medico else '' }}"
+                                       required
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 font-body focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all">
+                            </div>
+
+                            <div>
+                                <label for="telefone" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Telefone
+                                </label>
+                                <input type="tel" 
+                                       id="telefone" 
+                                       name="telefone" 
+                                       value="{{ medico.usuario.telefone if medico else '' }}"
+                                       placeholder="(11) 99999-9999"
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 font-body focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all">
+                            </div>
+
+                            <div>
+                                <label for="crm" class="block text-sm font-medium text-gray-700 mb-2">
+                                    CRM *
+                                </label>
+                                <input type="text" 
+                                       id="crm" 
+                                       name="crm" 
+                                       value="{{ medico.crm if medico else '' }}"
+                                       required
+                                       placeholder="123456/SP"
+                                       class="w-full border border-gray-300 rounded-xl px-4 py-3 font-body focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Especialidades -->
+                    <div class="border-b border-gray-200 pb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Especialidades</h3>
+                        
+                        {% if especialidades %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for especialidade in especialidades %}
+                            <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                <input type="checkbox" 
+                                       name="especialidades" 
+                                       value="{{ especialidade.id }}"
+                                       {% if medico and especialidade in medico.especialidades %}checked{% endif %}
+                                       class="form-checkbox h-5 w-5 text-teal rounded focus:ring-teal focus:ring-offset-0">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ especialidade.nome }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        {{ especialidade.duracao_padrao }} min
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-6 bg-gray-50 rounded-xl">
+                            <p class="text-gray-500 mb-4">Nenhuma especialidade cadastrada</p>
+                            <a href="{{ url_for('admin.nova_especialidade') }}" 
+                               class="text-teal hover:text-teal-dark transition-colors">
+                                Criar primeira especialidade →
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="border-b border-gray-200 pb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Biografia Profissional</h3>
+                        
+                        <div>
+                            <label for="bio" class="block text-sm font-medium text-gray-700 mb-2">
+                                Biografia
+                            </label>
+                            <textarea id="bio" 
+                                      name="bio" 
+                                      rows="4"
+                                      placeholder="Descreva a experiência, formação e áreas de atuação do médico..."
+                                      class="w-full border border-gray-300 rounded-xl px-4 py-3 font-body focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition-all">{{ medico.bio if medico else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Status (apenas para edição) -->
+                    {% if medico %}
+                    <div>
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" 
+                                   name="ativo"
+                                   {% if medico.ativo %}checked{% endif %}
+                                   class="form-checkbox h-5 w-5 text-teal rounded focus:ring-teal focus:ring-offset-0">
+                            <span class="text-sm font-medium text-gray-700">
+                                Médico ativo
+                            </span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Médicos inativos não aparecem para agendamento
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Botões -->
+                <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                    <a href="{{ url_for('admin.medicos') }}" 
+                       class="link-elegant px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                        ← Cancelar
+                    </a>
+                    <button type="submit" 
+                            class="btn-teal px-8 py-3 rounded-xl">
+                        {% if medico %}
+                            💾 Salvar Alterações
+                        {% else %}
+                            ✨ Criar Médico
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Informações -->
+        {% if not medico %}
+        <div class="mt-8 card-elegant bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
+            <h3 class="text-sm font-semibold text-yellow-800 mb-2">🔑 Informação Importante</h3>
+            <p class="text-sm text-yellow-700">
+                Após criar o médico, uma senha temporária será gerada. O profissional deverá alterar a senha no primeiro acesso ao sistema.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
