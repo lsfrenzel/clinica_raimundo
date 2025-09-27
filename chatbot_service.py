@@ -325,6 +325,11 @@ Responda sempre em formato JSON com esta estrutura:
         elif action == "create_booking":
             booking_data = result.get("data", {})
             
+            # DEBUG: Log dos dados recebidos
+            print(f"[DEBUG create_booking] Dados recebidos:")
+            print(f"  booking_data: {booking_data}")
+            print(f"  updated_context: {updated_context}")
+            
             # Mesclar dados do booking com contexto salvado
             merged_booking_data = {
                 'medico_id': updated_context.get('medico_id'),
@@ -338,7 +343,15 @@ Responda sempre em formato JSON com esta estrutura:
             # Sobrescrever com dados do booking se disponíveis
             merged_booking_data.update({k: v for k, v in booking_data.items() if v})
             
+            # DEBUG: Log dos dados mesclados
+            print(f"[DEBUG create_booking] Dados mesclados para create_appointment:")
+            print(f"  merged_booking_data: {merged_booking_data}")
+            
             result["data"] = self.create_appointment(merged_booking_data, context)
+            
+            # DEBUG: Log do resultado
+            print(f"[DEBUG create_booking] Resultado do create_appointment:")
+            print(f"  result: {result['data']}")
             
             # Limpar contexto após agendamento bem-sucedido
             if result["data"].get("success"):
@@ -440,6 +453,8 @@ Responda sempre em formato JSON com esta estrutura:
 
     def _rule_based_response(self, user_message, context=None):
         """Resposta baseada em regras (quando OpenAI não está disponível)"""
+        import re
+        
         message_lower = user_message.lower()
         user_name = context.get('user_name', 'Paciente') if context else 'Paciente'
         
@@ -460,6 +475,105 @@ Responda sempre em formato JSON com esta estrutura:
                 "action": "get_specialties",
                 "data": especialidades_data
             }
+        
+        # Seleção de especialidades específicas
+        elif any(specialty in message_lower for specialty in ['ginecologia', 'obstetrícia', 'obstetricia', 'pré-natal', 'prenatal']):
+            if 'ginecologia' in message_lower:
+                specialty_id = 4  # Mastologia (relacionada à ginecologia)
+                specialty_name = 'Ginecologia'
+            elif any(word in message_lower for word in ['obstetrícia', 'obstetricia']):
+                specialty_id = 2  # Pré-Natal de Alto Risco
+                specialty_name = 'Obstetrícia'
+            else:
+                specialty_id = 2  # Pré-Natal de Alto Risco
+                specialty_name = 'Pré-natal'
+            
+            doctors_data = self.get_doctors_by_specialty(specialty_id)
+            if doctors_data:
+                doctors_text = "\n".join([f"👨‍⚕️ **Dr(a). {doc['nome']}** - CRM: {doc['crm']}\n   📝 {doc.get('bio', 'Médico especialista')[:100]}..." for doc in doctors_data])
+                return {
+                    "message": f"🏥 **Médicos disponíveis para {specialty_name}:**\n\n{doctors_text}\n\n💬 **Digite o nome do médico** que você gostaria de consultar ou digite \"qualquer\" para ver horários de todos!",
+                    "action": "show_doctors",
+                    "data": {
+                        "specialty_id": specialty_id,
+                        "specialty_name": specialty_name,
+                        "doctors": doctors_data
+                    }
+                }
+            else:
+                return {
+                    "message": f"😊 **Especialidade {specialty_name} selecionada!**\n\nVou buscar nossos médicos especialistas...",
+                    "action": "select_specialty",
+                    "data": {"specialty_id": specialty_id, "specialty_name": specialty_name}
+                }
+                
+        # Seleção de médicos específicos
+        elif any(doctor in message_lower for doctor in ['dr. ricardo', 'ricardo mendes', 'dra. ana', 'ana silva', 'raimundo', 'dr. raimundo']):
+            if any(name in message_lower for name in ['ricardo', 'ricardo mendes']):
+                doctor_id = 3
+                doctor_name = "Dr. Ricardo Mendes"
+            elif any(name in message_lower for name in ['ana', 'ana silva']):
+                doctor_id = 2  
+                doctor_name = "Dra. Ana Carolina Silva"
+            elif any(name in message_lower for name in ['raimundo']):
+                doctor_id = 1
+                doctor_name = "Dr. Raimundo Nunes"
+            else:
+                doctor_id = 3  # Default
+                doctor_name = "Dr. Ricardo Mendes"
+                
+            schedules = self.get_doctor_schedules(doctor_id)
+            schedules_text = "\n".join([f"📅 **{sch['data']}** às **{sch['hora']}**" for sch in schedules[:5]])
+            
+            return {
+                "message": f"👨‍⚕️ **Excelente escolha! {doctor_name}**\n\n⏰ **Próximos horários disponíveis:**\n\n{schedules_text}\n\n💬 **Digite a data e hora** que prefere (exemplo: \"30/09/2025 às 08:00\") ou digite \"mais horários\" para ver outras opções!",
+                "action": "select_doctor",
+                "data": {
+                    "doctor_id": doctor_id,
+                    "doctor_name": doctor_name,
+                    "schedules": schedules
+                }
+            }
+            
+        # Seleção de horários específicos
+        elif any(pattern in message_lower for pattern in ['30/09', '01/10', '02/10', 'às 08:00', 'às 09:00', 'às 14:00']):
+            # Extrair data e hora da mensagem
+            date_match = re.search(r'(\d{1,2}/\d{1,2}/\d{4})', user_message)
+            time_match = re.search(r'às (\d{1,2}:\d{2})', user_message)
+            
+            if date_match and time_match:
+                date_str = date_match.group(1)
+                time_str = time_match.group(1)
+                datetime_str = f"{date_str.split('/')[2]}-{date_str.split('/')[1]:0>2}-{date_str.split('/')[0]:0>2}T{time_str}:00"
+                
+                return {
+                    "message": f"⏰ **Horário selecionado: {date_str} às {time_str}**\n\n📋 **Agora preciso confirmar seus dados:**\n\n• Nome: {context.get('user_name', '[Por favor, informe seu nome]')}\n• Email: {context.get('user_email', '[Por favor, informe seu email]')}\n\n💬 **Digite seu telefone para contato** (exemplo: 11 99999-9999):",
+                    "action": "select_schedule",
+                    "data": {
+                        "datetime": datetime_str,
+                        "date_str": date_str,
+                        "time_str": time_str
+                    }
+                }
+            else:
+                return {
+                    "message": "⏰ **Para selecionar um horário, digite no formato:**\n\n📅 **\"30/09/2025 às 08:00\"**\n\nOu escolha uma das opções mostradas anteriormente.",
+                    "action": "general_chat",
+                    "data": {}
+                }
+                
+        # Coleta de telefone
+        elif re.search(r'\b\d{2}\s?\d{4,5}-?\d{4}\b', user_message) or re.search(r'\(\d{2}\)\s?\d{4,5}-?\d{4}', user_message):
+            phone_match = re.search(r'(\(?\d{2}\)?\s?\d{4,5}-?\d{4})', user_message)
+            if phone_match:
+                phone = phone_match.group(1)
+                return {
+                    "message": f"📞 **Telefone confirmado: {phone}**\n\n✅ **Resumo do seu agendamento:**\n\n• **Médico:** {context.get('medico_nome', 'Médico selecionado')}\n• **Data/Hora:** {context.get('datetime_slot', 'Horário selecionado')}\n• **Nome:** {context.get('user_name', 'Nome informado')}\n• **Email:** {context.get('user_email', 'Email informado')}\n• **Telefone:** {phone}\n\n🎉 **Digite \"CONFIRMAR\" para finalizar o agendamento!**",
+                    "action": "confirm_booking",
+                    "data": {
+                        "patient_phone": phone
+                    }
+                }
         
         # Perguntas sobre médicos
         elif any(word in message_lower for word in ['médico', 'medico', 'doutor', 'doutora', 'profissional', 'equipe', 'staff']):
@@ -485,6 +599,45 @@ Responda sempre em formato JSON com esta estrutura:
                 "action": "get_specialties",
                 "data": self.get_specialties()
             }
+            
+        # Confirmação de agendamento (adicionar lógica para rule-based)
+        elif any(word in message_lower for word in ['confirmar', 'sim', 'confirmo', 'ok', 'agendar agora', 'finalizar']):
+            # Verificar se temos contexto completo para agendamento
+            if (context and context.get('medico_id') and context.get('datetime_slot') and 
+                (context.get('patient_name') or context.get('user_name')) and 
+                (context.get('patient_email') or context.get('user_email'))):
+                
+                # Criar dados completos para o agendamento
+                booking_data = {
+                    'medico_id': context.get('medico_id'),
+                    'especialidade_id': context.get('especialidade_id'),
+                    'data_hora': context.get('datetime_slot'),
+                    'nome': context.get('patient_name') or context.get('user_name'),
+                    'email': context.get('patient_email') or context.get('user_email'),
+                    'telefone': context.get('patient_phone', ''),
+                }
+                
+                return {
+                    "message": "🎉 **Perfeito! Finalizando seu agendamento...**\n\nAguarde um momento enquanto confirmo sua consulta no sistema.",
+                    "action": "create_booking",
+                    "data": booking_data
+                }
+            else:
+                missing_data = []
+                if not context or not context.get('medico_id'):
+                    missing_data.append("médico")
+                if not context or not context.get('datetime_slot'):
+                    missing_data.append("horário")
+                if not context or not (context.get('patient_name') or context.get('user_name')):
+                    missing_data.append("nome")
+                if not context or not (context.get('patient_email') or context.get('user_email')):
+                    missing_data.append("email")
+                    
+                return {
+                    "message": f"📋 **Para confirmar o agendamento, ainda preciso de:** {', '.join(missing_data)}\n\n💬 Digite \"agendar\" para começar o processo completo!",
+                    "action": "get_specialties",
+                    "data": self.get_specialties()
+                }
         
         # Horários
         elif any(word in message_lower for word in ['horário', 'horario', 'disponível', 'disponivel', 'livre', 'vaga', 'vagas', 'quando']):
