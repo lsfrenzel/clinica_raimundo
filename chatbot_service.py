@@ -399,6 +399,11 @@ Responda sempre em formato JSON com esta estrutura:
             # Verificar se é usuário autenticado ou visitante
             if context and context.get('authenticated') and context.get('user_id'):
                 agendamento.paciente_id = context['user_id']
+                # Para usuários autenticados, salvar também o email para referência cruzada
+                if context.get('user_email'):
+                    agendamento.email_convidado = context['user_email']
+                if booking_data.get('nome'):
+                    agendamento.observacoes = f"Agendado por: {booking_data['nome']} | {agendamento.observacoes}"
             else:
                 agendamento.nome_convidado = booking_data['nome']
                 agendamento.email_convidado = booking_data['email']

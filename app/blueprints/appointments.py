@@ -129,7 +129,14 @@ def meus_agendamentos():
         return redirect(url_for('auth.login'))
     
     from models import Agendamento
-    agendamentos = Agendamento.query.filter_by(paciente_id=current_user.id)\
-                                   .order_by(Agendamento.inicio.desc()).all()
+    from sqlalchemy import or_
+    
+    # Buscar agendamentos tanto com paciente_id quanto com email de convidado
+    agendamentos = Agendamento.query.filter(
+        or_(
+            Agendamento.paciente_id == current_user.id,
+            Agendamento.email_convidado == current_user.email
+        )
+    ).order_by(Agendamento.inicio.desc()).all()
     
     return render_template('appointments/meus_agendamentos.html', agendamentos=agendamentos)
