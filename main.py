@@ -3,11 +3,15 @@
 
 import os
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from extensions import db, migrate, login_manager, mail, cors, csrf
 
 def create_app():
     # create the app
     app = Flask(__name__, template_folder='app/templates', static_folder='app/static')
+    
+    # Configure proxy fix for Replit
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     
     # Load configuration
     app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET')
