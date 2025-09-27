@@ -231,22 +231,37 @@ def chatbot():
             context['authenticated'] = False
             context['user_name'] = 'Visitante'
         
+        # Log do contexto que está sendo enviado
+        print(f"[DEBUG] Contexto enviado para chatbot: {context}")
+        
         # Processar mensagem no chatbot
         response = chatbot_service.chat_response(user_message, context)
         
+        # Log da resposta do chatbot
+        print(f"[DEBUG] Resposta do chatbot - Ação: {response.get('action')}")
+        
         # Extrair contexto atualizado da resposta
         updated_context = response.pop('_updated_context', {})
+        print(f"[DEBUG] Contexto atualizado: {updated_context}")
         
-        # Minimizar PII na sessão - manter apenas IDs essenciais
-        minimal_context = {
+        # Armazenar contexto necessário para manter o fluxo da conversa
+        essential_context = {
             'especialidade_id': updated_context.get('especialidade_id'),
+            'especialidade_nome': updated_context.get('especialidade_nome'),
             'medico_id': updated_context.get('medico_id'),
-            'datetime_slot': updated_context.get('datetime_slot')
+            'medico_nome': updated_context.get('medico_nome'),
+            'datetime_slot': updated_context.get('datetime_slot'),
+            'patient_name': updated_context.get('patient_name'),
+            'patient_email': updated_context.get('patient_email'),
+            'patient_phone': updated_context.get('patient_phone'),
+            'conversation_step': updated_context.get('conversation_step', 'start')
         }
         
         # Filtrar valores None/vazios
-        session['chat_context'] = {k: v for k, v in minimal_context.items() if v is not None}
+        session['chat_context'] = {k: v for k, v in essential_context.items() if v is not None}
         session.permanent = True
+        
+        print(f"[DEBUG] Contexto salvo na sessão: {session['chat_context']}")
         
         return jsonify({
             'success': True,

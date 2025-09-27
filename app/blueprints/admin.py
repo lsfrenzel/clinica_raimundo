@@ -152,11 +152,10 @@ def nova_especialidade():
             flash('Especialidade já existe.', 'error')
             return render_template('admin/form_especialidade.html')
         
-        especialidade = Especialidade(
-            nome=nome,
-            descricao=descricao,
-            duracao_padrao=duracao_padrao
-        )
+        especialidade = Especialidade()
+        especialidade.nome = nome
+        especialidade.descricao = descricao
+        especialidade.duracao_padrao = duracao_padrao
         
         db.session.add(especialidade)
         db.session.commit()
@@ -284,11 +283,22 @@ def criar_agenda():
     from models import Medico, Agenda
     
     if request.method == 'POST':
-        medico_id = int(request.form.get('medico_id'))
-        data_inicio = datetime.strptime(request.form.get('data_inicio'), '%Y-%m-%d').date()
-        data_fim = datetime.strptime(request.form.get('data_fim'), '%Y-%m-%d').date()
-        hora_inicio = datetime.strptime(request.form.get('hora_inicio'), '%H:%M').time()
-        hora_fim = datetime.strptime(request.form.get('hora_fim'), '%H:%M').time()
+        medico_id_str = request.form.get('medico_id')
+        data_inicio_str = request.form.get('data_inicio')
+        data_fim_str = request.form.get('data_fim')
+        hora_inicio_str = request.form.get('hora_inicio')
+        hora_fim_str = request.form.get('hora_fim')
+        
+        if not all([medico_id_str, data_inicio_str, data_fim_str, hora_inicio_str, hora_fim_str]):
+            flash('Todos os campos são obrigatórios.', 'error')
+            medicos = Medico.query.filter_by(ativo=True).all()
+            return render_template('admin/criar_agenda.html', medicos=medicos)
+        
+        medico_id = int(medico_id_str)
+        data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
+        data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
+        hora_inicio = datetime.strptime(hora_inicio_str, '%H:%M').time()
+        hora_fim = datetime.strptime(hora_fim_str, '%H:%M').time()
         intervalo = int(request.form.get('intervalo', 30))
         dias_semana = request.form.getlist('dias_semana')
         
@@ -314,13 +324,13 @@ def criar_agenda():
                     ).first()
                     
                     if not existe:
-                        agenda = Agenda(
-                            medico_id=medico_id,
-                            data=data_atual,
-                            hora_inicio=hora_atual.time(),
-                            hora_fim=fim_slot.time(),
-                            disponivel=True
-                        )
+                        agenda = Agenda()
+                        agenda.medico_id = medico_id
+                        agenda.data = data_atual
+                        agenda.hora_inicio = hora_atual.time()
+                        agenda.hora_fim = fim_slot.time()
+                        agenda.ativo = True
+                        agenda.duracao_minutos = intervalo
                         db.session.add(agenda)
                         total_criados += 1
                     

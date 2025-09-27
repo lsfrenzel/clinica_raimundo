@@ -204,10 +204,17 @@ Responda sempre em formato JSON com esta estrutura:
         # Criar cópia do contexto para atualização
         updated_context = context.copy()
         
+        # Rastrear etapa da conversa
+        current_step = updated_context.get('conversation_step', 'start')
+        
         if action == "get_specialties":
             result["data"] = self.get_specialties()
+            updated_context['conversation_step'] = 'selecting_specialty'
             
         elif action == "show_doctors" or action == "select_specialty":
+            # Sempre definir que estamos mostrando médicos
+            updated_context['conversation_step'] = 'selecting_doctor'
+            
             # Verificar se data é dict ou list  
             data = result.get("data", {})
             if isinstance(data, dict):
@@ -243,6 +250,11 @@ Responda sempre em formato JSON com esta estrutura:
                     updated_context['especialidade_nome'] = specialty_name
                 
                 result["data"] = self.get_doctors_by_specialty(specialty_id)
+            else:
+                # Para ginecologia, usar ID 7 como padrão
+                updated_context['especialidade_id'] = 7
+                updated_context['especialidade_nome'] = 'Ginecologia'
+                result["data"] = self.get_doctors_by_specialty(7)
             # Se data já é uma lista, não processar IDs
             
         elif action == "show_schedules" or action == "select_doctor":
@@ -285,6 +297,7 @@ Responda sempre em formato JSON com esta estrutura:
                 if doctor_id:
                     updated_context['medico_id'] = doctor_id
                     updated_context['medico_nome'] = doctor_name
+                    updated_context['conversation_step'] = 'selecting_time'
                     
                     result["data"] = self.get_doctor_schedules(doctor_id)
                 else:
