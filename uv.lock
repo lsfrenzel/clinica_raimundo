@@ -830,6 +830,7 @@ dependencies = [
     { name = "openai" },
     { name = "psycopg2-binary" },
     { name = "python-dotenv" },
+    { name = "requests" },
     { name = "sqlalchemy" },
     { name = "werkzeug" },
 ]
@@ -851,6 +852,7 @@ requires-dist = [
     { name = "openai", specifier = ">=1.108.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
+    { name = "requests", specifier = ">=2.32.5" },
     { name = "sqlalchemy", specifier = ">=2.0.43" },
     { name = "werkzeug", specifier = ">=3.1.3" },
 ]
