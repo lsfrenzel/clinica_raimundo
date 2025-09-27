@@ -28,7 +28,7 @@ class ChatbotService:
         self.gemini_client = gemini_client
         self.openai_client = openai_client
         self.use_gemini = gemini_client is not None
-        self.use_openai = openai_client is not None and not self.use_gemini
+        self.use_openai = openai_client is not None  # OpenAI disponível como fallback mesmo com Gemini ativo
         
     def get_system_prompt(self):
         """Define o contexto e comportamento do chatbot"""
@@ -98,21 +98,22 @@ Responda sempre em formato JSON com esta estrutura:
             }
             
         except Exception as e:
-            # Se Gemini ou OpenAI falharem, usar versão baseada em regras
-            if any(error in str(e).lower() for error in ["insufficient_quota", "429", "quota", "rate_limit"]):
+            # Fallback seguro para qualquer erro - não expor detalhes internos
+            try:
                 result = self._rule_based_response(user_message, context)
                 result, updated_context = self._process_action(result, context)
                 return {
                     **result,
                     '_updated_context': updated_context
                 }
-            
-            return {
-                "message": f"Desculpe, ocorreu um erro inesperado. Tente novamente. Erro: {str(e)}",
-                "action": "error",
-                "data": {},
-                "_updated_context": context or {}
-            }
+            except Exception:
+                # Último recurso - resposta genérica segura
+                return {
+                    "message": "Olá! Estou aqui para ajudar você a agendar sua consulta na Clínica Dr. Raimundo Nunes. Como posso ajudá-lo hoje?",
+                    "action": "general_chat",
+                    "data": {},
+                    "_updated_context": context or {}
+                }
 
     def _openai_response(self, user_message, context=None):
         """Resposta usando OpenAI (quando disponível)"""
@@ -183,9 +184,14 @@ Responda sempre em formato JSON com esta estrutura:
         except Exception as e:
             # Em caso de erro no Gemini, tentar OpenAI como fallback
             if self.use_openai and self.openai_client:
-                return self._openai_response(user_message, context)
+                try:
+                    return self._openai_response(user_message, context)
+                except Exception:
+                    # Se OpenAI também falhar, usar sistema baseado em regras
+                    return self._rule_based_response(user_message, context)
             else:
-                raise e
+                # Se não há OpenAI, usar sistema baseado em regras
+                return self._rule_based_response(user_message, context)
 
     def _process_action(self, result, context=None):
         """Processa as ações específicas do chatbot"""
