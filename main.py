@@ -14,7 +14,14 @@ def create_app():
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     
     # Load configuration
-    app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET')
+    # SECRET_KEY é obrigatório para sessões e CSRF
+    # Em produção, sempre configure SESSION_SECRET no ambiente
+    secret_key = os.environ.get('SESSION_SECRET')
+    if not secret_key:
+        import secrets
+        secret_key = secrets.token_hex(32)
+        app.logger.warning('⚠️  SESSION_SECRET não configurado! Usando chave temporária. Configure SESSION_SECRET para produção!')
+    app.config['SECRET_KEY'] = secret_key
     
     # configure the database, relative to the app instance folder
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
