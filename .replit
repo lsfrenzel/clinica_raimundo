@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Medical Clinic App"
+args = "Flask App"
 
 [[workflows.workflow]]
-name = "Medical Clinic App"
+name = "Flask App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -34,10 +34,6 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 39359
-externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
