@@ -458,6 +458,66 @@ Responda sempre em formato JSON com esta estrutura:
         message_lower = user_message.lower()
         user_name = context.get('user_name', 'Paciente') if context else 'Paciente'
         
+        # PRIORIDADE: Verificar se o usuário mencionou uma especialidade específica do banco
+        try:
+            especialidades_db = self.get_specialties()
+            for esp in especialidades_db:
+                esp_nome_lower = esp['nome'].lower()
+                # Verificar se o nome da especialidade está na mensagem (fuzzy match)
+                if esp_nome_lower in message_lower or message_lower in esp_nome_lower:
+                    print(f"[DEBUG] Especialidade detectada: {esp['nome']}")
+                    specialty_id = esp['id']
+                    specialty_name = esp['nome']
+                    
+                    doctors_data = self.get_doctors_by_specialty(specialty_id)
+                    if doctors_data:
+                        doctors_text = "\n".join([f"👨‍⚕️ **Dr(a). {doc['nome']}** - CRM: {doc['crm']}\n   📝 {doc.get('bio', 'Médico especialista')[:100]}..." for doc in doctors_data])
+                        return {
+                            "message": f"🏥 **Médicos disponíveis para {specialty_name}:**\n\n{doctors_text}\n\n💬 **Digite o nome do médico** que você gostaria de consultar ou digite \"qualquer\" para ver horários de todos!",
+                            "action": "show_doctors",
+                            "data": {
+                                "specialty_id": specialty_id,
+                                "specialty_name": specialty_name,
+                                "doctors": doctors_data
+                            }
+                        }
+                    else:
+                        return {
+                            "message": f"😊 **Especialidade {specialty_name} selecionada!**\n\nVou buscar nossos médicos especialistas...",
+                            "action": "select_specialty",
+                            "data": {"specialty_id": specialty_id, "specialty_name": specialty_name}
+                        }
+        except Exception as e:
+            print(f"[DEBUG] Erro ao verificar especialidades: {e}")
+        
+        # PRIORIDADE 2: Verificar se o usuário mencionou um médico específico do banco
+        try:
+            medicos_db = self.get_doctors_by_specialty()
+            for medico in medicos_db:
+                medico_nome_lower = medico['nome'].lower()
+                # Verificar se o nome do médico está na mensagem
+                # Também verificar variações como "raimundo", "ana", "ricardo"
+                nome_partes = medico_nome_lower.split()
+                if any(parte in message_lower for parte in nome_partes if len(parte) > 3):
+                    print(f"[DEBUG] Médico detectado: {medico['nome']}")
+                    doctor_id = medico['id']
+                    doctor_name = medico['nome']
+                    
+                    schedules = self.get_doctor_schedules(doctor_id)
+                    if schedules:
+                        schedules_text = "\n".join([f"📅 **{sch['data']}** às **{sch['hora']}**" for sch in schedules[:5]])
+                        return {
+                            "message": f"👨‍⚕️ **Excelente escolha! {doctor_name}**\n\n⏰ **Próximos horários disponíveis:**\n\n{schedules_text}\n\n💬 **Digite a data e hora** que prefere (exemplo: \"02/10/2025 às 15:00\") ou digite \"mais horários\" para ver outras opções!",
+                            "action": "select_doctor",
+                            "data": {
+                                "doctor_id": doctor_id,
+                                "doctor_name": doctor_name,
+                                "schedules": schedules
+                            }
+                        }
+        except Exception as e:
+            print(f"[DEBUG] Erro ao verificar médicos: {e}")
+        
         # Cumprimentos e saudações
         if any(word in message_lower for word in ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hello', 'alo', 'alô']):
             return {
@@ -720,10 +780,13 @@ Responda sempre em formato JSON com esta estrutura:
             }
 
     def get_specialties(self):
-        """Busca especialidades disponíveis no banco"""
+        """Busca especialidades disponíveis no banco de dados"""
         try:
+            print(f"[DEBUG] Buscando especialidades ativas...")
             especialidades = Especialidade.query.filter_by(ativo=True).all()
-            return [
+            print(f"[DEBUG] Encontradas {len(especialidades)} especialidades ativas")
+            
+            resultado = [
                 {
                     "id": esp.id,
                     "nome": esp.nome,
@@ -732,22 +795,33 @@ Responda sempre em formato JSON com esta estrutura:
                 }
                 for esp in especialidades
             ]
+            return resultado
         except Exception as e:
             print(f"Erro ao buscar especialidades: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def get_doctors_by_specialty(self, specialty_id=None):
-        """Busca médicos por especialidade"""
+        """Busca médicos por especialidade no banco de dados"""
         try:
+            print(f"[DEBUG] Buscando médicos - specialty_id: {specialty_id}")
+            
             if specialty_id:
                 # Usar relacionamento SQLAlchemy para buscar médicos por especialidade
                 especialidade = Especialidade.query.get(specialty_id)
                 if especialidade:
+                    print(f"[DEBUG] Especialidade encontrada: {especialidade.nome}")
+                    # Filtrar médicos ativos da especialidade
                     medicos = [medico for medico in especialidade.medicos if medico.ativo]
+                    print(f"[DEBUG] Médicos ativos encontrados: {len(medicos)}")
                 else:
+                    print(f"[DEBUG] Especialidade não encontrada com ID {specialty_id}")
                     medicos = []
             else:
+                # Buscar todos os médicos ativos
                 medicos = Medico.query.filter_by(ativo=True).all()
+                print(f"[DEBUG] Buscando todos médicos ativos: {len(medicos)}")
             
             resultado = []
             for medico in medicos:
@@ -761,52 +835,76 @@ Responda sempre em formato JSON com esta estrutura:
                         "especialidades": [esp.nome for esp in medico.especialidades]
                     })
             
+            print(f"[DEBUG] Retornando {len(resultado)} médicos")
             return resultado
+            
         except Exception as e:
             print(f"Erro ao buscar médicos: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def get_doctor_schedules(self, doctor_id, days_ahead=14):
-        """Busca horários disponíveis de um médico"""
+        """Busca horários disponíveis de um médico na tabela Agenda"""
         try:
             if not doctor_id:
+                print(f"[DEBUG] doctor_id vazio")
                 return []
                 
+            from models import Agenda
+            
             medico = Medico.query.get(doctor_id)
             if not medico:
+                print(f"[DEBUG] Médico não encontrado com ID {doctor_id}")
                 return []
             
-            data_inicio = datetime.now()
+            data_inicio = datetime.now().date()
             data_fim = data_inicio + timedelta(days=days_ahead)
             
-            # Gerar horários disponíveis simulados (8h às 17h, seg-sex)
-            horarios_disponiveis = []
-            for i in range(days_ahead):
-                data_atual = data_inicio + timedelta(days=i)
-                # Segunda a sexta-feira apenas
-                if data_atual.weekday() < 5:  # 0=segunda, 4=sexta
-                    for hora in range(8, 17):  # 8h às 16h (última consulta às 16h)
-                        datetime_slot = datetime.combine(data_atual.date(), datetime.min.time().replace(hour=hora))
-                        
-                        # Verificar se já existe agendamento
-                        agendamento_existente = Agendamento.query.filter_by(
-                            medico_id=doctor_id,
-                            inicio=datetime_slot
-                        ).first()
-                        
-                        if not agendamento_existente and datetime_slot > datetime.now():
-                            horarios_disponiveis.append({
-                                "data": datetime_slot.strftime("%d/%m/%Y"),
-                                "hora": datetime_slot.strftime("%H:%M"),
-                                "duracao": 60,  # 60 minutos padrão
-                                "tipo": "consulta",
-                                "datetime": datetime_slot.isoformat()
-                            })
+            print(f"[DEBUG] Buscando agendas para médico ID {doctor_id} de {data_inicio} até {data_fim}")
             
-            return horarios_disponiveis[:20]  # Limitar a 20 horários
+            # Buscar agendas disponíveis na tabela Agenda
+            agendas = Agenda.query.filter(
+                Agenda.medico_id == doctor_id,
+                Agenda.data >= data_inicio,
+                Agenda.data <= data_fim,
+                Agenda.ativo == True
+            ).order_by(Agenda.data, Agenda.hora_inicio).all()
+            
+            print(f"[DEBUG] Encontradas {len(agendas)} agendas no banco de dados")
+            
+            horarios_disponiveis = []
+            for agenda in agendas:
+                # Combinar data e hora para criar datetime
+                datetime_slot = datetime.combine(agenda.data, agenda.hora_inicio)
+                
+                # Verificar se já existe agendamento neste horário
+                agendamento_existente = Agendamento.query.filter_by(
+                    medico_id=doctor_id,
+                    inicio=datetime_slot
+                ).first()
+                
+                # Só adicionar se não houver agendamento e o horário for futuro
+                if not agendamento_existente and datetime_slot > datetime.now():
+                    horarios_disponiveis.append({
+                        "data": agenda.data.strftime("%d/%m/%Y"),
+                        "hora": agenda.hora_inicio.strftime("%H:%M"),
+                        "duracao": agenda.duracao_minutos,
+                        "tipo": agenda.tipo,
+                        "datetime": datetime_slot.isoformat()
+                    })
+                    
+                    # Limitar a 20 horários
+                    if len(horarios_disponiveis) >= 20:
+                        break
+            
+            print(f"[DEBUG] Retornando {len(horarios_disponiveis)} horários disponíveis")
+            return horarios_disponiveis
             
         except Exception as e:
             print(f"Erro ao buscar horários: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
 

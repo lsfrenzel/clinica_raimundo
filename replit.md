@@ -70,7 +70,27 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 
 ## Resolução de Problemas Recentes
 
-### ✅ Problema: Chatbot não criava agendamentos
+### ✅ Problema: Chatbot não acessava banco de dados corretamente (02/10/2025)
+**Causa**: 
+- Função `get_doctor_schedules` gerava horários simulados em vez de buscar da tabela `agendas`
+- Sistema rule-based não detectava especialidades/médicos específicos do banco
+- Falta de priorização na detecção de entidades do banco de dados
+
+**Solução**:
+- ✅ Corrigida função `get_doctor_schedules` para buscar horários REAIS da tabela `agendas`
+- ✅ Adicionada verificação prioritária de especialidades do banco antes de outras regras
+- ✅ Adicionada verificação prioritária de médicos do banco antes de outras regras
+- ✅ Melhorado logging para debug de acesso ao banco (DEBUG logs)
+- ✅ Testado e validado: 18 horários disponíveis encontrados para Dr. Raimundo Nunes
+
+**Resultados**:
+- 9 especialidades carregadas corretamente do banco
+- 5 médicos listados adequadamente
+- 28 agendas encontradas no banco de dados
+- 18 horários disponíveis retornados corretamente
+- Detecção inteligente de especialidades e médicos mencionados pelo usuário
+
+### ✅ Problema anterior: Chatbot não criava agendamentos
 **Causa**: Sistema rule-based não tinha lógica completa de agendamento
 **Solução**: 
 - Expandido sistema rule-based com fluxo completo
@@ -82,6 +102,7 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 - Rule-based agora processa agendamentos completos
 - Funciona mesmo quando Gemini API falha
 - Mantém qualidade de experiência
+- Acessa banco de dados PostgreSQL corretamente
 
 ## Configuração e Deploy
 
