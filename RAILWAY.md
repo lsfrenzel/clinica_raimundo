@@ -48,6 +48,14 @@ SESSION_SECRET=sua-chave-secreta-aqui
 GEMINI_API_KEY=sua-chave-gemini-aqui (opcional)
 ```
 
+**⚠️ SESSION_SECRET é OBRIGATÓRIO** - Para gerar uma chave segura:
+```bash
+# Python
+python -c "import secrets; print(secrets.token_hex(32))"
+
+# Ou use um gerador online: https://randomkeygen.com/
+```
+
 **Importante:** O Railway já configura automaticamente:
 - `DATABASE_URL` - Conexão com PostgreSQL
 - `PORT` - Porta do servidor
@@ -183,6 +191,20 @@ railway shell
 ```
 
 ## 🐛 Troubleshooting
+
+### Erro: "Internal Server Error" nas páginas de login/cadastro
+**Causa:** SESSION_SECRET não configurado
+**Solução:** 
+1. No Railway dashboard → seu serviço → Variables
+2. Adicione a variável `SESSION_SECRET` com uma chave segura:
+```bash
+# Gere uma chave segura com:
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+3. Cole o resultado em SESSION_SECRET
+4. Aguarde o redeploy automático
+
+**Nota:** O app gera uma chave temporária se SESSION_SECRET não existir, mas **isso é inseguro** e as sessões não persistem entre restarts.
 
 ### Erro: "Application failed to respond"
 **Causa:** Comando de start incorreto
