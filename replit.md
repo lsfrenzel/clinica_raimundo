@@ -104,6 +104,27 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 - Mantém qualidade de experiência
 - Acessa banco de dados PostgreSQL corretamente
 
+### ✅ API do Gemini Configurada e Funcionando (02/10/2025)
+**Status**: GEMINI_API_KEY configurada e ativa ✅
+
+**Testes realizados**:
+- ✅ Inicialização: Gemini client criado com sucesso
+- ✅ Processamento: Todas as mensagens processadas pelo Gemini
+- ✅ Contexto: Conversação mantida corretamente
+- ✅ Integração: Banco de dados PostgreSQL acessado (18 horários disponíveis)
+- ✅ Fluxo completo: Agendamento funcionando do início ao fim
+
+**Logs de confirmação**:
+```
+[DEBUG] ✅ API PRIMÁRIA: GEMINI
+[DEBUG] 🤖 Usando GEMINI API para processar mensagem
+```
+
+**Arquitetura atual**:
+- 1ª opção: Gemini API (Google AI) - **ATIVA** ✅
+- 2ª opção: OpenAI API (GPT) - Fallback
+- 3ª opção: Rule-based system - Backup
+
 ## Configuração e Deploy
 
 ### Opções de Hospedagem
