@@ -13,12 +13,24 @@ def login():
     
     if request.method == 'POST':
         from models import User
+        import sys
+        
         email = request.form.get('email')
         password = request.form.get('password')
         
+        # Debug logging
+        print(f"[LOGIN] Tentativa de login: {email}", file=sys.stderr)
+        
         user = User.query.filter_by(email=email).first()
         
-        if user and user.check_password(password):
+        if not user:
+            print(f"[LOGIN] Usuário não encontrado: {email}", file=sys.stderr)
+            flash('Email ou senha inválidos.', 'error')
+        elif not user.ativo:
+            print(f"[LOGIN] Usuário inativo: {email}", file=sys.stderr)
+            flash('Usuário inativo. Contate o administrador.', 'error')
+        elif user.check_password(password):
+            print(f"[LOGIN] Login bem-sucedido: {email}", file=sys.stderr)
             remember_me = bool(request.form.get('remember'))
             login_user(user, remember=remember_me)
             next_page = request.args.get('next')
@@ -27,6 +39,7 @@ def login():
             # Redirecionar para chatbot após login
             return redirect(url_for('main.chatbot'))
         else:
+            print(f"[LOGIN] Senha incorreta para: {email}", file=sys.stderr)
             flash('Email ou senha inválidos.', 'error')
     
     return render_template('auth/login.html')

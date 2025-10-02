@@ -2,6 +2,20 @@
 
 Este guia mostra como fazer deploy da Clínica Dr. Raimundo Nunes no Railway com PostgreSQL.
 
+## ✅ NOVIDADE: Sistema de Migration Automático
+
+O projeto agora possui **migration automática** a cada deploy:
+- ✅ Cria/atualiza todas as tabelas do banco automaticamente
+- ✅ Garante que o usuário admin existe e está funcional
+- ✅ Reseta senha do admin se necessário (sempre será: admin123)
+- ✅ Roda automaticamente - não precisa executar migrations manualmente!
+
+**Benefícios:**
+- Deploy mais simples e rápido
+- Sem necessidade de rodar comandos manuais
+- Admin sempre disponível e funcional
+- Banco sempre atualizado
+
 ## 📋 Pré-requisitos
 
 - Conta no [Railway](https://railway.app) (gratuita)
