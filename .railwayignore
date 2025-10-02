@@ -1,0 +1,27 @@
+# Arquivos que não devem ser enviados para o Railway
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.env
+.venv
+venv/
+ENV/
+.git/
+.gitignore
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.sqlite
+*.db
+cookies.txt
+cookies_debug.txt
+debug_*.py
+test_*.py
+attached_assets/
+.replit
+replit.nix
+uv.lock

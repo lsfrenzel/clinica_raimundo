@@ -85,21 +85,36 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 
 ## Configuração e Deploy
 
-### Variáveis de Ambiente Requeridas
-- `DATABASE_URL`: Conexão PostgreSQL (configurado automaticamente no Replit)
-- `SESSION_SECRET`: Chave para sessões Flask (configurado automaticamente no Replit)
-- `GEMINI_API_KEY`: Chave da API Gemini (opcional - fallback rule-based ativo)
+### Opções de Hospedagem
 
-### Configuração Replit
+#### 🔷 Replit (Desenvolvimento)
 - **Workflow**: Flask App rodando em 0.0.0.0:5000
 - **Deploy**: Configurado para autoscale com Gunicorn
 - **Proxy**: ProxyFix configurado para ambiente Replit
 - **Database**: PostgreSQL integrado do Replit
 
+#### 🚂 Railway (Produção) - **Recomendado**
+- **Configuração**: Veja [RAILWAY.md](RAILWAY.md) para guia completo
+- **Database**: PostgreSQL gerenciado
+- **Deploy**: Automático via GitHub
+- **Domínio**: Gerado automaticamente (.up.railway.app)
+
+### Variáveis de Ambiente Requeridas
+- `DATABASE_URL`: Conexão PostgreSQL (configurado automaticamente)
+- `SESSION_SECRET`: Chave para sessões Flask
+- `GEMINI_API_KEY`: Chave da API Gemini (opcional - fallback rule-based ativo)
+- `PORT`: Porta do servidor (configurado automaticamente)
+
 ### Comandos de Execução
 ```bash
-uv run python main.py  # Desenvolvimento
-gunicorn --bind 0.0.0.0:5000 --reuse-port main:app  # Produção
+# Desenvolvimento Local/Replit
+uv run python main.py
+
+# Produção (Replit)
+gunicorn --bind 0.0.0.0:5000 --reuse-port main:app
+
+# Produção (Railway)
+gunicorn --bind 0.0.0.0:$PORT main:app
 ```
 
 ### Banco de Dados

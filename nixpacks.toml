@@ -1,0 +1,6 @@
+# Configuração Railway para Python/Flask
+[phases.setup]
+nixPkgs = ['python311']
+
+[start]
+cmd = "gunicorn --bind 0.0.0.0:$PORT main:app"
