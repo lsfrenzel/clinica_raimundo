@@ -31,13 +31,26 @@ class User(UserMixin, db.Model):
     def set_password(self, password):
         """Define a senha do usuário com hash bcrypt"""
         if password:
-            self.senha_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            # Garantir encoding correto
+            password_bytes = password.encode('utf-8') if isinstance(password, str) else password
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(password_bytes, salt)
+            self.senha_hash = hashed.decode('utf-8')
     
     def check_password(self, password):
         """Verifica se a senha está correta"""
         if not self.senha_hash:
             return False
-        return bcrypt.checkpw(password.encode('utf-8'), self.senha_hash.encode('utf-8'))
+        try:
+            # Garantir encoding correto
+            password_bytes = password.encode('utf-8') if isinstance(password, str) else password
+            hash_bytes = self.senha_hash.encode('utf-8') if isinstance(self.senha_hash, str) else self.senha_hash
+            return bcrypt.checkpw(password_bytes, hash_bytes)
+        except Exception as e:
+            # Log do erro para debugging
+            import sys
+            print(f"Erro ao verificar senha: {e}", file=sys.stderr)
+            return False
     
     def is_admin(self):
         return self.role == 'admin'
