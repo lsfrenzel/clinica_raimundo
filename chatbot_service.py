@@ -30,6 +30,20 @@ class ChatbotService:
         self.use_gemini = gemini_client is not None
         self.use_openai = openai_client is not None  # OpenAI disponível como fallback mesmo com Gemini ativo
         
+        # Log de configuração das APIs
+        print(f"[DEBUG] 🔧 Configuração do Chatbot:")
+        print(f"[DEBUG] - GEMINI_API_KEY presente: {'Sim ✅' if GEMINI_API_KEY else 'Não ❌'}")
+        print(f"[DEBUG] - Gemini Client configurado: {'Sim ✅' if self.use_gemini else 'Não ❌'}")
+        print(f"[DEBUG] - OPENAI_API_KEY presente: {'Sim ✅' if OPENAI_API_KEY else 'Não ❌'}")
+        print(f"[DEBUG] - OpenAI Client configurado: {'Sim ✅' if self.use_openai else 'Não ❌'}")
+        
+        if self.use_gemini:
+            print(f"[DEBUG] ✅ API PRIMÁRIA: GEMINI")
+        elif self.use_openai:
+            print(f"[DEBUG] ✅ API PRIMÁRIA: OPENAI")
+        else:
+            print(f"[DEBUG] ⚠️  API PRIMÁRIA: RULE-BASED (Nenhuma API configurada)")
+        
     def get_system_prompt(self):
         """Define o contexto e comportamento do chatbot"""
         return """Você é um assistente virtual inteligente da Clínica Dr. Raimundo Nunes, especializada em ginecologia e obstetrícia.
@@ -82,10 +96,13 @@ Responda sempre em formato JSON com esta estrutura:
         """Gera resposta do chatbot baseada na mensagem do usuário"""
         try:
             if self.use_gemini and self.gemini_client:
+                print(f"[DEBUG] 🤖 Usando GEMINI API para processar mensagem")
                 result = self._gemini_response(user_message, context)
             elif self.use_openai and self.openai_client:
+                print(f"[DEBUG] 🤖 Usando OPENAI API para processar mensagem")
                 result = self._openai_response(user_message, context)
             else:
+                print(f"[DEBUG] 🤖 Usando SISTEMA RULE-BASED para processar mensagem")
                 result = self._rule_based_response(user_message, context)
             
             # Sempre processar ações específicas, independente do engine usado
