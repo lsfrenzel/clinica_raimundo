@@ -5,9 +5,10 @@ Sistema completo de gestão para clínica médica especializada em ginecologia e
 
 ## Estado Atual do Projeto ✅
 - **Sistema Totalmente Funcional**: Chatbot, agendamentos, painel admin
-- **Database Populado**: 9 especialidades, 5 médicos, 434 slots de agendamento
+- **Database Populado**: 9 especialidades, 5 médicos, 448 slots de agendamento
 - **Chatbot IA**: Gemini API configurado com sistema rule-based como fallback
-- **Agendamentos**: Funcionando perfeitamente via chatbot (ID 12 criado com sucesso)
+- **Agendamentos**: Funcionando perfeitamente via chatbot
+- **Replit Environment**: Configurado e funcionando com PostgreSQL integrado
 
 ## Funcionalidades Principais
 
@@ -84,20 +85,28 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 
 ## Configuração e Deploy
 
-### Variáveis de Ambiente
-- `DATABASE_URL`: Conexão PostgreSQL
-- `GEMINI_API_KEY`: Chave da API Gemini
-- `SESSION_SECRET`: Chave para sessões Flask
+### Variáveis de Ambiente Requeridas
+- `DATABASE_URL`: Conexão PostgreSQL (configurado automaticamente no Replit)
+- `SESSION_SECRET`: Chave para sessões Flask (configurado automaticamente no Replit)
+- `GEMINI_API_KEY`: Chave da API Gemini (opcional - fallback rule-based ativo)
+
+### Configuração Replit
+- **Workflow**: Flask App rodando em 0.0.0.0:5000
+- **Deploy**: Configurado para autoscale com Gunicorn
+- **Proxy**: ProxyFix configurado para ambiente Replit
+- **Database**: PostgreSQL integrado do Replit
 
 ### Comandos de Execução
 ```bash
-uv run python main.py  # Iniciar servidor
+uv run python main.py  # Desenvolvimento
+gunicorn --bind 0.0.0.0:5000 --reuse-port main:app  # Produção
 ```
 
 ### Banco de Dados
-- Schema: SQLAlchemy models
-- População: Script `scripts/seed_data.py`
-- Conexão: PostgreSQL via DATABASE_URL
+- **Schema**: SQLAlchemy models (criados automaticamente)
+- **População**: Script `scripts/seed_data.py`
+- **Conexão**: PostgreSQL via DATABASE_URL do Replit
+- **Inicialização**: Execute `uv run python scripts/seed_data.py` para popular dados
 
 ## Próximas Melhorias Sugeridas
 1. **Notificações**: SMS/Email de confirmação
@@ -113,5 +122,10 @@ uv run python main.py  # Iniciar servidor
 - ✅ Sistema de fallback testado e aprovado
 - ✅ Fluxo completo de usuário validado
 
+## Credenciais de Acesso (Desenvolvimento)
+- **Admin**: admin@clinicadrraimundonunes.com.br / admin123
+- **Médicos**: [email do médico] / medico123
+- **Pacientes**: [email do paciente] / paciente123
+
 ---
-**Última atualização**: 27/09/2025 - Sistema totalmente funcional com chatbot IA + fallback robusto
+**Última atualização**: 02/10/2025 - Sistema integrado ao Replit com PostgreSQL e deploy configurado
