@@ -17,6 +17,139 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@bp.route('/init-database')
+def init_database():
+    """Rota especial para inicializar o banco de dados - USE APENAS UMA VEZ"""
+    from models import User, Especialidade, Medico, Agenda
+    from datetime import time
+    
+    try:
+        # Criar tabelas
+        db.create_all()
+        
+        # Verificar se já existe admin
+        admin = User.query.filter_by(email='admin@clinicadrraimundonunes.com.br').first()
+        if admin:
+            return jsonify({
+                'status': 'already_exists',
+                'message': 'Banco já foi inicializado! Admin já existe.',
+                'admin_email': 'admin@clinicadrraimundonunes.com.br',
+                'admin_password': 'admin123'
+            })
+        
+        # Criar especialidades
+        especialidades_data = [
+            {'nome': 'DIU e Implanon', 'descricao': 'Inserção e acompanhamento de DIU hormonal e implantes contraceptivos.', 'duracao_padrao': 45},
+            {'nome': 'Pré-Natal de Alto Risco', 'descricao': 'Acompanhamento especializado de gestações de alto risco.', 'duracao_padrao': 60},
+            {'nome': 'Hipertensão e Diabetes Gestacional', 'descricao': 'Tratamento de complicações metabólicas na gestação.', 'duracao_padrao': 45},
+            {'nome': 'Mastologia', 'descricao': 'Prevenção, diagnóstico e tratamento de doenças da mama.', 'duracao_padrao': 30},
+            {'nome': 'Uroginecologia', 'descricao': 'Tratamento de incontinência urinária e prolapsos genitais.', 'duracao_padrao': 45},
+            {'nome': 'Climatério e Menopausa', 'descricao': 'Acompanhamento e tratamento de sintomas do climatério.', 'duracao_padrao': 30},
+            {'nome': 'PTGI', 'descricao': 'Programa de Tratamento de Gestações Indesejadas.', 'duracao_padrao': 60},
+            {'nome': 'Sexualidade', 'descricao': 'Orientação e tratamento de disfunções sexuais femininas.', 'duracao_padrao': 45},
+            {'nome': 'Reprodução Humana', 'descricao': 'Investigação e tratamento de infertilidade conjugal.', 'duracao_padrao': 60}
+        ]
+        
+        especialidades = []
+        for esp_data in especialidades_data:
+            esp = Especialidade(**esp_data)
+            esp.ativo = True
+            db.session.add(esp)
+            especialidades.append(esp)
+        db.session.commit()
+        
+        # Criar admin
+        admin = User()
+        admin.nome = "Administrador"
+        admin.email = "admin@clinicadrraimundonunes.com.br"
+        admin.telefone = "(11) 99999-9999"
+        admin.role = "admin"
+        admin.ativo = True
+        admin.set_password("admin123")
+        db.session.add(admin)
+        db.session.commit()
+        
+        # Criar médicos
+        medicos_data = [
+            {'nome': 'Dr. Raimundo Nunes', 'crm': 'CRM/SP 123456', 'email': 'raimundo.nunes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99001-1234', 'especialidades': ['Pré-Natal de Alto Risco']},
+            {'nome': 'Dra. Ana Silva', 'crm': 'CRM/SP 234567', 'email': 'ana.silva@clinicadrraimundonunes.com.br', 'telefone': '(11) 99002-1234', 'especialidades': ['Mastologia']},
+            {'nome': 'Dr. Carlos Oliveira', 'crm': 'CRM/SP 345678', 'email': 'carlos.oliveira@clinicadrraimundonunes.com.br', 'telefone': '(11) 99003-1234', 'especialidades': ['Reprodução Humana']},
+            {'nome': 'Dra. Maria Santos', 'crm': 'CRM/SP 456789', 'email': 'maria.santos@clinicadrraimundonunes.com.br', 'telefone': '(11) 99004-1234', 'especialidades': ['Uroginecologia']},
+            {'nome': 'Dr. Ricardo Mendes', 'crm': 'CRM/SP 567890', 'email': 'ricardo.mendes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99005-1234', 'especialidades': ['Climatério e Menopausa']}
+        ]
+        
+        medicos = []
+        for med_data in medicos_data:
+            user = User()
+            user.nome = med_data['nome']
+            user.email = med_data['email']
+            user.telefone = med_data['telefone']
+            user.role = "medico"
+            user.ativo = True
+            user.set_password("medico123")
+            db.session.add(user)
+            db.session.commit()
+            
+            medico = Medico()
+            medico.user_id = user.id
+            medico.crm = med_data['crm']
+            medico.bio = f"Especialista em {med_data['especialidades'][0]} com mais de 10 anos de experiência."
+            medico.ativo = True
+            db.session.add(medico)
+            db.session.flush()
+            
+            for esp_nome in med_data['especialidades']:
+                especialidade = next((e for e in especialidades if e.nome == esp_nome), None)
+                if especialidade:
+                    medico.especialidades.append(especialidade)
+            
+            medicos.append(medico)
+        db.session.commit()
+        
+        # Criar agenda (próximos 30 dias)
+        hoje = datetime.now().date()
+        agenda_count = 0
+        for medico in medicos:
+            for dia_offset in range(30):
+                data = hoje + timedelta(days=dia_offset)
+                if data.weekday() >= 5:
+                    continue
+                for hora in range(8, 17):
+                    agenda = Agenda()
+                    agenda.medico_id = medico.id
+                    agenda.data = data
+                    agenda.hora_inicio = time(hora, 0)
+                    agenda.hora_fim = time(hora + 1, 0)
+                    agenda.duracao_minutos = 60
+                    agenda.tipo = 'presencial'
+                    agenda.ativo = True
+                    db.session.add(agenda)
+                    agenda_count += 1
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Banco de dados inicializado com sucesso!',
+            'dados_criados': {
+                'especialidades': len(especialidades),
+                'medicos': len(medicos),
+                'agenda_slots': agenda_count
+            },
+            'credenciais': {
+                'admin_email': 'admin@clinicadrraimundonunes.com.br',
+                'admin_password': 'admin123',
+                'medicos_password': 'medico123'
+            },
+            'proximo_passo': 'Acesse /auth/login e faça login com as credenciais do admin'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'status': 'error',
+            'message': f'Erro ao inicializar banco: {str(e)}'
+        }), 500
+
 @bp.route('/')
 @login_required
 @admin_required
