@@ -79,12 +79,40 @@ def run_migrations():
                     db.session.rollback()
                     print(f"   ❌ Erro ao ativar admin: {e}")
         
-        # 3. Resumo
+        # 3. Criar especialidades básicas (se não existirem)
+        print("\n📝 Verificando especialidades...")
+        from models import Especialidade, Medico, Agenda
+        from datetime import timedelta, time
+        
+        especialidades_basicas = [
+            {'nome': 'DIU e Implanon', 'duracao_padrao': 45},
+            {'nome': 'Pré-Natal de Alto Risco', 'duracao_padrao': 60},
+            {'nome': 'Mastologia', 'duracao_padrao': 30},
+            {'nome': 'Uroginecologia', 'duracao_padrao': 45},
+            {'nome': 'Climatério e Menopausa', 'duracao_padrao': 30},
+        ]
+        
+        for esp_data in especialidades_basicas:
+            esp = Especialidade.query.filter_by(nome=esp_data['nome']).first()
+            if not esp:
+                esp = Especialidade(**esp_data)
+                db.session.add(esp)
+                print(f"   ✅ Criada: {esp_data['nome']}")
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"   ⚠️  Erro ao criar especialidades: {e}")
+        
+        # 4. Resumo
         print("\n📊 RESUMO:")
         total_users = User.query.count()
         total_admins = User.query.filter_by(role='admin').count()
+        total_especialidades = Especialidade.query.count()
         print(f"   Total de usuários: {total_users}")
         print(f"   Administradores: {total_admins}")
+        print(f"   Especialidades: {total_especialidades}")
         
         print("\n✨ Migration completa!")
         print("=" * 60)
