@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script de migration automático para Railway/Produção
-Inicializa, cria e aplica migrations + garante que admin existe
+Cria TODAS as tabelas e popula com dados iniciais
 """
 
 import sys
@@ -10,14 +10,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from main import create_app
 from extensions import db
-from models import User
+from models import User, Especialidade, Medico, Agenda, Agendamento
+from datetime import datetime, timedelta, time
 
 def run_migrations():
-    """Executa migrations automaticamente"""
+    """Executa migrations e popula dados automaticamente"""
     
     app = create_app()
     
-    print("🚀 SISTEMA DE MIGRATION AUTOMÁTICO")
+    print("🚀 SISTEMA DE MIGRATION AUTOMÁTICO - RAILWAY")
     print("=" * 60)
     
     with app.app_context():
@@ -30,89 +31,158 @@ def run_migrations():
             print(f"❌ Erro ao criar tabelas: {e}")
             return False
         
-        # 2. Verificar/criar usuário admin
-        print("\n🔑 Verificando usuário administrador...")
-        admin = User.query.filter_by(email='admin@clinicadrraimundonunes.com.br').first()
-        
-        if not admin:
-            print("   Criando usuário admin...")
-            admin = User()
-            admin.nome = "Administrador"
-            admin.email = "admin@clinicadrraimundonunes.com.br"
-            admin.telefone = "(11) 99999-9999"
-            admin.role = "admin"
-            admin.ativo = True
-            admin.set_password("admin123")
+        # 2. Verificar se já tem dados
+        total_users = User.query.count()
+        if total_users > 0:
+            print(f"\n✅ Banco já populado ({total_users} usuários)")
             
-            try:
+            # Garantir que admin existe e está OK
+            admin = User.query.filter_by(email='admin@clinicadrraimundonunes.com.br').first()
+            if admin:
+                print(f"✅ Admin existe: {admin.email}")
+                if not admin.check_password("admin123"):
+                    admin.set_password("admin123")
+                    admin.ativo = True
+                    db.session.commit()
+                    print("   ✅ Senha resetada!")
+            else:
+                print("⚠️  Admin não encontrado, criando...")
+                admin = User()
+                admin.nome = "Administrador"
+                admin.email = "admin@clinicadrraimundonunes.com.br"
+                admin.telefone = "(11) 99999-9999"
+                admin.role = "admin"
+                admin.ativo = True
+                admin.set_password("admin123")
                 db.session.add(admin)
                 db.session.commit()
-                print("✅ Admin criado com sucesso!")
-                print(f"   Email: {admin.email}")
-                print(f"   Senha: admin123")
-            except Exception as e:
-                db.session.rollback()
-                print(f"❌ Erro ao criar admin: {e}")
-                return False
-        else:
-            print(f"✅ Admin já existe: {admin.email}")
+                print("✅ Admin criado!")
             
-            # Garantir que a senha está funcionando
-            if not admin.check_password("admin123"):
-                print("   ⚠️  Resetando senha do admin...")
-                admin.set_password("admin123")
-                try:
-                    db.session.commit()
-                    print("   ✅ Senha resetada com sucesso!")
-                except Exception as e:
-                    db.session.rollback()
-                    print(f"   ❌ Erro ao resetar senha: {e}")
-            
-            # Garantir que admin está ativo
-            if not admin.ativo:
-                print("   ⚠️  Ativando admin...")
-                admin.ativo = True
-                try:
-                    db.session.commit()
-                    print("   ✅ Admin ativado!")
-                except Exception as e:
-                    db.session.rollback()
-                    print(f"   ❌ Erro ao ativar admin: {e}")
+            print("\n✨ Migration completa!")
+            print("=" * 60)
+            return True
         
-        # 3. Criar especialidades básicas (se não existirem)
-        print("\n📝 Verificando especialidades...")
-        from models import Especialidade, Medico, Agenda
-        from datetime import timedelta, time
+        print("\n📝 Banco vazio - Populando com dados iniciais...")
         
-        especialidades_basicas = [
-            {'nome': 'DIU e Implanon', 'duracao_padrao': 45},
-            {'nome': 'Pré-Natal de Alto Risco', 'duracao_padrao': 60},
-            {'nome': 'Mastologia', 'duracao_padrao': 30},
-            {'nome': 'Uroginecologia', 'duracao_padrao': 45},
-            {'nome': 'Climatério e Menopausa', 'duracao_padrao': 30},
+        # 3. Criar especialidades
+        print("\n📋 Criando especialidades...")
+        especialidades_data = [
+            {'nome': 'DIU e Implanon', 'descricao': 'Inserção e acompanhamento de DIU hormonal e implantes contraceptivos.', 'duracao_padrao': 45},
+            {'nome': 'Pré-Natal de Alto Risco', 'descricao': 'Acompanhamento especializado de gestações de alto risco.', 'duracao_padrao': 60},
+            {'nome': 'Hipertensão e Diabetes Gestacional', 'descricao': 'Tratamento de complicações metabólicas na gestação.', 'duracao_padrao': 45},
+            {'nome': 'Mastologia', 'descricao': 'Prevenção, diagnóstico e tratamento de doenças da mama.', 'duracao_padrao': 30},
+            {'nome': 'Uroginecologia', 'descricao': 'Tratamento de incontinência urinária e prolapsos genitais.', 'duracao_padrao': 45},
+            {'nome': 'Climatério e Menopausa', 'descricao': 'Acompanhamento e tratamento de sintomas do climatério.', 'duracao_padrao': 30},
+            {'nome': 'PTGI', 'descricao': 'Programa de Tratamento de Gestações Indesejadas.', 'duracao_padrao': 60},
+            {'nome': 'Sexualidade', 'descricao': 'Orientação e tratamento de disfunções sexuais femininas.', 'duracao_padrao': 45},
+            {'nome': 'Reprodução Humana', 'descricao': 'Investigação e tratamento de infertilidade conjugal.', 'duracao_padrao': 60}
         ]
         
-        for esp_data in especialidades_basicas:
-            esp = Especialidade.query.filter_by(nome=esp_data['nome']).first()
-            if not esp:
-                esp = Especialidade(**esp_data)
-                db.session.add(esp)
-                print(f"   ✅ Criada: {esp_data['nome']}")
+        especialidades = []
+        for esp_data in especialidades_data:
+            esp = Especialidade(**esp_data)
+            db.session.add(esp)
+            especialidades.append(esp)
+        db.session.commit()
+        print(f"✅ {len(especialidades)} especialidades criadas")
         
-        try:
+        # 4. Criar admin
+        print("\n👤 Criando administrador...")
+        admin = User()
+        admin.nome = "Administrador"
+        admin.email = "admin@clinicadrraimundonunes.com.br"
+        admin.telefone = "(11) 99999-9999"
+        admin.role = "admin"
+        admin.ativo = True
+        admin.set_password("admin123")
+        db.session.add(admin)
+        db.session.commit()
+        print(f"✅ Admin criado - Email: {admin.email} | Senha: admin123")
+        
+        # 5. Criar médicos
+        print("\n👨‍⚕️ Criando médicos...")
+        medicos_data = [
+            {'nome': 'Dr. Raimundo Nunes', 'crm': 'CRM/SP 123456', 'email': 'raimundo.nunes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99001-1234', 'especialidades': ['Pré-Natal de Alto Risco'], 'bio': 'Mais de 30 anos de experiência em obstetrícia e gestações de alto risco.'},
+            {'nome': 'Dra. Ana Silva', 'crm': 'CRM/SP 234567', 'email': 'ana.silva@clinicadrraimundonunes.com.br', 'telefone': '(11) 99002-1234', 'especialidades': ['Mastologia'], 'bio': 'Especialista em prevenção e tratamento de doenças da mama.'},
+            {'nome': 'Dr. Carlos Oliveira', 'crm': 'CRM/SP 345678', 'email': 'carlos.oliveira@clinicadrraimundonunes.com.br', 'telefone': '(11) 99003-1234', 'especialidades': ['Reprodução Humana'], 'bio': 'Especialista em reprodução assistida e infertilidade.'},
+            {'nome': 'Dra. Maria Santos', 'crm': 'CRM/SP 456789', 'email': 'maria.santos@clinicadrraimundonunes.com.br', 'telefone': '(11) 99004-1234', 'especialidades': ['Uroginecologia'], 'bio': 'Tratamento de incontinência urinária e disfunções do assoalho pélvico.'},
+            {'nome': 'Dr. Ricardo Mendes', 'crm': 'CRM/SP 567890', 'email': 'ricardo.mendes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99005-1234', 'especialidades': ['Climatério e Menopausa'], 'bio': 'Acompanhamento da saúde da mulher no climatério e menopausa.'}
+        ]
+        
+        medicos = []
+        for med_data in medicos_data:
+            # Criar usuário médico
+            user = User()
+            user.nome = med_data['nome']
+            user.email = med_data['email']
+            user.telefone = med_data['telefone']
+            user.role = "medico"
+            user.ativo = True
+            user.set_password("medico123")
+            db.session.add(user)
             db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"   ⚠️  Erro ao criar especialidades: {e}")
+            
+            # Criar médico
+            medico = Medico()
+            medico.user_id = user.id
+            medico.crm = med_data['crm']
+            medico.bio = med_data['bio']
+            medico.ativo = True
+            db.session.add(medico)
+            db.session.flush()
+            
+            # Associar especialidades
+            for esp_nome in med_data['especialidades']:
+                especialidade = next((e for e in especialidades if e.nome == esp_nome), None)
+                if especialidade:
+                    medico.especialidades.append(especialidade)
+            
+            medicos.append(medico)
         
-        # 4. Resumo
-        print("\n📊 RESUMO:")
-        total_users = User.query.count()
-        total_admins = User.query.filter_by(role='admin').count()
-        total_especialidades = Especialidade.query.count()
-        print(f"   Total de usuários: {total_users}")
-        print(f"   Administradores: {total_admins}")
-        print(f"   Especialidades: {total_especialidades}")
+        db.session.commit()
+        print(f"✅ {len(medicos)} médicos criados - Senha padrão: medico123")
+        
+        # 6. Criar agenda (próximos 30 dias)
+        print("\n📅 Criando agenda dos médicos...")
+        hoje = datetime.now().date()
+        agenda_count = 0
+        
+        for medico in medicos:
+            for dia_offset in range(30):
+                data = hoje + timedelta(days=dia_offset)
+                # Pular fins de semana
+                if data.weekday() >= 5:
+                    continue
+                
+                # Criar slots de 1 hora das 8h às 17h
+                for hora in range(8, 17):
+                    agenda = Agenda()
+                    agenda.medico_id = medico.id
+                    agenda.data = data
+                    agenda.hora_inicio = time(hora, 0)
+                    agenda.hora_fim = time(hora + 1, 0)
+                    agenda.duracao_minutos = 60
+                    agenda.tipo = 'presencial'
+                    agenda.ativo = True
+                    db.session.add(agenda)
+                    agenda_count += 1
+        
+        db.session.commit()
+        print(f"✅ {agenda_count} slots de agenda criados")
+        
+        # 7. Resumo final
+        print("\n" + "=" * 60)
+        print("✅ BANCO POPULADO COM SUCESSO!")
+        print("=" * 60)
+        print(f"\n📊 DADOS CRIADOS:")
+        print(f"   • Especialidades: {Especialidade.query.count()}")
+        print(f"   • Médicos: {Medico.query.count()}")
+        print(f"   • Agenda: {Agenda.query.count()} slots")
+        print(f"   • Admin: 1")
+        
+        print(f"\n🔑 CREDENCIAIS DE LOGIN:")
+        print(f"   Email: admin@clinicadrraimundonunes.com.br")
+        print(f"   Senha: admin123")
         
         print("\n✨ Migration completa!")
         print("=" * 60)
