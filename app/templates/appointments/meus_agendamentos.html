@@ -20,7 +20,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {% if agendamentos %}
             <!-- Próximas Consultas -->
-            {% set proximos = agendamentos | selectattr('inicio', 'greaterthan', moment.utcnow()) | list %}
+            {% set proximos = agendamentos | selectattr('inicio', 'greaterthan', agora) | list %}
             {% if proximos %}
             <div class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Próximas Consultas</h2>
@@ -30,9 +30,9 @@
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900">
-                                    {{ agendamento.medico.usuario.nome }}
+                                    {{ agendamento.medico.usuario.nome if agendamento.medico and agendamento.medico.usuario else 'Médico não disponível' }}
                                 </h3>
-                                <p class="text-clinic-primary">{{ agendamento.especialidade.nome }}</p>
+                                <p class="text-clinic-primary">{{ agendamento.especialidade.nome if agendamento.especialidade else 'Especialidade não disponível' }}</p>
                             </div>
                             <span class="inline-block bg-green-100 text-green-800 text-sm px-2 py-1 rounded-full">
                                 {{ agendamento.status.title() }}
@@ -84,7 +84,7 @@
             {% endif %}
             
             <!-- Histórico -->
-            {% set historico = agendamentos | rejectattr('inicio', 'greaterthan', moment.utcnow()) | list %}
+            {% set historico = agendamentos | rejectattr('inicio', 'greaterthan', agora) | list %}
             {% if historico %}
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Histórico de Consultas</h2>
@@ -117,10 +117,10 @@
                                         {{ agendamento.inicio.strftime('%d/%m/%Y às %H:%M') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ agendamento.medico.usuario.nome }}
+                                        {{ agendamento.medico.usuario.nome if agendamento.medico and agendamento.medico.usuario else 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ agendamento.especialidade.nome }}
+                                        {{ agendamento.especialidade.nome if agendamento.especialidade else 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         {% if agendamento.status == 'realizado' %}

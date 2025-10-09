@@ -128,15 +128,24 @@ def meus_agendamentos():
     if not current_user.is_authenticated:
         return redirect(url_for('auth.login'))
     
-    from models import Agendamento
+    from models import Agendamento, Medico, User, Especialidade
     from sqlalchemy import or_
+    from sqlalchemy.orm import joinedload
     
-    # Buscar agendamentos tanto com paciente_id quanto com email de convidado
-    agendamentos = Agendamento.query.filter(
+    # Buscar agendamentos com relacionamentos carregados (eager loading)
+    agendamentos = Agendamento.query.options(
+        joinedload(Agendamento.medico).joinedload(Medico.usuario),
+        joinedload(Agendamento.especialidade)
+    ).filter(
         or_(
             Agendamento.paciente_id == current_user.id,
             Agendamento.email_convidado == current_user.email
         )
     ).order_by(Agendamento.inicio.desc()).all()
     
-    return render_template('appointments/meus_agendamentos.html', agendamentos=agendamentos)
+    # Passar datetime atual para o template
+    agora = datetime.utcnow()
+    
+    return render_template('appointments/meus_agendamentos.html', 
+                         agendamentos=agendamentos,
+                         agora=agora)
