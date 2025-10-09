@@ -77,13 +77,6 @@ def create_app():
     from app.blueprints.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
     
-    # TEMPORÁRIO: Endpoint de setup - DELETE APÓS USAR!
-    try:
-        from setup_route import setup_bp
-        app.register_blueprint(setup_bp)
-    except ImportError:
-        pass  # Arquivo já foi deletado (segurança)
-    
     with app.app_context():
         # Import all models to register them
         import models  # noqa: F401

@@ -2,19 +2,28 @@
 
 Este guia mostra como fazer deploy da Clínica Dr. Raimundo Nunes no Railway com PostgreSQL.
 
-## ✅ NOVIDADE: Sistema de Migration Automático
+## ✅ Sistema de Migração Automática Configurado
 
-O projeto agora possui **migration automática** a cada deploy:
+O projeto possui **migração automática** que roda a cada deploy:
 - ✅ Cria/atualiza todas as tabelas do banco automaticamente
-- ✅ Garante que o usuário admin existe e está funcional
+- ✅ Garante que o usuário admin existe e está funcional  
 - ✅ Reseta senha do admin se necessário (sempre será: admin123)
-- ✅ Roda automaticamente - não precisa executar migrations manualmente!
+- ✅ Roda automaticamente antes do gunicorn iniciar
 
-**Benefícios:**
-- Deploy mais simples e rápido
-- Sem necessidade de rodar comandos manuais
-- Admin sempre disponível e funcional
-- Banco sempre atualizado
+**Como funciona:**
+```toml
+# nixpacks.toml
+[start]
+cmd = "python scripts/auto_migrate.py && gunicorn --bind 0.0.0.0:$PORT main:app"
+```
+
+**Vantagens:**
+- ✅ Deploy simples - apenas push para GitHub
+- ✅ Sem comandos manuais
+- ✅ Admin sempre disponível: `admin@clinicadrraimundonunes.com.br` / `admin123`
+- ✅ Banco sempre atualizado
+
+**Ver detalhes em:** `MIGRATION_AUTOMATICA.md`
 
 ## 📋 Pré-requisitos
 
@@ -74,30 +83,27 @@ python -c "import secrets; print(secrets.token_hex(32))"
 - `DATABASE_URL` - Conexão com PostgreSQL
 - `PORT` - Porta do servidor
 
-### 6. Executar Migrações (Primeira vez)
+### 6. Verificar Migração Automática
 
-Após o deploy, você precisa popular o banco de dados:
+A migração roda automaticamente! Verifique nos logs:
 
-**Opção A - Via Railway CLI:**
-```bash
-# Instalar Railway CLI
-npm i -g @railway/cli
-
-# Login
-railway login
-
-# Conectar ao projeto
-railway link
-
-# Executar seed
-railway run python scripts/seed_data.py
+1. No Railway dashboard → Deployments → View Logs
+2. Procure por:
+```
+🚀 SISTEMA DE MIGRATION AUTOMÁTICO
+✅ Tabelas criadas/atualizadas com sucesso!
+✅ Admin criado com sucesso!
 ```
 
-**Opção B - Conectar localmente ao Railway DB:**
+3. Faça login:
+   - URL: `https://seu-app.railway.app/auth/login`
+   - Email: `admin@clinicadrraimundonunes.com.br`
+   - Senha: `admin123`
+
+**Opcional - Popular com dados de exemplo:**
 ```bash
-# Copiar DATABASE_URL do Railway dashboard
-export DATABASE_URL="postgresql://..."
-python scripts/seed_data.py
+# Via Railway CLI
+railway run python scripts/seed_data.py
 ```
 
 ### 7. Gerar Domínio Público
