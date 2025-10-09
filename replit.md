@@ -136,10 +136,12 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 - **Database**: PostgreSQL integrado do Replit
 
 #### 🚂 Railway (Produção) - **Recomendado**
-- **Configuração**: Veja [RAILWAY.md](RAILWAY.md) para guia completo
+- **Configuração**: Veja [README_RAILWAY.md](README_RAILWAY.md) para guia completo
 - **Database**: PostgreSQL gerenciado
 - **Deploy**: Automático via GitHub
 - **Domínio**: Gerado automaticamente (.up.railway.app)
+- **População Automática**: O banco é populado automaticamente no primeiro deploy via `scripts/auto_migrate.py`
+- **Script Manual**: Se necessário, execute `railway run python popular_railway.py`
 
 ### Variáveis de Ambiente Requeridas
 - `DATABASE_URL`: Conexão PostgreSQL (configurado automaticamente)
@@ -160,10 +162,18 @@ gunicorn --bind 0.0.0.0:$PORT main:app
 ```
 
 ### Banco de Dados
+
+#### Desenvolvimento (Replit)
 - **Schema**: SQLAlchemy models (criados automaticamente)
 - **População**: Script `scripts/seed_data.py`
 - **Conexão**: PostgreSQL via DATABASE_URL do Replit
-- **Inicialização**: Execute `uv run python scripts/seed_data.py` para popular dados
+- **Inicialização**: Execute `python scripts/seed_data.py` para popular dados
+
+#### Produção (Railway)
+- **População Automática**: O script `scripts/auto_migrate.py` roda automaticamente no deploy
+- **Arquivo de Configuração**: `nixpacks.toml` define o comando de inicialização
+- **População Manual**: Se necessário, execute `railway run python popular_railway.py`
+- **Documentação**: Veja [README_RAILWAY.md](README_RAILWAY.md) e [COMO_POPULAR_BANCO_RAILWAY.md](COMO_POPULAR_BANCO_RAILWAY.md)
 
 ## Próximas Melhorias Sugeridas
 1. **Notificações**: SMS/Email de confirmação
