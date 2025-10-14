@@ -44,27 +44,58 @@
 <!-- Horários Disponíveis -->
 <section class="py-12 bg-gray-50">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Filtro de Data -->
+        <div class="mb-8">
+            <div class="bg-white rounded-2xl shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Pesquisar Horários por Data</h3>
+                <form method="GET" class="flex flex-col sm:flex-row gap-4 items-center">
+                    <div class="flex-1 w-full">
+                        <label for="data" class="block text-sm font-medium text-gray-700 mb-2">Selecione a Data</label>
+                        <input type="date" 
+                               id="data" 
+                               name="data" 
+                               value="{{ data_selecionada.strftime('%Y-%m-%d') if data_selecionada else '' }}"
+                               min="{{ datetime.now().strftime('%Y-%m-%d') }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent">
+                    </div>
+                    <div class="w-full sm:w-auto">
+                        <label class="block text-sm font-medium text-gray-700 mb-2 sm:invisible">Buscar</label>
+                        <button type="submit" class="w-full sm:w-auto btn-teal px-6 py-2">
+                            🔍 Buscar Horários
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         {% if horarios_disponiveis %}
             <div class="mb-8 text-center">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">Próximos Horários Disponíveis</h3>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                    Horários Disponíveis - {{ data_selecionada.strftime('%d/%m/%Y') }}
+                </h3>
                 <p class="text-gray-600">Clique no horário desejado para agendar sua consulta</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {% for horario in horarios_disponiveis %}
-                <a href="{{ url_for('appointments.confirmar', medico_id=medico.id, data_hora=horario.data.isoformat() + 'T' + horario.hora.strftime('%H:%M')) }}" 
-                   class="bg-white p-4 rounded-lg border border-gray-200 hover:border-clinic-primary hover:shadow-md transition-all duration-200 text-center">
-                    <div class="text-lg font-semibold text-gray-900 mb-1">
-                        {{ horario.data.strftime('%d/%m/%Y') }}
+                <a href="{{ url_for('appointments.confirmar', medico_id=medico.id, data_hora=horario.data_hora_completa) }}" 
+                   class="bg-white p-6 rounded-xl border-2 border-gray-200 hover:border-teal hover:shadow-lg transition-all duration-200 text-center group">
+                    <div class="text-sm text-teal font-semibold mb-2">
+                        {{ horario.data.strftime('%A').upper() }}
                     </div>
-                    <div class="text-clinic-primary font-medium mb-2">
+                    <div class="text-2xl font-bold text-dark-gray mb-1">
                         {{ horario.hora.strftime('%H:%M') }}
                     </div>
                     <div class="text-sm text-gray-500">
-                        {{ horario.data.strftime('%A').title() }}
+                        {{ horario.data.strftime('%d/%m/%Y') }}
                     </div>
-                    <div class="text-xs text-gray-400 mt-1">
-                        {{ horario.duracao or 30 }} minutos
+                    <div class="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
+                        ⏱️ {{ horario.duracao or 30 }} minutos
+                    </div>
+                    <div class="mt-3 text-teal opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
                     </div>
                 </a>
                 {% endfor %}
@@ -77,7 +108,14 @@
                     </svg>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-4">Nenhum horário disponível</h3>
-                <p class="text-gray-600 mb-6">No momento não há horários disponíveis para este médico.</p>
+                <p class="text-gray-600 mb-6">
+                    {% if data_selecionada %}
+                        Não há horários disponíveis para {{ data_selecionada.strftime('%d/%m/%Y') }}.
+                    {% else %}
+                        No momento não há horários disponíveis para este médico.
+                    {% endif %}
+                </p>
+                <p class="text-gray-500 mb-6">Tente selecionar outra data ou escolha outro médico.</p>
                 <div class="space-y-3">
                     <p class="text-sm text-gray-500">Você pode:</p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">

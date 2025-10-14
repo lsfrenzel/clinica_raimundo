@@ -36,22 +36,60 @@ def medicos_por_especialidade(especialidade_id):
 @bp.route('/horarios/<int:medico_id>')
 def horarios_medico(medico_id):
     """Passo 3: Escolher horário específico do médico"""
-    from models import Medico
+    from models import Medico, Agenda, Agendamento
     medico = Medico.query.get_or_404(medico_id)
     data_param = request.args.get('data')
     
+    # Definir a data de busca
     if data_param:
         try:
-            data_inicio = datetime.strptime(data_param, '%Y-%m-%d')
+            data_selecionada = datetime.strptime(data_param, '%Y-%m-%d').date()
         except ValueError:
-            data_inicio = datetime.now()
+            data_selecionada = datetime.now().date()
     else:
-        data_inicio = datetime.now()
+        data_selecionada = datetime.now().date()
     
-    horarios = medico.get_proximos_horarios_livres(data_inicio, limite=20)
+    # Buscar horários disponíveis do dia específico
+    horarios_disponiveis = []
+    
+    # Buscar todas as agendas do médico para o dia selecionado
+    agendas_dia = Agenda.query.filter(
+        Agenda.medico_id == medico.id,
+        Agenda.data == data_selecionada,
+        Agenda.ativo == True
+    ).order_by(Agenda.hora_inicio).all()
+    
+    # Buscar agendamentos já existentes para este dia
+    agendamentos_existentes = set()
+    agendamentos = Agendamento.query.filter(
+        Agendamento.medico_id == medico.id,
+        db.func.date(Agendamento.inicio) == data_selecionada,
+        Agendamento.status.in_(['agendado', 'confirmado'])
+    ).all()
+    
+    for agendamento in agendamentos:
+        agendamentos_existentes.add(agendamento.inicio.time())
+    
+    # Filtrar apenas horários livres
+    for agenda in agendas_dia:
+        if agenda.hora_inicio not in agendamentos_existentes:
+            # Combinar data e hora para criar datetime completo
+            data_hora = datetime.combine(data_selecionada, agenda.hora_inicio)
+            
+            # Só mostrar horários futuros
+            if data_hora > datetime.now():
+                horarios_disponiveis.append({
+                    'data': data_selecionada,
+                    'hora': agenda.hora_inicio,
+                    'duracao': agenda.duracao_minutos,
+                    'data_hora_completa': data_hora.isoformat()
+                })
     
     return render_template('appointments/horarios.html', 
-                         medico=medico, horarios=horarios)
+                         medico=medico, 
+                         horarios_disponiveis=horarios_disponiveis,
+                         data_selecionada=data_selecionada,
+                         datetime=datetime)
 
 @bp.route('/confirmar', methods=['GET', 'POST'])
 @login_required
