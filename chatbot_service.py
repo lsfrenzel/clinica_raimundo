@@ -453,7 +453,8 @@ Responda sempre em formato JSON com esta estrutura:
                 agendamento.telefone_convidado = booking_data.get('telefone', '')
             
             db.session.add(agendamento)
-            db.session.commit()
+            db.session.flush()  # Garantir que o ID seja gerado
+            db.session.commit()  # Persistir no banco de dados
             
             return {
                 'success': True,
