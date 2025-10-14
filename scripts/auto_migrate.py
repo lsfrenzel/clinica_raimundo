@@ -31,33 +31,33 @@ def run_migrations():
             print(f"❌ Erro ao criar tabelas: {e}")
             return False
         
-        # 2. Verificar se já tem dados
-        total_users = User.query.count()
-        if total_users > 0:
-            print(f"\n✅ Banco já populado ({total_users} usuários)")
-            
-            # Garantir que admin existe e está OK
-            admin = User.query.filter_by(email='admin@clinicadrraimundonunes.com.br').first()
-            if admin:
-                print(f"✅ Admin existe: {admin.email}")
-                if not admin.check_password("admin123"):
-                    admin.set_password("admin123")
-                    admin.ativo = True
-                    db.session.commit()
-                    print("   ✅ Senha resetada!")
-            else:
-                print("⚠️  Admin não encontrado, criando...")
-                admin = User()
-                admin.nome = "Administrador"
-                admin.email = "admin@clinicadrraimundonunes.com.br"
-                admin.telefone = "(11) 99999-9999"
-                admin.role = "admin"
-                admin.ativo = True
+        # 2. Garantir que admin existe
+        admin = User.query.filter_by(email='admin@clinicadrraimundonunes.com.br').first()
+        if admin:
+            print(f"✅ Admin existe: {admin.email}")
+            if not admin.check_password("admin123"):
                 admin.set_password("admin123")
-                db.session.add(admin)
+                admin.ativo = True
                 db.session.commit()
-                print("✅ Admin criado!")
-            
+                print("   ✅ Senha resetada!")
+        else:
+            print("⚠️  Admin não encontrado, criando...")
+            admin = User()
+            admin.nome = "Administrador"
+            admin.email = "admin@clinicadrraimundonunes.com.br"
+            admin.telefone = "(11) 99999-9999"
+            admin.role = "admin"
+            admin.ativo = True
+            admin.set_password("admin123")
+            db.session.add(admin)
+            db.session.commit()
+            print("✅ Admin criado!")
+        
+        # 3. Verificar se já tem especialidades
+        total_esp = Especialidade.query.count()
+        if total_esp > 0:
+            print(f"\n✅ Banco já tem especialidades ({total_esp})")
+            print(f"✅ Banco já tem médicos ({Medico.query.count()})")
             print("\n✨ Migration completa!")
             print("=" * 60)
             return True
@@ -102,11 +102,51 @@ def run_migrations():
         # 5. Criar médicos
         print("\n👨‍⚕️ Criando médicos...")
         medicos_data = [
-            {'nome': 'Dr. Raimundo Nunes', 'crm': 'CRM/SP 123456', 'email': 'raimundo.nunes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99001-1234', 'especialidades': ['Pré-Natal de Alto Risco'], 'bio': 'Mais de 30 anos de experiência em obstetrícia e gestações de alto risco.'},
-            {'nome': 'Dra. Ana Silva', 'crm': 'CRM/SP 234567', 'email': 'ana.silva@clinicadrraimundonunes.com.br', 'telefone': '(11) 99002-1234', 'especialidades': ['Mastologia'], 'bio': 'Especialista em prevenção e tratamento de doenças da mama.'},
-            {'nome': 'Dr. Carlos Oliveira', 'crm': 'CRM/SP 345678', 'email': 'carlos.oliveira@clinicadrraimundonunes.com.br', 'telefone': '(11) 99003-1234', 'especialidades': ['Reprodução Humana'], 'bio': 'Especialista em reprodução assistida e infertilidade.'},
-            {'nome': 'Dra. Maria Santos', 'crm': 'CRM/SP 456789', 'email': 'maria.santos@clinicadrraimundonunes.com.br', 'telefone': '(11) 99004-1234', 'especialidades': ['Uroginecologia'], 'bio': 'Tratamento de incontinência urinária e disfunções do assoalho pélvico.'},
-            {'nome': 'Dr. Ricardo Mendes', 'crm': 'CRM/SP 567890', 'email': 'ricardo.mendes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99005-1234', 'especialidades': ['Climatério e Menopausa'], 'bio': 'Acompanhamento da saúde da mulher no climatério e menopausa.'}
+            {
+                'nome': 'Dr. Raimundo Nunes',
+                'email': 'raimundo@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4321',
+                'crm': 'CRM/SP 12345',
+                'bio': 'Mais de 30 anos de experiência em ginecologia e obstetrícia. Especialista em pré-natal de alto risco e cirurgia ginecológica.',
+                'foto_url': '/static/images/dr-carlos-oliveira.jpg',
+                'especialidades': ['DIU e Implanon', 'Pré-Natal de Alto Risco', 'Hipertensão e Diabetes Gestacional']
+            },
+            {
+                'nome': 'Dra. Ana Carolina Silva',
+                'email': 'ana@clinicadrraimundonunes.com.br', 
+                'telefone': '(11) 98765-4322',
+                'crm': 'CRM/SP 67890',
+                'bio': 'Ginecologista e obstetra. Especialização em laparoscopia e endometriose. Atendimento humanizado.',
+                'foto_url': '/static/images/dra-ana-silva.jpg',
+                'especialidades': ['Mastologia', 'Uroginecologia', 'Sexualidade']
+            },
+            {
+                'nome': 'Dr. Ricardo Mendes',
+                'email': 'ricardo@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4323', 
+                'crm': 'CRM/SP 54321',
+                'bio': 'Especialista em reprodução humana e climatério. Formação em medicina reprodutiva.',
+                'foto_url': '/static/images/dr-ricardo-mendes.jpg',
+                'especialidades': ['Climatério e Menopausa', 'Reprodução Humana', 'PTGI']
+            },
+            {
+                'nome': 'Dra. Maria Santos',
+                'email': 'maria@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4324',
+                'crm': 'CRM/SP 98765',
+                'bio': 'Especialista em ginecologia preventiva e mastologia. Experiência em rastreamento de câncer.',
+                'foto_url': '/static/images/dra-maria-santos.jpg',
+                'especialidades': ['Mastologia', 'DIU e Implanon']
+            },
+            {
+                'nome': 'Dra. Patrícia Lima',
+                'email': 'patricia@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4325',
+                'crm': 'CRM/SP 11111',
+                'bio': 'Ginecologista com especialização em uroginecologia. Experiência em cirurgias minimamente invasivas.',
+                'foto_url': '/static/images/dra-patricia-lima.jpg',
+                'especialidades': ['Uroginecologia', 'Pré-Natal de Alto Risco']
+            }
         ]
         
         medicos = []
