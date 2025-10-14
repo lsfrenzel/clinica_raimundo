@@ -289,11 +289,11 @@ def corrigir_medicos():
             resultado['correcoes'].append('⚠️ Nenhum médico encontrado. Criando médicos...')
             
             medicos_data = [
-                {'nome': 'Dr. Raimundo Nunes', 'crm': 'CRM/SP 123456', 'email': 'raimundo.nunes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99001-1234', 'especialidades': ['Pré-Natal de Alto Risco', 'DIU e Implanon']},
-                {'nome': 'Dra. Ana Silva', 'crm': 'CRM/SP 234567', 'email': 'ana.silva@clinicadrraimundonunes.com.br', 'telefone': '(11) 99002-1234', 'especialidades': ['Mastologia']},
-                {'nome': 'Dr. Carlos Oliveira', 'crm': 'CRM/SP 345678', 'email': 'carlos.oliveira@clinicadrraimundonunes.com.br', 'telefone': '(11) 99003-1234', 'especialidades': ['Reprodução Humana']},
-                {'nome': 'Dra. Maria Santos', 'crm': 'CRM/SP 456789', 'email': 'maria.santos@clinicadrraimundonunes.com.br', 'telefone': '(11) 99004-1234', 'especialidades': ['Uroginecologia']},
-                {'nome': 'Dr. Ricardo Mendes', 'crm': 'CRM/SP 567890', 'email': 'ricardo.mendes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99005-1234', 'especialidades': ['Climatério e Menopausa', 'Sexualidade']}
+                {'nome': 'Dr. Raimundo Nunes', 'crm': 'CRM/SP 123456', 'email': 'raimundo.nunes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99001-1234', 'especialidades': ['Pré-Natal de Alto Risco', 'DIU e Implanon', 'Hipertensão e Diabetes Gestacional']},
+                {'nome': 'Dra. Ana Silva', 'crm': 'CRM/SP 234567', 'email': 'ana.silva@clinicadrraimundonunes.com.br', 'telefone': '(11) 99002-1234', 'especialidades': ['Mastologia', 'Climatério e Menopausa']},
+                {'nome': 'Dr. Carlos Oliveira', 'crm': 'CRM/SP 345678', 'email': 'carlos.oliveira@clinicadrraimundonunes.com.br', 'telefone': '(11) 99003-1234', 'especialidades': ['Reprodução Humana', 'PTGI']},
+                {'nome': 'Dra. Maria Santos', 'crm': 'CRM/SP 456789', 'email': 'maria.santos@clinicadrraimundonunes.com.br', 'telefone': '(11) 99004-1234', 'especialidades': ['Uroginecologia', 'Sexualidade']},
+                {'nome': 'Dr. Ricardo Mendes', 'crm': 'CRM/SP 567890', 'email': 'ricardo.mendes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99005-1234', 'especialidades': ['Climatério e Menopausa', 'Sexualidade', 'Mastologia']}
             ]
             
             medicos_criados = []
@@ -332,11 +332,11 @@ def corrigir_medicos():
         
         # 4. CORRIGIR ASSOCIAÇÕES DE MÉDICOS EXISTENTES
         correcoes_associacoes = [
-            {'crm': 'CRM/SP 123456', 'especialidades': ['Pré-Natal de Alto Risco', 'DIU e Implanon']},
-            {'crm': 'CRM/SP 234567', 'especialidades': ['Mastologia']},
-            {'crm': 'CRM/SP 345678', 'especialidades': ['Reprodução Humana']},
-            {'crm': 'CRM/SP 456789', 'especialidades': ['Uroginecologia']},
-            {'crm': 'CRM/SP 567890', 'especialidades': ['Climatério e Menopausa', 'Sexualidade']}
+            {'crm': 'CRM/SP 123456', 'especialidades': ['Pré-Natal de Alto Risco', 'DIU e Implanon', 'Hipertensão e Diabetes Gestacional']},
+            {'crm': 'CRM/SP 234567', 'especialidades': ['Mastologia', 'Climatério e Menopausa']},
+            {'crm': 'CRM/SP 345678', 'especialidades': ['Reprodução Humana', 'PTGI']},
+            {'crm': 'CRM/SP 456789', 'especialidades': ['Uroginecologia', 'Sexualidade']},
+            {'crm': 'CRM/SP 567890', 'especialidades': ['Climatério e Menopausa', 'Sexualidade', 'Mastologia']}
         ]
         
         associacoes_corrigidas = 0
