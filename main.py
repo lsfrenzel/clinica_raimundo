@@ -84,6 +84,9 @@ def create_app():
     from app.blueprints.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
     
+    from app.blueprints.setup import bp as setup_bp
+    app.register_blueprint(setup_bp)
+    
     with app.app_context():
         # Import all models to register them
         import models  # noqa: F401

@@ -1,0 +1,223 @@
+"""
+Blueprint para popular o banco de dados via URL
+Acesse: /setup-database para executar
+"""
+from flask import Blueprint, jsonify
+from extensions import db
+from models import User, Especialidade, Medico, Agenda
+from datetime import datetime, timedelta, time
+
+bp = Blueprint('setup', __name__)
+
+@bp.route('/setup-database')
+def setup_database():
+    """
+    Rota para popular o banco de dados
+    Acesse: https://seu-app.railway.app/setup-database
+    """
+    
+    resultado = {
+        'status': 'iniciando',
+        'mensagens': [],
+        'dados_criados': {}
+    }
+    
+    try:
+        # 1. Criar tabelas
+        resultado['mensagens'].append('📦 Criando tabelas...')
+        db.create_all()
+        resultado['mensagens'].append('✅ Tabelas criadas!')
+        
+        # 2. Verificar e criar admin
+        resultado['mensagens'].append('👤 Verificando administrador...')
+        admin = User.query.filter_by(email='admin@clinicadrraimundonunes.com.br').first()
+        
+        if admin:
+            resultado['mensagens'].append(f'✅ Admin já existe: {admin.email}')
+            if not admin.check_password("admin123"):
+                admin.set_password("admin123")
+                admin.ativo = True
+                db.session.commit()
+                resultado['mensagens'].append('✅ Senha do admin resetada para: admin123')
+        else:
+            admin = User()
+            admin.nome = "Administrador"
+            admin.email = "admin@clinicadrraimundonunes.com.br"
+            admin.telefone = "(11) 99999-9999"
+            admin.role = "admin"
+            admin.ativo = True
+            admin.set_password("admin123")
+            db.session.add(admin)
+            db.session.commit()
+            resultado['mensagens'].append('✅ Admin criado!')
+        
+        # 3. Verificar se já tem especialidades
+        total_esp = Especialidade.query.count()
+        if total_esp > 0:
+            resultado['mensagens'].append(f'✅ Banco já tem {total_esp} especialidades')
+            resultado['mensagens'].append(f'✅ Banco já tem {Medico.query.count()} médicos')
+            resultado['dados_criados'] = {
+                'especialidades': total_esp,
+                'medicos': Medico.query.count(),
+                'agenda': Agenda.query.count(),
+                'usuarios': User.query.count()
+            }
+            resultado['status'] = 'ja_populado'
+            return jsonify(resultado), 200
+        
+        # 4. Criar especialidades
+        resultado['mensagens'].append('📋 Criando especialidades...')
+        especialidades_data = [
+            {'nome': 'DIU e Implanon', 'descricao': 'Inserção e acompanhamento de DIU hormonal e implantes contraceptivos.', 'duracao_padrao': 45},
+            {'nome': 'Pré-Natal de Alto Risco', 'descricao': 'Acompanhamento especializado de gestações de alto risco.', 'duracao_padrao': 60},
+            {'nome': 'Hipertensão e Diabetes Gestacional', 'descricao': 'Tratamento de complicações metabólicas na gestação.', 'duracao_padrao': 45},
+            {'nome': 'Mastologia', 'descricao': 'Prevenção, diagnóstico e tratamento de doenças da mama.', 'duracao_padrao': 30},
+            {'nome': 'Uroginecologia', 'descricao': 'Tratamento de incontinência urinária e prolapsos genitais.', 'duracao_padrao': 45},
+            {'nome': 'Climatério e Menopausa', 'descricao': 'Acompanhamento e tratamento de sintomas do climatério.', 'duracao_padrao': 30},
+            {'nome': 'PTGI', 'descricao': 'Programa de Tratamento de Gestações Indesejadas.', 'duracao_padrao': 60},
+            {'nome': 'Sexualidade', 'descricao': 'Orientação e tratamento de disfunções sexuais femininas.', 'duracao_padrao': 45},
+            {'nome': 'Reprodução Humana', 'descricao': 'Investigação e tratamento de infertilidade conjugal.', 'duracao_padrao': 60}
+        ]
+        
+        especialidades = []
+        for esp_data in especialidades_data:
+            esp = Especialidade(**esp_data)
+            db.session.add(esp)
+            especialidades.append(esp)
+        db.session.commit()
+        resultado['mensagens'].append(f'✅ {len(especialidades)} especialidades criadas!')
+        
+        # 5. Criar médicos
+        resultado['mensagens'].append('👨‍⚕️ Criando médicos...')
+        medicos_data = [
+            {
+                'nome': 'Dr. Raimundo Nunes',
+                'email': 'raimundo@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4321',
+                'crm': 'CRM/SP 12345',
+                'bio': 'Mais de 30 anos de experiência em ginecologia e obstetrícia. Especialista em pré-natal de alto risco e cirurgia ginecológica.',
+                'foto_url': '/static/images/dr-carlos-oliveira.jpg',
+                'especialidades': ['DIU e Implanon', 'Pré-Natal de Alto Risco', 'Hipertensão e Diabetes Gestacional']
+            },
+            {
+                'nome': 'Dra. Ana Carolina Silva',
+                'email': 'ana@clinicadrraimundonunes.com.br', 
+                'telefone': '(11) 98765-4322',
+                'crm': 'CRM/SP 67890',
+                'bio': 'Ginecologista e obstetra. Especialização em laparoscopia e endometriose. Atendimento humanizado.',
+                'foto_url': '/static/images/dra-ana-silva.jpg',
+                'especialidades': ['Mastologia', 'Uroginecologia', 'Sexualidade']
+            },
+            {
+                'nome': 'Dr. Ricardo Mendes',
+                'email': 'ricardo@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4323', 
+                'crm': 'CRM/SP 54321',
+                'bio': 'Especialista em reprodução humana e climatério. Formação em medicina reprodutiva.',
+                'foto_url': '/static/images/dr-ricardo-mendes.jpg',
+                'especialidades': ['Climatério e Menopausa', 'Reprodução Humana', 'PTGI']
+            },
+            {
+                'nome': 'Dra. Maria Santos',
+                'email': 'maria@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4324',
+                'crm': 'CRM/SP 98765',
+                'bio': 'Especialista em ginecologia preventiva e mastologia. Experiência em rastreamento de câncer.',
+                'foto_url': '/static/images/dra-maria-santos.jpg',
+                'especialidades': ['Mastologia', 'DIU e Implanon']
+            },
+            {
+                'nome': 'Dra. Patrícia Lima',
+                'email': 'patricia@clinicadrraimundonunes.com.br',
+                'telefone': '(11) 98765-4325',
+                'crm': 'CRM/SP 11111',
+                'bio': 'Ginecologista com especialização em uroginecologia. Experiência em cirurgias minimamente invasivas.',
+                'foto_url': '/static/images/dra-patricia-lima.jpg',
+                'especialidades': ['Uroginecologia', 'Pré-Natal de Alto Risco']
+            }
+        ]
+        
+        medicos = []
+        for med_data in medicos_data:
+            # Criar usuário médico
+            user = User()
+            user.nome = med_data['nome']
+            user.email = med_data['email']
+            user.telefone = med_data['telefone']
+            user.role = "medico"
+            user.ativo = True
+            user.set_password("medico123")
+            db.session.add(user)
+            db.session.commit()
+            
+            # Criar médico
+            medico = Medico()
+            medico.user_id = user.id
+            medico.crm = med_data['crm']
+            medico.bio = med_data['bio']
+            medico.foto_url = med_data.get('foto_url')
+            medico.ativo = True
+            db.session.add(medico)
+            db.session.flush()
+            
+            # Associar especialidades
+            for esp_nome in med_data['especialidades']:
+                especialidade = next((e for e in especialidades if e.nome == esp_nome), None)
+                if especialidade:
+                    medico.especialidades.append(especialidade)
+            
+            medicos.append(medico)
+        
+        db.session.commit()
+        resultado['mensagens'].append(f'✅ {len(medicos)} médicos criados!')
+        
+        # 6. Criar agenda
+        resultado['mensagens'].append('📅 Criando agenda dos médicos...')
+        hoje = datetime.now().date()
+        agenda_count = 0
+        
+        for medico in medicos:
+            for dia_offset in range(30):
+                data = hoje + timedelta(days=dia_offset)
+                # Pular fins de semana
+                if data.weekday() >= 5:
+                    continue
+                
+                # Criar slots de 1 hora das 8h às 17h
+                for hora in range(8, 17):
+                    agenda = Agenda()
+                    agenda.medico_id = medico.id
+                    agenda.data = data
+                    agenda.hora_inicio = time(hora, 0)
+                    agenda.hora_fim = time(hora + 1, 0)
+                    agenda.duracao_minutos = 60
+                    agenda.tipo = 'presencial'
+                    agenda.ativo = True
+                    db.session.add(agenda)
+                    agenda_count += 1
+        
+        db.session.commit()
+        resultado['mensagens'].append(f'✅ {agenda_count} slots de agenda criados!')
+        
+        # 7. Resumo final
+        resultado['status'] = 'sucesso'
+        resultado['dados_criados'] = {
+            'especialidades': Especialidade.query.count(),
+            'medicos': Medico.query.count(),
+            'agenda': Agenda.query.count(),
+            'usuarios': User.query.count()
+        }
+        resultado['mensagens'].append('🎉 BANCO POPULADO COM SUCESSO!')
+        resultado['mensagens'].append('')
+        resultado['mensagens'].append('🔑 CREDENCIAIS DE LOGIN:')
+        resultado['mensagens'].append('Email: admin@clinicadrraimundonunes.com.br')
+        resultado['mensagens'].append('Senha: admin123')
+        
+        return jsonify(resultado), 200
+        
+    except Exception as e:
+        resultado['status'] = 'erro'
+        resultado['mensagens'].append(f'❌ ERRO: {str(e)}')
+        import traceback
+        resultado['mensagens'].append(traceback.format_exc())
+        return jsonify(resultado), 500
