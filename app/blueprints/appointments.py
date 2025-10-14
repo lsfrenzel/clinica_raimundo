@@ -20,7 +20,6 @@ def agendar_logado():
     return redirect(url_for('appointments.agendar'))
 
 @bp.route('/medicos/<int:especialidade_id>')
-@login_required
 def medicos_por_especialidade(especialidade_id):
     """Passo 2: Escolher médico da especialidade"""
     from models import Especialidade
@@ -35,7 +34,6 @@ def medicos_por_especialidade(especialidade_id):
                          especialidade=especialidade, medicos=medicos)
 
 @bp.route('/horarios/<int:medico_id>')
-@login_required
 def horarios_medico(medico_id):
     """Passo 3: Escolher horário específico do médico"""
     from models import Medico
