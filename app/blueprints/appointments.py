@@ -69,29 +69,59 @@ def confirmar():
         observacoes = request.form.get('observacoes', '')
         
         try:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Iniciando agendamento para usuário {current_user.id}")
+            logger.info(f"Dados recebidos - medico_id: {medico_id}, especialidade_id: {especialidade_id}, data_hora: {data_hora}")
+            
             if not data_hora:
                 raise ValueError("data_hora é obrigatório")
+            if not medico_id:
+                raise ValueError("medico_id é obrigatório")
+            if not especialidade_id:
+                raise ValueError("especialidade_id é obrigatório")
+                
             inicio = datetime.fromisoformat(data_hora)
             fim = inicio + timedelta(minutes=30)  # Duração padrão
             
             from models import Agendamento
             # Criar agendamento (apenas para usuários logados)
             agendamento = Agendamento()
-            agendamento.medico_id = medico_id
-            agendamento.especialidade_id = especialidade_id
+            agendamento.medico_id = int(medico_id)
+            agendamento.especialidade_id = int(especialidade_id)
             agendamento.inicio = inicio
             agendamento.fim = fim
             agendamento.paciente_id = current_user.id
             agendamento.observacoes = observacoes
             
+            logger.info(f"Agendamento criado em memória: {agendamento}")
+            
             db.session.add(agendamento)
+            db.session.flush()  # Flush para obter o ID antes do commit
+            
+            logger.info(f"Agendamento com ID {agendamento.id} adicionado à sessão")
+            
             db.session.commit()
+            
+            logger.info(f"Agendamento {agendamento.id} confirmado no banco de dados")
+            
+            # Verificar se o agendamento foi salvo
+            agendamento_salvo = Agendamento.query.get(agendamento.id)
+            if not agendamento_salvo:
+                logger.error(f"ERRO: Agendamento {agendamento.id} não foi encontrado no banco após commit!")
+                raise Exception("Falha ao salvar agendamento no banco de dados")
+            
+            logger.info(f"Agendamento {agendamento.id} verificado e confirmado no banco")
             
             flash('Agendamento realizado com sucesso!', 'success')
             return redirect(url_for('appointments.sucesso', agendamento_id=agendamento.id))
             
         except Exception as e:
-            flash('Erro ao realizar agendamento. Tente novamente.', 'error')
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Erro ao realizar agendamento: {str(e)}", exc_info=True)
+            db.session.rollback()
+            flash(f'Erro ao realizar agendamento: {str(e)}. Tente novamente.', 'error')
             return redirect(url_for('appointments.agendar'))
     
     # GET - Mostrar formulário de confirmação
