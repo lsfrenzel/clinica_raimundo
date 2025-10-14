@@ -70,6 +70,28 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 
 ## Resolução de Problemas Recentes
 
+### ✅ Problema: Agendamentos não aparecem em "Meus Agendamentos" (14/10/2025)
+**Causa**: 
+- Conflito de timezone entre horário local e UTC
+- Agendamentos salvos com datetime naive (sem timezone) do formulário HTML
+- Comparação feita com `datetime.utcnow()` causava classificação incorreta
+- Agendamentos futuros apareciam como passados devido à diferença de fuso horário
+
+**Solução**:
+- ✅ Implementada conversão de horário de Brasília (UTC-3) para UTC ao salvar agendamentos
+- ✅ Todos os datetimes armazenados consistentemente em UTC no banco de dados
+- ✅ Conversão de UTC para horário de Brasília na exibição para o usuário
+- ✅ Campos temporários `inicio_local` e `fim_local` adicionados para renderização
+- ✅ Template atualizado para exibir horários no timezone correto com indicação "(horário de Brasília)"
+- ✅ Logging detalhado adicionado para debug de agendamentos
+- ✅ Validação e tratamento de erros melhorados
+
+**Resultados**:
+- Agendamentos agora aparecem corretamente em "Próximas Consultas"
+- Horários exibidos no fuso correto para o usuário (Brasília)
+- Comparações de data/hora consistentes (UTC vs UTC)
+- Sistema robusto com melhor observabilidade via logs
+
 ### ✅ Problema: Chatbot não acessava banco de dados corretamente (02/10/2025)
 **Causa**: 
 - Função `get_doctor_schedules` gerava horários simulados em vez de buscar da tabela `agendas`
