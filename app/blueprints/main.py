@@ -32,7 +32,6 @@ def medicos():
     return render_template('medicos.html', medicos=medicos)
 
 @bp.route('/chatbot')
-@login_required
 def chatbot():
     """Página do chatbot inteligente"""
     return render_template('chatbot.html')
