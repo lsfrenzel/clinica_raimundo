@@ -150,6 +150,74 @@ def init_database():
             'message': f'Erro ao inicializar banco: {str(e)}'
         }), 500
 
+@bp.route('/diagnostico-detalhado')
+def diagnostico_detalhado():
+    """Rota para diagnóstico detalhado do banco de dados"""
+    from models import User, Especialidade, Medico, Agenda
+    from sqlalchemy import text
+    
+    try:
+        resultado = {
+            'database_url': 'Conectado (URL oculta por segurança)',
+            'especialidades': [],
+            'medicos': [],
+            'usuarios': [],
+            'tabela_associacao': []
+        }
+        
+        especialidades = Especialidade.query.all()
+        for esp in especialidades:
+            medicos_list = esp.medicos.filter_by(ativo=True).all()
+            resultado['especialidades'].append({
+                'id': esp.id,
+                'nome': esp.nome,
+                'ativo': esp.ativo,
+                'medicos_count': len(medicos_list),
+                'medicos': [{'id': m.id, 'crm': m.crm, 'nome': User.query.get(m.user_id).nome if User.query.get(m.user_id) else 'N/A'} for m in medicos_list]
+            })
+        
+        medicos = Medico.query.all()
+        for medico in medicos:
+            user = User.query.get(medico.user_id)
+            especialidades_list = [e.nome for e in medico.especialidades]
+            resultado['medicos'].append({
+                'id': medico.id,
+                'nome': user.nome if user else 'N/A',
+                'crm': medico.crm,
+                'ativo': medico.ativo,
+                'user_id': medico.user_id,
+                'especialidades': especialidades_list
+            })
+        
+        users = User.query.filter_by(role='medico').all()
+        for user in users:
+            resultado['usuarios'].append({
+                'id': user.id,
+                'nome': user.nome,
+                'email': user.email,
+                'role': user.role,
+                'ativo': user.ativo
+            })
+        
+        with db.engine.connect() as connection:
+            query = text("SELECT * FROM medico_especialidade")
+            result = connection.execute(query)
+            for row in result:
+                resultado['tabela_associacao'].append({
+                    'medico_id': row[0],
+                    'especialidade_id': row[1]
+                })
+        
+        return jsonify(resultado)
+        
+    except Exception as e:
+        import traceback
+        return jsonify({
+            'status': 'error',
+            'message': f'Erro: {str(e)}',
+            'traceback': traceback.format_exc()
+        }), 500
+
 @bp.route('/corrigir-medicos')
 def corrigir_medicos():
     """Rota para diagnosticar e corrigir associações de médicos com especialidades"""
