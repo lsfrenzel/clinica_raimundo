@@ -241,12 +241,17 @@
 </div>
 
 <script>
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
 function confirmarAgendamento(id) {
     if (confirm('Confirmar este agendamento?')) {
         fetch(`/admin/agendamentos/${id}/confirmar`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
             }
         })
         .then(response => response.json())
@@ -254,6 +259,8 @@ function confirmarAgendamento(id) {
             if (data.success) {
                 alert(data.message);
                 location.reload();
+            } else {
+                alert(data.message || 'Erro ao confirmar agendamento');
             }
         })
         .catch(error => {
@@ -270,6 +277,7 @@ function cancelarAgendamento(id) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
             },
             body: JSON.stringify({ motivo: motivo })
         })
@@ -278,6 +286,8 @@ function cancelarAgendamento(id) {
             if (data.success) {
                 alert(data.message);
                 location.reload();
+            } else {
+                alert(data.message || 'Erro ao cancelar agendamento');
             }
         })
         .catch(error => {
@@ -293,6 +303,7 @@ function concluirAgendamento(id) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
             }
         })
         .then(response => response.json())
@@ -300,6 +311,8 @@ function concluirAgendamento(id) {
             if (data.success) {
                 alert(data.message);
                 location.reload();
+            } else {
+                alert(data.message || 'Erro ao concluir agendamento');
             }
         })
         .catch(error => {
