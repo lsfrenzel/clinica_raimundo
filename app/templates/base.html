@@ -246,10 +246,12 @@
         /* Mobile Menu */
         .mobile-menu {
             @apply fixed inset-0 bg-white z-50 transform translate-x-full transition-transform duration-300;
+            display: none;
         }
         
         .mobile-menu.active {
             @apply translate-x-0;
+            display: block;
         }
         
         /* Scroll Progress Bar */
