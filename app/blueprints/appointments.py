@@ -191,15 +191,15 @@ def meus_agendamentos():
     agora = datetime.utcnow()
     
     # Converter horários para timezone de Brasília para exibição
-    from datetime import timezone
-    brasilia_offset = timezone(timedelta(hours=-3))
+    from datetime import timezone as tz
+    brasilia_offset = tz(timedelta(hours=-3))
     
     for agendamento in agendamentos:
         # Converter de UTC para horário de Brasília para exibição
         if agendamento.inicio:
-            agendamento.inicio_local = agendamento.inicio.replace(tzinfo=timezone.utc).astimezone(brasilia_offset).replace(tzinfo=None)
+            agendamento.inicio_local = agendamento.inicio.replace(tzinfo=tz.utc).astimezone(brasilia_offset).replace(tzinfo=None)
         if agendamento.fim:
-            agendamento.fim_local = agendamento.fim.replace(tzinfo=timezone.utc).astimezone(brasilia_offset).replace(tzinfo=None)
+            agendamento.fim_local = agendamento.fim.replace(tzinfo=tz.utc).astimezone(brasilia_offset).replace(tzinfo=None)
     
     return render_template('appointments/meus_agendamentos.html', 
                          agendamentos=agendamentos,
