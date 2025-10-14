@@ -3,104 +3,177 @@
 {% block title %}Login - Clínica Dr. Raimundo Nunes{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
-            Acesse sua conta
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-            Ou 
-            <a href="{{ url_for('auth.register') }}" class="font-medium text-teal hover:text-teal-light">
-                crie uma nova conta
-            </a>
-        </p>
-    </div>
-
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form class="space-y-6" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">
-                        Email
-                    </label>
-                    <div class="mt-1">
-                        <input 
-                            id="email" 
-                            name="email" 
-                            type="email" 
-                            autocomplete="email" 
-                            required 
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-teal focus:border-teal sm:text-sm"
-                            placeholder="seu@email.com"
-                        >
+<div class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <!-- Left Side - Branding -->
+        <div class="hidden lg:block" data-aos="fade-right">
+            <div class="bg-gradient-to-br from-primary-600 to-teal-500 rounded-3xl p-12 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+                
+                <div class="relative z-10">
+                    <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mb-8">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <h2 class="text-4xl font-display font-bold mb-4">Bem-vindo de volta!</h2>
+                    <p class="text-xl text-white/90 mb-8 leading-relaxed">
+                        Acesse sua conta para gerenciar seus agendamentos e manter seu histórico médico sempre atualizado.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <span class="text-white/90">Acesso rápido aos seus agendamentos</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <span class="text-white/90">Histórico completo de consultas</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <span class="text-white/90">Assistente virtual personalizado</span>
+                        </div>
                     </div>
                 </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">
-                        Senha
-                    </label>
-                    <div class="mt-1">
-                        <input 
-                            id="password" 
-                            name="password" 
-                            type="password" 
-                            autocomplete="current-password" 
-                            required 
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-teal focus:border-teal sm:text-sm"
-                            placeholder="••••••••"
-                        >
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input 
-                            id="remember" 
-                            name="remember" 
-                            type="checkbox" 
-                            class="h-4 w-4 text-teal focus:ring-teal border-gray-300 rounded"
-                        >
-                        <label for="remember" class="ml-2 block text-sm text-gray-900">
-                            Lembrar de mim
-                        </label>
-                    </div>
-
-                    <div class="text-sm">
-                        <a href="#" class="font-medium text-teal hover:text-teal-light">
-                            Esqueceu a senha?
+            </div>
+        </div>
+        
+        <!-- Right Side - Login Form -->
+        <div class="w-full" data-aos="fade-left">
+            <div class="card p-8 sm:p-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl sm:text-4xl font-display font-bold text-gray-900 mb-3">
+                        Acesse sua conta
+                    </h2>
+                    <p class="text-gray-600">
+                        Novo por aqui? 
+                        <a href="{{ url_for('auth.register') }}" class="text-primary-600 font-semibold hover:text-primary-700 transition-colors duration-300">
+                            Crie uma conta
                         </a>
-                    </div>
+                    </p>
                 </div>
 
-                <div>
-                    <button 
-                        type="submit" 
-                        class="w-full btn-teal text-white py-2 px-4 rounded-md font-medium"
-                    >
-                        Entrar
-                    </button>
-                </div>
-            </form>
-
-            <div class="mt-6">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300" />
+                <form class="space-y-6" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Email
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                </svg>
+                            </div>
+                            <input 
+                                id="email" 
+                                name="email" 
+                                type="email" 
+                                autocomplete="email" 
+                                required 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 sm:text-sm"
+                                placeholder="seu@email.com"
+                            >
+                        </div>
                     </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">Credenciais de teste</span>
-                    </div>
-                </div>
 
-                <div class="mt-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
-                    <p class="font-medium mb-2">Contas de teste disponíveis:</p>
-                    <ul class="space-y-1 text-xs">
-                        <li><strong>Admin:</strong> admin@clinicadrraimundonunes.com.br / admin123</li>
-                        <li><strong>Médico:</strong> raimundo@clinicadrraimundonunes.com.br / medico123</li>
-                        <li><strong>Paciente:</strong> ana.silva@email.com / paciente123</li>
-                    </ul>
+                    <div>
+                        <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Senha
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <input 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                autocomplete="current-password" 
+                                required 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 sm:text-sm"
+                                placeholder="••••••••"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input 
+                                id="remember" 
+                                name="remember" 
+                                type="checkbox" 
+                                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+                            >
+                            <label for="remember" class="ml-2 block text-sm text-gray-700 cursor-pointer">
+                                Lembrar de mim
+                            </label>
+                        </div>
+
+                        <div class="text-sm">
+                            <a href="#" class="font-semibold text-primary-600 hover:text-primary-700 transition-colors duration-300">
+                                Esqueceu a senha?
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button 
+                            type="submit" 
+                            class="w-full btn-primary text-lg py-4"
+                        >
+                            Entrar
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Test Credentials -->
+                <div class="mt-8">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-200"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-4 bg-white text-gray-500 font-medium">Credenciais de teste</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-gradient-to-br from-primary-50 to-teal-50 border border-primary-100 p-4 rounded-xl">
+                        <p class="font-semibold text-gray-900 mb-3 text-sm">Contas de teste disponíveis:</p>
+                        <div class="space-y-2 text-xs text-gray-700">
+                            <div class="flex items-center space-x-2 bg-white/50 rounded-lg p-2">
+                                <span class="font-semibold">Admin:</span>
+                                <code class="bg-white px-2 py-1 rounded">admin@clinicadrraimundonunes.com.br</code>
+                                <code class="bg-white px-2 py-1 rounded">admin123</code>
+                            </div>
+                            <div class="flex items-center space-x-2 bg-white/50 rounded-lg p-2">
+                                <span class="font-semibold">Médico:</span>
+                                <code class="bg-white px-2 py-1 rounded">raimundo@clinicadrraimundonunes.com.br</code>
+                                <code class="bg-white px-2 py-1 rounded">medico123</code>
+                            </div>
+                            <div class="flex items-center space-x-2 bg-white/50 rounded-lg p-2">
+                                <span class="font-semibold">Paciente:</span>
+                                <code class="bg-white px-2 py-1 rounded">ana.silva@email.com</code>
+                                <code class="bg-white px-2 py-1 rounded">paciente123</code>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
