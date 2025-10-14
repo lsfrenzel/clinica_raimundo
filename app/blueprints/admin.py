@@ -150,6 +150,210 @@ def init_database():
             'message': f'Erro ao inicializar banco: {str(e)}'
         }), 500
 
+@bp.route('/corrigir-medicos')
+def corrigir_medicos():
+    """Rota para diagnosticar e corrigir associações de médicos com especialidades"""
+    from models import User, Especialidade, Medico, Agenda
+    from datetime import time
+    
+    try:
+        resultado = {
+            'diagnostico': {},
+            'correcoes': [],
+            'status': 'success'
+        }
+        
+        # 1. DIAGNÓSTICO
+        especialidades = Especialidade.query.all()
+        medicos = Medico.query.all()
+        users = User.query.all()
+        agendas = Agenda.query.filter_by(ativo=True).count()
+        
+        resultado['diagnostico'] = {
+            'total_especialidades': len(especialidades),
+            'total_medicos': len(medicos),
+            'total_usuarios': len(users),
+            'total_agendas_ativas': agendas,
+            'especialidades_detalhes': []
+        }
+        
+        # Detalhar cada especialidade
+        for esp in especialidades:
+            medicos_count = esp.medicos.filter_by(ativo=True).count()
+            resultado['diagnostico']['especialidades_detalhes'].append({
+                'id': esp.id,
+                'nome': esp.nome,
+                'medicos_ativos': medicos_count
+            })
+        
+        # 2. CORREÇÃO: Criar especialidades se não existirem
+        especialidades_data = [
+            {'nome': 'DIU e Implanon', 'descricao': 'Inserção e acompanhamento de DIU hormonal e implantes contraceptivos.', 'duracao_padrao': 45},
+            {'nome': 'Pré-Natal de Alto Risco', 'descricao': 'Acompanhamento especializado de gestações de alto risco.', 'duracao_padrao': 60},
+            {'nome': 'Hipertensão e Diabetes Gestacional', 'descricao': 'Tratamento de complicações metabólicas na gestação.', 'duracao_padrao': 45},
+            {'nome': 'Mastologia', 'descricao': 'Prevenção, diagnóstico e tratamento de doenças da mama.', 'duracao_padrao': 30},
+            {'nome': 'Uroginecologia', 'descricao': 'Tratamento de incontinência urinária e prolapsos genitais.', 'duracao_padrao': 45},
+            {'nome': 'Climatério e Menopausa', 'descricao': 'Acompanhamento e tratamento de sintomas do climatério.', 'duracao_padrao': 30},
+            {'nome': 'PTGI', 'descricao': 'Programa de Tratamento de Gestações Indesejadas.', 'duracao_padrao': 60},
+            {'nome': 'Sexualidade', 'descricao': 'Orientação e tratamento de disfunções sexuais femininas.', 'duracao_padrao': 45},
+            {'nome': 'Reprodução Humana', 'descricao': 'Investigação e tratamento de infertilidade conjugal.', 'duracao_padrao': 60}
+        ]
+        
+        especialidades_criadas = 0
+        for esp_data in especialidades_data:
+            esp = Especialidade.query.filter_by(nome=esp_data['nome']).first()
+            if not esp:
+                esp = Especialidade(**esp_data)
+                esp.ativo = True
+                db.session.add(esp)
+                especialidades_criadas += 1
+        
+        if especialidades_criadas > 0:
+            db.session.commit()
+            resultado['correcoes'].append(f'✅ {especialidades_criadas} especialidades criadas')
+        
+        # Recarregar especialidades
+        especialidades = Especialidade.query.all()
+        
+        # 3. CRIAR MÉDICOS SE NÃO EXISTIREM
+        medicos_count = Medico.query.count()
+        if medicos_count == 0:
+            resultado['correcoes'].append('⚠️ Nenhum médico encontrado. Criando médicos...')
+            
+            medicos_data = [
+                {'nome': 'Dr. Raimundo Nunes', 'crm': 'CRM/SP 123456', 'email': 'raimundo.nunes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99001-1234', 'especialidades': ['Pré-Natal de Alto Risco', 'DIU e Implanon']},
+                {'nome': 'Dra. Ana Silva', 'crm': 'CRM/SP 234567', 'email': 'ana.silva@clinicadrraimundonunes.com.br', 'telefone': '(11) 99002-1234', 'especialidades': ['Mastologia']},
+                {'nome': 'Dr. Carlos Oliveira', 'crm': 'CRM/SP 345678', 'email': 'carlos.oliveira@clinicadrraimundonunes.com.br', 'telefone': '(11) 99003-1234', 'especialidades': ['Reprodução Humana']},
+                {'nome': 'Dra. Maria Santos', 'crm': 'CRM/SP 456789', 'email': 'maria.santos@clinicadrraimundonunes.com.br', 'telefone': '(11) 99004-1234', 'especialidades': ['Uroginecologia']},
+                {'nome': 'Dr. Ricardo Mendes', 'crm': 'CRM/SP 567890', 'email': 'ricardo.mendes@clinicadrraimundonunes.com.br', 'telefone': '(11) 99005-1234', 'especialidades': ['Climatério e Menopausa', 'Sexualidade']}
+            ]
+            
+            medicos_criados = []
+            for med_data in medicos_data:
+                user = User.query.filter_by(email=med_data['email']).first()
+                if not user:
+                    user = User()
+                    user.nome = med_data['nome']
+                    user.email = med_data['email']
+                    user.telefone = med_data['telefone']
+                    user.role = "medico"
+                    user.ativo = True
+                    user.set_password("medico123")
+                    db.session.add(user)
+                    db.session.commit()
+                
+                medico = Medico.query.filter_by(user_id=user.id).first()
+                if not medico:
+                    medico = Medico()
+                    medico.user_id = user.id
+                    medico.crm = med_data['crm']
+                    medico.bio = f"Especialista com mais de 10 anos de experiência."
+                    medico.ativo = True
+                    db.session.add(medico)
+                    db.session.flush()
+                
+                for esp_nome in med_data['especialidades']:
+                    especialidade = next((e for e in especialidades if e.nome == esp_nome), None)
+                    if especialidade and especialidade not in medico.especialidades:
+                        medico.especialidades.append(especialidade)
+                
+                medicos_criados.append(medico)
+            
+            db.session.commit()
+            resultado['correcoes'].append(f'✅ {len(medicos_criados)} médicos criados')
+        
+        # 4. CORRIGIR ASSOCIAÇÕES DE MÉDICOS EXISTENTES
+        correcoes_associacoes = [
+            {'crm': 'CRM/SP 123456', 'especialidades': ['Pré-Natal de Alto Risco', 'DIU e Implanon']},
+            {'crm': 'CRM/SP 234567', 'especialidades': ['Mastologia']},
+            {'crm': 'CRM/SP 345678', 'especialidades': ['Reprodução Humana']},
+            {'crm': 'CRM/SP 456789', 'especialidades': ['Uroginecologia']},
+            {'crm': 'CRM/SP 567890', 'especialidades': ['Climatério e Menopausa', 'Sexualidade']}
+        ]
+        
+        associacoes_corrigidas = 0
+        for corr in correcoes_associacoes:
+            medico = Medico.query.filter_by(crm=corr['crm']).first()
+            if medico:
+                medico.especialidades = []
+                for esp_nome in corr['especialidades']:
+                    esp = Especialidade.query.filter_by(nome=esp_nome).first()
+                    if esp and esp not in medico.especialidades:
+                        medico.especialidades.append(esp)
+                        associacoes_corrigidas += 1
+        
+        if associacoes_corrigidas > 0:
+            db.session.commit()
+            resultado['correcoes'].append(f'✅ {associacoes_corrigidas} associações médico-especialidade corrigidas')
+        
+        # 5. CRIAR AGENDAS SE NECESSÁRIO
+        hoje = datetime.now().date()
+        agenda_count = 0
+        
+        for medico in Medico.query.filter_by(ativo=True).all():
+            agendas_futuras = Agenda.query.filter(
+                Agenda.medico_id == medico.id,
+                Agenda.data >= hoje,
+                Agenda.ativo == True
+            ).count()
+            
+            if agendas_futuras < 10:
+                for dia_offset in range(30):
+                    data = hoje + timedelta(days=dia_offset)
+                    if data.weekday() >= 5:
+                        continue
+                    
+                    existe = Agenda.query.filter_by(
+                        medico_id=medico.id,
+                        data=data
+                    ).first()
+                    
+                    if not existe:
+                        for hora in range(8, 17):
+                            agenda = Agenda()
+                            agenda.medico_id = medico.id
+                            agenda.data = data
+                            agenda.hora_inicio = time(hora, 0)
+                            agenda.hora_fim = time(hora + 1, 0)
+                            agenda.duracao_minutos = 60
+                            agenda.tipo = 'presencial'
+                            agenda.ativo = True
+                            db.session.add(agenda)
+                            agenda_count += 1
+        
+        if agenda_count > 0:
+            db.session.commit()
+            resultado['correcoes'].append(f'✅ {agenda_count} slots de agenda criados')
+        
+        # 6. RESULTADO FINAL
+        resultado['resultado_final'] = {}
+        for esp in Especialidade.query.all():
+            medicos_ativos = esp.medicos.filter_by(ativo=True).count()
+            resultado['resultado_final'][esp.nome] = {
+                'id': esp.id,
+                'medicos_ativos': medicos_ativos
+            }
+        
+        # URLs para teste
+        resultado['urls_teste'] = [
+            '/appointments/medicos/1',
+            '/appointments/medicos/2',
+            '/appointments/medicos/3',
+            '/appointments/medicos/4',
+            '/appointments/medicos/5'
+        ]
+        
+        return jsonify(resultado)
+        
+    except Exception as e:
+        db.session.rollback()
+        import traceback
+        return jsonify({
+            'status': 'error',
+            'message': f'Erro ao corrigir médicos: {str(e)}',
+            'traceback': traceback.format_exc()
+        }), 500
+
 @bp.route('/')
 @login_required
 @admin_required
