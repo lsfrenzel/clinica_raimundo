@@ -4,154 +4,172 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="relative overflow-hidden section-spacing min-h-96 flex items-center">
-    <!-- Background Image -->
+<section class="relative overflow-hidden min-h-[70vh] flex items-center bg-gradient-to-br from-primary-600 via-primary-500 to-teal-400">
+    <!-- Animated Background -->
     <div class="absolute inset-0">
-        <img src="{{ url_for('static', filename='images/especialidades.jpg') }}" 
-             alt="Especialidades médicas" 
-             class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-gradient-to-r from-teal-dark/95 via-emerald/90 to-teal/85"></div>
+        <div class="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl top-20 right-20 animate-float"></div>
+        <div class="absolute w-96 h-96 bg-white/10 rounded-full blur-3xl bottom-20 left-20 animate-float" style="animation-delay: 2s;"></div>
     </div>
     
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+    <!-- Pattern Overlay -->
+    <div class="absolute inset-0 opacity-10">
+        <svg width="100%" height="100%">
+            <pattern id="grid-esp" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                <circle cx="25" cy="25" r="1" fill="white"/>
+            </pattern>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#grid-esp)"/>
+        </svg>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
         <div class="text-center">
-            <div class="mb-6">
-                <div class="inline-flex items-center bg-white/20 rounded-full px-6 py-3 text-sm font-medium backdrop-blur-sm border border-white/30">
-                    <span class="w-2 h-2 bg-white rounded-full mr-3"></span>
+            <div class="mb-6" data-aos="fade-down">
+                <div class="inline-flex items-center glass rounded-full px-6 py-3">
+                    <span class="w-2 h-2 bg-accent-300 rounded-full mr-3 animate-pulse"></span>
                     <span class="text-white font-semibold">Atendimento especializado</span>
                 </div>
             </div>
             
-            <h1 class="text-display md:text-5xl font-display font-bold mb-8 leading-tight text-white fade-in drop-shadow-lg">
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-8 text-white" data-aos="fade-up" data-aos-delay="100">
                 Nossas Especialidades
             </h1>
             
-            <p class="text-body-lg mb-10 text-white/95 max-w-3xl mx-auto leading-relaxed font-body drop-shadow-sm font-medium">
-                Cuidado completo e especializado para todas as fases da vida da mulher, 
-                com profissionais experientes e tecnologia de ponta.
+            <p class="text-xl sm:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed font-light" data-aos="fade-up" data-aos-delay="200">
+                Cuidado completo e especializado para todas as fases da vida da mulher
             </p>
         </div>
     </div>
 </section>
 
-<!-- Especialidades -->
-<section class="section-spacing bg-cream">
+<!-- Especialidades Grid -->
+<section class="py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16 slide-up">
-            <h2 class="text-heading font-display font-bold text-dark-gray mb-6">Nossas Áreas de Atuação</h2>
-            <p class="text-body-lg text-gray-700 font-body font-medium">Especialidades médicas com excelência e humanização</p>
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl font-display font-bold text-gray-900 mb-6">Áreas de Atuação</h2>
+            <p class="text-xl text-gray-600 font-light">Especialidades médicas com excelência e humanização</p>
         </div>
         
         {% if especialidades %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for especialidade in especialidades %}
-                <div class="card-elegant bg-white p-8 border-l-4 border-teal hover:border-emerald transition-all duration-300">
-                    <div class="text-center mb-6">
-                        <div class="gradient-emerald text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="card-interactive group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                    <div class="h-2 gradient-primary"></div>
+                    <div class="p-8">
+                        <div class="w-20 h-20 gradient-primary rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                         </div>
-                        <h3 class="text-heading-sm font-heading font-semibold text-dark-gray mb-4">{{ especialidade.nome }}</h3>
-                    </div>
-                    
-                    <p class="text-gray-600 mb-6 text-center font-body font-medium leading-relaxed">
-                        {{ especialidade.descricao or 'Especialidade médica com atendimento personalizado e de alta qualidade para sua saúde.' }}
-                    </p>
-                    
-                    <div class="text-center">
-                        <div class="inline-flex items-center bg-emerald/10 text-emerald text-sm px-3 py-1 rounded-full mr-2 mb-4 font-body">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {{ especialidade.duracao_padrao or 30 }} minutos
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ especialidade.nome }}</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            {{ especialidade.descricao or 'Especialidade médica com atendimento personalizado e de alta qualidade.' }}
+                        </p>
+                        
+                        <div class="flex items-center justify-between">
+                            {% if especialidade.duracao_padrao %}
+                            <div class="flex items-center text-sm text-gray-500">
+                                <svg class="w-5 h-5 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {{ especialidade.duracao_padrao }} min
+                            </div>
+                            {% endif %}
+                            <a href="{{ url_for('appointments.agendar') }}?especialidade_id={{ especialidade.id }}" 
+                               class="btn-primary px-6 py-3 text-sm">
+                                Agendar
+                            </a>
                         </div>
-                        <a href="{{ url_for('appointments.agendar') }}?especialidade_id={{ especialidade.id }}" 
-                           class="btn-emerald px-6 py-3 w-full text-center">
-                            Agendar Consulta
-                        </a>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="text-center py-16">
-                <div class="w-24 h-24 gradient-teal rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div class="text-center py-20" data-aos="fade-up">
+                <div class="w-24 h-24 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                 </div>
-                <h3 class="text-heading-sm font-heading font-semibold text-dark-gray mb-4">Nossas Especialidades Estão Sendo Preparadas</h3>
-                <p class="text-gray-600 font-body font-medium">Em breve teremos mais informações detalhadas sobre todas as nossas especialidades médicas.</p>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Nossas Especialidades Estão Sendo Preparadas</h3>
+                <p class="text-gray-600">Em breve teremos mais informações sobre todas as especialidades.</p>
             </div>
         {% endif %}
     </div>
 </section>
 
-<!-- Principais Serviços -->
-<section class="section-spacing bg-white">
+<!-- Serviços Principais -->
+<section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16 fade-in">
-            <h2 class="text-heading font-display font-bold text-dark-gray mb-6">Principais Serviços</h2>
-            <p class="text-body-lg text-gray-700 font-body font-medium">Conheça os serviços que mais procurados em nossa clínica</p>
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl font-display font-bold text-gray-900 mb-6">Principais Serviços</h2>
+            <p class="text-xl text-gray-600 font-light">Os serviços mais procurados em nossa clínica</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="card-elegant bg-white p-8 text-center border border-gold/20">
-                <div class="gradient-gold text-white w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="card-interactive p-8 text-center" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-16 h-16 gradient-accent rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                 </div>
-                <h4 class="text-lg font-semibold text-dark-gray mb-3 font-heading">DIU Hormonal</h4>
-                <p class="text-sm text-gray-600 font-body font-medium leading-relaxed">Inserção especializada dos modelos Mirena e Kyleena com 30+ anos de experiência</p>
+                <h4 class="text-lg font-bold text-gray-900 mb-3">DIU Hormonal</h4>
+                <p class="text-sm text-gray-600 leading-relaxed">Inserção especializada dos modelos Mirena e Kyleena</p>
             </div>
-            <div class="card-elegant bg-white p-8 text-center border border-teal/20">
-                <div class="gradient-teal text-white w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            
+            <div class="card-interactive p-8 text-center" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </div>
-                <h4 class="text-lg font-semibold text-dark-gray mb-3 font-heading">Pré-natal</h4>
-                <p class="text-sm text-gray-600 font-body font-medium leading-relaxed">Acompanhamento completo e humanizado da gestação, do início ao pós-parto</p>
+                <h4 class="text-lg font-bold text-gray-900 mb-3">Pré-natal</h4>
+                <p class="text-sm text-gray-600 leading-relaxed">Acompanhamento completo da gestação</p>
             </div>
-            <div class="card-elegant bg-white p-8 text-center border border-emerald/20">
-                <div class="gradient-emerald text-white w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            
+            <div class="card-interactive p-8 text-center" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </div>
-                <h4 class="text-lg font-semibold text-dark-gray mb-3 font-heading">Ginecologia Geral</h4>
-                <p class="text-sm text-gray-600 font-body font-medium leading-relaxed">Consultas preventivas, exames de rotina e tratamentos especializados</p>
+                <h4 class="text-lg font-bold text-gray-900 mb-3">Ginecologia Geral</h4>
+                <p class="text-sm text-gray-600 leading-relaxed">Consultas preventivas e tratamentos</p>
             </div>
-            <div class="card-elegant bg-white p-8 text-center border border-gold/20">
-                <div class="gradient-gold text-white w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            
+            <div class="card-interactive p-8 text-center" data-aos="fade-up" data-aos-delay="400">
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
-                <h4 class="text-lg font-semibold text-dark-gray mb-3 font-heading">Planejamento Familiar</h4>
-                <p class="text-sm text-gray-600 font-body font-medium leading-relaxed">Orientação personalizada em contracepção e planejamento reprodutivo</p>
+                <h4 class="text-lg font-bold text-gray-900 mb-3">Planejamento Familiar</h4>
+                <p class="text-sm text-gray-600 leading-relaxed">Orientação em contracepção</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CTA -->
-<section class="section-spacing gradient-teal text-white">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
-        <h2 class="text-heading font-display font-bold mb-6 text-white drop-shadow-lg">Precisa de Atendimento Especializado?</h2>
-        <p class="text-body-lg text-white/95 mb-10 drop-shadow-sm font-medium leading-relaxed">
-            Nossa equipe de especialistas está pronta para oferecer o melhor cuidado 
-            para sua saúde, com humanização e excelência.
+<section class="py-24 gradient-multi text-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <svg width="100%" height="100%">
+            <pattern id="cta-pattern-esp" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="20" cy="20" r="2" fill="white"/>
+            </pattern>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#cta-pattern-esp)"/>
+        </svg>
+    </div>
+    
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10" data-aos="zoom-in">
+        <h2 class="text-4xl sm:text-5xl font-display font-bold mb-8">Precisa de Atendimento Especializado?</h2>
+        <p class="text-xl sm:text-2xl text-white/95 mb-12 leading-relaxed font-light">
+            Nossa equipe de especialistas está pronta para oferecer o melhor cuidado para sua saúde
         </p>
         <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a href="{{ url_for('appointments.agendar') }}" 
-               class="btn-gold px-10 py-4 text-lg shadow-2xl font-bold">
-                Agendar Consulta
+            <a href="{{ url_for('appointments.agendar') }}" class="btn-accent text-xl">
+                📅 Agendar Consulta
             </a>
-            <a href="{{ url_for('main.medicos') }}" 
-               class="bg-white text-teal font-bold text-lg px-10 py-4 rounded-xl shadow-2xl hover:bg-gray-50 transition-all duration-300">
+            <a href="{{ url_for('main.medicos') }}" class="glass text-white font-semibold text-xl px-14 py-6 rounded-2xl hover:bg-white/20 transition-all duration-300">
                 Conheça Nossos Médicos
             </a>
         </div>

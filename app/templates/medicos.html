@@ -4,160 +4,191 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="relative overflow-hidden section-spacing min-h-96 flex items-center">
-    <!-- Background Image -->
+<section class="relative overflow-hidden min-h-[70vh] flex items-center bg-gradient-to-br from-accent-400 via-accent-500 to-primary-500">
+    <!-- Animated Background -->
     <div class="absolute inset-0">
-        <img src="{{ url_for('static', filename='images/equipe-medica.jpg') }}" 
-             alt="Equipe médica" 
-             class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-gradient-to-r from-teal-dark/95 via-gold/80 to-emerald-dark/90"></div>
+        <div class="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl top-20 left-20 animate-float"></div>
+        <div class="absolute w-96 h-96 bg-white/10 rounded-full blur-3xl bottom-20 right-20 animate-float" style="animation-delay: 2s;"></div>
     </div>
     
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+    <!-- Pattern Overlay -->
+    <div class="absolute inset-0 opacity-10">
+        <svg width="100%" height="100%">
+            <pattern id="grid-med" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                <circle cx="25" cy="25" r="1" fill="white"/>
+            </pattern>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#grid-med)"/>
+        </svg>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
         <div class="text-center">
-            <div class="mb-6">
-                <div class="inline-flex items-center bg-white/20 rounded-full px-6 py-3 text-sm font-medium backdrop-blur-sm border border-white/30">
-                    <span class="w-2 h-2 bg-white rounded-full mr-3"></span>
+            <div class="mb-6" data-aos="fade-down">
+                <div class="inline-flex items-center glass rounded-full px-6 py-3">
+                    <span class="w-2 h-2 bg-white rounded-full mr-3 animate-pulse"></span>
                     <span class="text-white font-semibold">Profissionais experientes</span>
                 </div>
             </div>
             
-            <h1 class="text-display md:text-5xl font-display font-bold mb-8 leading-tight text-white fade-in drop-shadow-lg">
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-8 text-white" data-aos="fade-up" data-aos-delay="100">
                 Nossa Equipe Médica
             </h1>
             
-            <p class="text-body-lg mb-10 text-white/95 max-w-3xl mx-auto leading-relaxed font-body drop-shadow-sm font-medium">
-                Profissionais experientes e especializados, dedicados ao cuidado humanizado 
-                e de excelência para sua saúde e bem-estar.
+            <p class="text-xl sm:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed font-light" data-aos="fade-up" data-aos-delay="200">
+                Profissionais dedicados ao cuidado humanizado e de excelência para sua saúde
             </p>
         </div>
     </div>
 </section>
 
-<!-- Médicos -->
-<section class="section-spacing bg-cream">
+<!-- Médicos Grid -->
+<section class="py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16 slide-up">
-            <h2 class="text-heading font-display font-bold text-dark-gray mb-6">Conheça Nossa Equipe</h2>
-            <p class="text-body-lg text-gray-700 font-body font-medium">Profissionais experientes dedicados ao seu bem-estar</p>
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl font-display font-bold text-gray-900 mb-6">Conheça Nossa Equipe</h2>
+            <p class="text-xl text-gray-600 font-light">Especialistas dedicados ao seu bem-estar</p>
         </div>
         
         {% if medicos %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {% for medico in medicos %}
-                <div class="card-elegant bg-white rounded-2xl overflow-hidden hover:transform hover:scale-105 transition-all duration-300">
+                <div class="card-interactive overflow-hidden group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
                     {% if medico.foto_url %}
-                        <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-64 object-cover">
+                        <div class="relative overflow-hidden h-80">
+                            <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
                     {% else %}
-                        <div class="w-full h-64 gradient-gold flex items-center justify-center">
-                            <div class="text-center">
-                                <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="h-80 gradient-primary flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 shimmer"></div>
+                            <div class="text-center relative z-10">
+                                <div class="w-32 h-32 bg-white/20 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                                    <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                 </div>
-                                <span class="text-white/80 text-sm font-medium drop-shadow-sm">{{ medico.usuario.nome }}</span>
                             </div>
                         </div>
                     {% endif %}
                     
                     <div class="p-8">
-                        <h3 class="text-heading-sm font-display font-bold text-dark-gray mb-2">{{ medico.usuario.nome }}</h3>
-                        <p class="text-teal mb-4 font-heading font-medium">CRM: {{ medico.crm }}</p>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ medico.usuario.nome }}</h3>
+                        <p class="text-primary-600 mb-4 font-semibold flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            CRM: {{ medico.crm }}
+                        </p>
                         
                         {% if medico.especialidades %}
-                            <div class="mb-6">
-                                <div class="flex flex-wrap gap-2">
-                                    {% for especialidade in medico.especialidades %}
-                                        <span class="inline-block bg-emerald/10 text-emerald text-sm px-3 py-1 rounded-full font-body font-medium">
-                                            {{ especialidade.nome }}
-                                        </span>
-                                    {% endfor %}
-                                </div>
+                            <div class="mb-6 flex flex-wrap gap-2">
+                                {% for especialidade in medico.especialidades %}
+                                    <span class="inline-block bg-primary-100 text-primary-700 text-sm px-4 py-2 rounded-full font-medium">
+                                        {{ especialidade.nome }}
+                                    </span>
+                                {% endfor %}
                             </div>
                         {% endif %}
                         
                         {% if medico.bio %}
-                            <p class="text-gray-600 text-sm mb-6 leading-relaxed font-body font-medium">
+                            <p class="text-gray-600 mb-6 leading-relaxed">
                                 {{ medico.bio[:120] }}{% if medico.bio|length > 120 %}...{% endif %}
                             </p>
                         {% endif %}
                         
-                        <div class="flex gap-3">
-                            <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
-                               class="btn-teal px-6 py-3 w-full text-center">
-                                Ver Horários
-                            </a>
-                        </div>
+                        <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
+                           class="block btn-primary text-center">
+                            📅 Ver Horários
+                        </a>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="text-center py-16">
-                <div class="w-24 h-24 gradient-teal rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div class="text-center py-20" data-aos="fade-up">
+                <div class="w-24 h-24 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
                     <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </div>
-                <h3 class="text-heading-sm font-heading font-semibold text-dark-gray mb-4">Nossa Equipe Está Sendo Preparada</h3>
-                <p class="text-gray-600 font-body font-medium">Em breve apresentaremos todos os profissionais da nossa equipe médica especializada.</p>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Nossa Equipe Está Sendo Preparada</h3>
+                <p class="text-gray-600">Em breve apresentaremos todos os profissionais da nossa equipe médica.</p>
             </div>
         {% endif %}
     </div>
 </section>
 
-<!-- Dr. Raimundo Destaque -->
-<section class="section-spacing bg-white">
+<!-- Destaque Dr. Raimundo -->
+<section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="card-elegant bg-white p-12 lg:p-16">
+        <div class="card-interactive p-12 lg:p-16 bg-gradient-to-br from-gray-50 to-white">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="fade-in">
+                <div data-aos="fade-right">
                     <div class="mb-6">
-                        <span class="inline-block gradient-gold text-white px-4 py-2 rounded-full text-sm font-medium mb-4 shadow-md">
-                            Diretor Clínico
+                        <span class="inline-block gradient-accent text-white px-6 py-3 rounded-full text-sm font-semibold shadow-lg">
+                            🏆 Diretor Clínico
                         </span>
                     </div>
-                    <h2 class="text-heading font-display font-bold text-dark-gray mb-8">Dr. Raimundo Nunes</h2>
-                    <p class="text-body-lg text-gray-700 mb-8 font-body font-medium leading-relaxed">
+                    <h2 class="text-4xl sm:text-5xl font-display font-bold text-gray-900 mb-8">Dr. Raimundo Nunes</h2>
+                    <p class="text-xl text-gray-700 mb-8 leading-relaxed">
                         Com mais de 30 anos de experiência em ginecologia e obstetrícia, 
-                        Dr. Raimundo é referência nacional em procedimentos ginecológicos, 
-                        especialmente na inserção de DIU hormonal.
+                        Dr. Raimundo é referência nacional em procedimentos ginecológicos.
                     </p>
-                    <div class="space-y-4 text-gray-600 mb-8">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-2 h-2 bg-emerald rounded-full"></div>
-                            <p class="font-body font-medium"><span class="font-semibold text-dark-gray">Especialização:</span> Ginecologia e Obstetrícia</p>
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Especialização</p>
+                                <p class="text-gray-600">Ginecologia e Obstetrícia</p>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-2 h-2 bg-gold rounded-full"></div>
-                            <p class="font-body font-medium"><span class="font-semibold text-dark-gray">Experiência:</span> Mais de 30 anos</p>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 gradient-accent rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Experiência</p>
+                                <p class="text-gray-600">Mais de 30 anos</p>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-2 h-2 bg-teal rounded-full"></div>
-                            <p class="font-body font-medium"><span class="font-semibold text-dark-gray">Especialidade:</span> DIU Hormonal (Mirena, Kyleena)</p>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Especialidade</p>
+                                <p class="text-gray-600">DIU Hormonal (Mirena, Kyleena)</p>
+                            </div>
                         </div>
                     </div>
-                    <a href="{{ url_for('appointments.agendar') }}" 
-                       class="btn-gold px-8 py-4 shadow-xl">
+                    <a href="{{ url_for('appointments.agendar') }}" class="btn-accent text-lg">
                         Agendar com Dr. Raimundo
                     </a>
                 </div>
                 
-                <div class="text-center slide-up">
-                    <div class="w-64 h-64 gradient-teal rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
-                        <svg class="w-32 h-32 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <div class="text-center" data-aos="fade-left">
+                    <div class="w-72 h-72 gradient-primary rounded-full flex items-center justify-center mx-auto mb-10 shadow-2xl relative">
+                        <div class="absolute inset-0 rounded-full shimmer"></div>
+                        <svg class="w-36 h-36 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-                        <div class="card-elegant bg-cream p-6 text-center">
-                            <div class="text-2xl font-bold text-teal mb-2 font-display">30+</div>
-                            <div class="text-gray-600 font-body font-medium text-sm">Anos de Experiência</div>
+                    <div class="grid grid-cols-2 gap-6 max-w-md mx-auto">
+                        <div class="card p-6 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);">
+                            <div class="text-4xl font-bold text-white mb-2">30+</div>
+                            <div class="text-white text-sm font-medium">Anos</div>
                         </div>
-                        <div class="card-elegant bg-cream p-6 text-center">
-                            <div class="text-2xl font-bold text-gold mb-2 font-display">1º</div>
-                            <div class="text-gray-600 font-body font-medium text-sm">Referência DIU</div>
+                        <div class="card p-6 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+                            <div class="text-4xl font-bold text-white mb-2">1º</div>
+                            <div class="text-white text-sm font-medium">Referência DIU</div>
                         </div>
                     </div>
                 </div>
@@ -167,20 +198,26 @@
 </section>
 
 <!-- CTA -->
-<section class="section-spacing gradient-emerald text-white">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20">
-        <h2 class="text-heading font-display font-bold mb-6 text-white drop-shadow-lg">Agende Sua Consulta com Nossa Equipe</h2>
-        <p class="text-body-lg text-white/95 mb-10 drop-shadow-sm font-medium leading-relaxed">
-            Escolha o profissional de sua preferência e agende online 
-            de forma rápida, segura e conveniente.
+<section class="py-24 gradient-multi text-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <svg width="100%" height="100%">
+            <pattern id="cta-pattern-med" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="20" cy="20" r="2" fill="white"/>
+            </pattern>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#cta-pattern-med)"/>
+        </svg>
+    </div>
+    
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10" data-aos="zoom-in">
+        <h2 class="text-4xl sm:text-5xl font-display font-bold mb-8">Agende com Nossa Equipe</h2>
+        <p class="text-xl sm:text-2xl text-white/95 mb-12 leading-relaxed font-light">
+            Escolha o profissional de sua preferência e agende online de forma rápida e segura
         </p>
         <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a href="{{ url_for('appointments.agendar') }}" 
-               class="btn-gold px-10 py-4 text-lg shadow-2xl font-bold">
-                Agendar Consulta
+            <a href="{{ url_for('appointments.agendar') }}" class="btn-accent text-xl">
+                📅 Agendar Agora
             </a>
-            <a href="{{ url_for('main.especialidades') }}" 
-               class="bg-white text-emerald font-bold text-lg px-10 py-4 rounded-xl shadow-2xl hover:bg-gray-50 transition-all duration-300">
+            <a href="{{ url_for('main.especialidades') }}" class="glass text-white font-semibold text-xl px-14 py-6 rounded-2xl hover:bg-white/20 transition-all duration-300">
                 Ver Especialidades
             </a>
         </div>
