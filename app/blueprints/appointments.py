@@ -81,8 +81,22 @@ def confirmar():
             if not especialidade_id:
                 raise ValueError("especialidade_id é obrigatório")
                 
-            inicio = datetime.fromisoformat(data_hora)
+            # Converter datetime local para UTC para consistência
+            # O formulário HTML datetime-local envia horário local (naive)
+            # Precisamos assumir que é horário de Brasília (UTC-3)
+            from datetime import timezone
+            inicio_naive = datetime.fromisoformat(data_hora)
+            
+            # Assumir que o horário recebido está no timezone de Brasília (UTC-3)
+            # e converter para UTC para armazenamento consistente
+            brasilia_offset = timezone(timedelta(hours=-3))
+            inicio_brasilia = inicio_naive.replace(tzinfo=brasilia_offset)
+            inicio = inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
+            
             fim = inicio + timedelta(minutes=30)  # Duração padrão
+            
+            logger.info(f"Horário recebido (local): {inicio_naive}")
+            logger.info(f"Horário convertido para UTC: {inicio}")
             
             from models import Agendamento
             # Criar agendamento (apenas para usuários logados)
@@ -173,8 +187,19 @@ def meus_agendamentos():
         )
     ).order_by(Agendamento.inicio.desc()).all()
     
-    # Passar datetime atual para o template
+    # Usar UTC para comparação consistente (agendamentos já estão em UTC)
     agora = datetime.utcnow()
+    
+    # Converter horários para timezone de Brasília para exibição
+    from datetime import timezone
+    brasilia_offset = timezone(timedelta(hours=-3))
+    
+    for agendamento in agendamentos:
+        # Converter de UTC para horário de Brasília para exibição
+        if agendamento.inicio:
+            agendamento.inicio_local = agendamento.inicio.replace(tzinfo=timezone.utc).astimezone(brasilia_offset).replace(tzinfo=None)
+        if agendamento.fim:
+            agendamento.fim_local = agendamento.fim.replace(tzinfo=timezone.utc).astimezone(brasilia_offset).replace(tzinfo=None)
     
     return render_template('appointments/meus_agendamentos.html', 
                          agendamentos=agendamentos,
