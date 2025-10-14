@@ -243,23 +243,69 @@
 <script>
 function confirmarAgendamento(id) {
     if (confirm('Confirmar este agendamento?')) {
-        // Implementar confirmação via AJAX
-        console.log('Confirmar agendamento', id);
+        fetch(`/admin/agendamentos/${id}/confirmar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao confirmar agendamento');
+        });
     }
 }
 
 function cancelarAgendamento(id) {
     const motivo = prompt('Motivo do cancelamento (opcional):');
     if (motivo !== null) {
-        // Implementar cancelamento via AJAX
-        console.log('Cancelar agendamento', id, 'Motivo:', motivo);
+        fetch(`/admin/agendamentos/${id}/cancelar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ motivo: motivo })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao cancelar agendamento');
+        });
     }
 }
 
 function concluirAgendamento(id) {
     if (confirm('Marcar este agendamento como concluído?')) {
-        // Implementar conclusão via AJAX
-        console.log('Concluir agendamento', id);
+        fetch(`/admin/agendamentos/${id}/concluir`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao concluir agendamento');
+        });
     }
 }
 </script>

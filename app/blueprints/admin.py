@@ -495,11 +495,12 @@ def criar_medico():
         crm = request.form.get('crm')
         bio = request.form.get('bio')
         
-        from models import User, Medico
+        from models import User, Medico, Especialidade
         # Verificar se email já existe
         if User.query.filter_by(email=email).first():
             flash('Este email já está cadastrado.', 'error')
-            return render_template('admin/criar_medico.html')
+            especialidades = Especialidade.query.filter_by(ativo=True).all()
+            return render_template('admin/form_medico.html', especialidades=especialidades)
         
         # Criar usuário
         user = User()
@@ -507,6 +508,7 @@ def criar_medico():
         user.email = email
         user.telefone = telefone
         user.role = 'medico'
+        user.ativo = True
         user.set_password('123456')  # Senha temporária
         
         db.session.add(user)
@@ -517,8 +519,21 @@ def criar_medico():
         medico.user_id = user.id
         medico.crm = crm
         medico.bio = bio
+        medico.ativo = True
+        foto_url = request.form.get('foto_url')
+        if foto_url:
+            medico.foto_url = foto_url
         
         db.session.add(medico)
+        db.session.flush()
+        
+        # Adicionar especialidades
+        especialidades_ids = request.form.getlist('especialidades')
+        for esp_id in especialidades_ids:
+            especialidade = Especialidade.query.get(int(esp_id))
+            if especialidade:
+                medico.especialidades.append(especialidade)
+        
         db.session.commit()
         
         flash(f'Médico {nome} criado com sucesso! Senha temporária: 123456', 'success')
@@ -526,7 +541,7 @@ def criar_medico():
     
     from models import Especialidade
     especialidades = Especialidade.query.filter_by(ativo=True).all()
-    return render_template('admin/criar_medico.html', especialidades=especialidades)
+    return render_template('admin/form_medico.html', especialidades=especialidades)
 
 @bp.route('/especialidades')
 @login_required
@@ -644,6 +659,43 @@ def agendamentos():
                        .paginate(page=page, per_page=20, error_out=False)
     
     return render_template('admin/agendamentos.html', agendamentos=agendamentos, status_filtro=status)
+
+@bp.route('/agendamentos/<int:id>/confirmar', methods=['POST'])
+@login_required
+@admin_required
+def confirmar_agendamento(id):
+    """Confirmar agendamento"""
+    from models import Agendamento
+    agendamento = Agendamento.query.get_or_404(id)
+    agendamento.status = 'confirmado'
+    agendamento.confirmado_em = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Agendamento confirmado com sucesso!'})
+
+@bp.route('/agendamentos/<int:id>/cancelar', methods=['POST'])
+@login_required
+@admin_required
+def cancelar_agendamento(id):
+    """Cancelar agendamento"""
+    from models import Agendamento
+    agendamento = Agendamento.query.get_or_404(id)
+    agendamento.status = 'cancelado'
+    motivo = request.json.get('motivo', '') if request.is_json else request.form.get('motivo', '')
+    if motivo:
+        agendamento.observacoes = f"{agendamento.observacoes or ''}\nCancelado: {motivo}".strip()
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Agendamento cancelado com sucesso!'})
+
+@bp.route('/agendamentos/<int:id>/concluir', methods=['POST'])
+@login_required
+@admin_required
+def concluir_agendamento(id):
+    """Concluir agendamento"""
+    from models import Agendamento
+    agendamento = Agendamento.query.get_or_404(id)
+    agendamento.status = 'concluido'
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Agendamento concluído com sucesso!'})
 
 @bp.route('/agenda/gerenciar')
 @login_required
