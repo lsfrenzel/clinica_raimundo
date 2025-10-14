@@ -328,32 +328,81 @@
     </div>
 </section>
 
-<!-- CTA Final -->
-<section class="py-24 gradient-multi text-white relative overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
+<!-- CTA Final Elegante -->
+<section class="relative overflow-hidden py-32 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900">
+    <!-- Elegant Pattern Background -->
+    <div class="absolute inset-0 opacity-[0.02]">
         <svg width="100%" height="100%">
-            <pattern id="cta-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                <circle cx="20" cy="20" r="2" fill="white"/>
-            </pattern>
-            <rect x="0" y="0" width="100%" height="100%" fill="url(#cta-pattern)"/>
+            <defs>
+                <pattern id="cta-elegant-pattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+                    <circle cx="40" cy="40" r="2" fill="white"/>
+                    <path d="M 0 40 L 80 40 M 40 0 L 40 80" stroke="white" stroke-width="0.5" opacity="0.3"/>
+                </pattern>
+            </defs>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#cta-elegant-pattern)"/>
         </svg>
     </div>
     
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10" data-aos="zoom-in">
-        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-display font-bold mb-8">Pronta para cuidar da sua saúde?</h2>
-        <p class="text-xl sm:text-2xl text-white/95 mb-12 leading-relaxed font-light">
-            Agende sua consulta agora e conte com profissionais experientes e dedicados ao seu bem-estar
+    <!-- Subtle Glow Effects -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute w-[500px] h-[500px] bg-primary-500/20 rounded-full blur-[100px] top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 animate-float"></div>
+        <div class="absolute w-[400px] h-[400px] bg-teal-500/15 rounded-full blur-[80px] top-1/2 right-1/4 -translate-y-1/2 animate-float" style="animation-delay: 1.5s;"></div>
+    </div>
+    
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <!-- Elegant Badge -->
+        <div class="mb-10" data-aos="fade-up">
+            <div class="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-2">
+                <svg class="w-4 h-4 text-primary-300 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-white/80 text-sm font-medium tracking-wide">Agendamento Simples e Rápido</span>
+            </div>
+        </div>
+        
+        <!-- Refined Title -->
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-6 text-white leading-tight tracking-tight" data-aos="fade-up" data-aos-delay="100">
+            Sua saúde merece<br>
+            <span class="bg-gradient-to-r from-primary-300 via-teal-300 to-emerald-300 bg-clip-text text-transparent">
+                atenção especializada
+            </span>
+        </h2>
+        
+        <!-- Elegant Description -->
+        <p class="text-lg sm:text-xl text-white/70 mb-12 leading-relaxed font-light max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+            Agende sua consulta com profissionais experientes, dedicados ao seu bem-estar e qualidade de vida
         </p>
-        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a href="{{ url_for('appointments.agendar') }}" class="btn-accent text-xl">
-                📅 Agendar Agora
+        
+        <!-- Refined Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center" data-aos="fade-up" data-aos-delay="300">
+            <a href="{{ url_for('appointments.agendar') }}" class="group relative bg-white text-slate-900 font-semibold text-lg px-12 py-4 rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 flex items-center">
+                <svg class="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Agendar Consulta
             </a>
-            <a href="https://wa.me/5511912951245" target="_blank" class="glass text-white font-semibold text-xl px-14 py-6 rounded-2xl hover:bg-white/20 transition-all duration-300 flex items-center">
-                <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <a href="https://wa.me/5511912951245" target="_blank" class="group bg-white/5 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg px-12 py-4 rounded-xl hover:bg-white/10 transition-all duration-300 flex items-center">
+                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
                 </svg>
                 WhatsApp
             </a>
+        </div>
+        
+        <!-- Trust Indicators -->
+        <div class="mt-16 grid grid-cols-3 gap-8 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="400">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-white mb-2">30+</div>
+                <div class="text-sm text-white/60 font-light">Anos de Experiência</div>
+            </div>
+            <div class="text-center border-l border-r border-white/20">
+                <div class="text-3xl font-bold text-white mb-2">5</div>
+                <div class="text-sm text-white/60 font-light">Médicos Especialistas</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-white mb-2">9</div>
+                <div class="text-sm text-white/60 font-light">Especialidades</div>
+            </div>
         </div>
     </div>
 </section>
