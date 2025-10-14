@@ -2,9 +2,16 @@
 # Based on blueprint:python_database integration
 
 import os
+import logging
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from extensions import db, migrate, login_manager, mail, cors, csrf
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 def create_app():
     # create the app
