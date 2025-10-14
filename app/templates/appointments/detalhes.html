@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes do Agendamento - Clínica Dr. Raimundo Nunes{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="bg-gradient-to-r from-clinic-primary to-clinic-accent text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Detalhes do Agendamento</h1>
+            <p class="text-xl text-blue-100">
+                Informações completas da sua consulta
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Detalhes do Agendamento -->
+{% if agendamento %}
+<section class="py-12 bg-gray-50">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <div class="flex justify-between items-start mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Informações da Consulta</h2>
+                <span class="inline-block bg-{{ 'green' if agendamento.status == 'agendado' else 'blue' if agendamento.status == 'confirmado' else 'gray' }}-100 text-{{ 'green' if agendamento.status == 'agendado' else 'blue' if agendamento.status == 'confirmado' else 'gray' }}-800 text-sm px-3 py-1 rounded-full">
+                    {{ agendamento.status.title() }}
+                </span>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Paciente</label>
+                    <p class="text-lg text-gray-900">{{ agendamento.nome_paciente }}</p>
+                </div>
+                
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Médico</label>
+                    <p class="text-lg text-gray-900">{{ agendamento.medico.usuario.nome if agendamento.medico and agendamento.medico.usuario else 'N/A' }}</p>
+                    <p class="text-sm text-gray-600">CRM: {{ agendamento.medico.crm if agendamento.medico else 'N/A' }}</p>
+                </div>
+                
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Especialidade</label>
+                    <p class="text-lg text-gray-900">{{ agendamento.especialidade.nome if agendamento.especialidade else 'N/A' }}</p>
+                </div>
+                
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Data e Horário</label>
+                    <p class="text-lg text-gray-900">
+                        {{ agendamento.inicio_local.strftime('%d/%m/%Y às %H:%M') if agendamento.inicio_local else agendamento.inicio.strftime('%d/%m/%Y às %H:%M') }}
+                    </p>
+                    <p class="text-sm text-gray-600">Horário de Brasília</p>
+                </div>
+                
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Duração</label>
+                    <p class="text-lg text-gray-900">{{ ((agendamento.fim - agendamento.inicio).total_seconds() / 60) | int }} minutos</p>
+                </div>
+                
+                {% if agendamento.email_paciente %}
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Email de Contato</label>
+                    <p class="text-lg text-gray-900">{{ agendamento.email_paciente }}</p>
+                </div>
+                {% endif %}
+                
+                {% if agendamento.telefone_paciente %}
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Telefone</label>
+                    <p class="text-lg text-gray-900">{{ agendamento.telefone_paciente }}</p>
+                </div>
+                {% endif %}
+                
+                {% if agendamento.observacoes %}
+                <div class="border-b pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Observações</label>
+                    <p class="text-gray-900">{{ agendamento.observacoes }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="pb-3">
+                    <label class="text-sm text-gray-500 font-medium">Agendado em</label>
+                    <p class="text-gray-900">{{ agendamento.created_at.strftime('%d/%m/%Y às %H:%M') if agendamento.created_at else 'N/A' }}</p>
+                </div>
+            </div>
+            
+            <!-- Ações -->
+            <div class="mt-8 pt-6 border-t flex flex-col sm:flex-row gap-3 justify-between">
+                {% if agendamento.pode_ser_cancelado() %}
+                <form method="POST" action="{{ url_for('appointments.cancelar', agendamento_id=agendamento.id) }}" 
+                      onsubmit="return confirm('Tem certeza que deseja cancelar este agendamento?')" class="flex-1">
+                    <button type="submit" 
+                            class="w-full sm:w-auto bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200">
+                        Cancelar Agendamento
+                    </button>
+                </form>
+                {% endif %}
+                
+                <a href="{{ url_for('appointments.meus_agendamentos') }}" 
+                   class="flex-1 text-center border border-clinic-primary text-clinic-primary px-6 py-2 rounded-lg font-semibold hover:bg-clinic-primary hover:text-white transition-colors duration-200">
+                    Voltar para Meus Agendamentos
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Informações Úteis -->
+<section class="py-12 bg-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Informações Importantes</h2>
+        
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        Por favor, chegue com 15 minutos de antecedência. Traga documentos de identificação e cartão do convênio (se aplicável).
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700">
+                        Cancelamentos devem ser feitos com pelo menos 24 horas de antecedência.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

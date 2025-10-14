@@ -165,6 +165,52 @@ def sucesso(agendamento_id):
     
     return render_template('appointments/sucesso.html', agendamento=agendamento)
 
+@bp.route('/detalhes/<int:agendamento_id>')
+@login_required
+def detalhes(agendamento_id):
+    """Detalhes do agendamento"""
+    from models import Agendamento
+    agendamento = Agendamento.query.get_or_404(agendamento_id)
+    
+    # Verificar se o agendamento pertence ao usuário logado
+    if agendamento.paciente_id != current_user.id and agendamento.email_convidado != current_user.email:
+        flash('Agendamento não encontrado.', 'error')
+        return redirect(url_for('main.index'))
+    
+    # Converter horário para Brasília para exibição
+    from datetime import timezone as tz
+    brasilia_offset = tz(timedelta(hours=-3))
+    if agendamento.inicio:
+        agendamento.inicio_local = agendamento.inicio.replace(tzinfo=tz.utc).astimezone(brasilia_offset).replace(tzinfo=None)
+    if agendamento.fim:
+        agendamento.fim_local = agendamento.fim.replace(tzinfo=tz.utc).astimezone(brasilia_offset).replace(tzinfo=None)
+    
+    return render_template('appointments/detalhes.html', agendamento=agendamento)
+
+@bp.route('/cancelar/<int:agendamento_id>', methods=['POST'])
+@login_required
+def cancelar(agendamento_id):
+    """Cancelar agendamento"""
+    from models import Agendamento
+    agendamento = Agendamento.query.get_or_404(agendamento_id)
+    
+    # Verificar se o agendamento pertence ao usuário logado
+    if agendamento.paciente_id != current_user.id and agendamento.email_convidado != current_user.email:
+        flash('Agendamento não encontrado.', 'error')
+        return redirect(url_for('main.index'))
+    
+    # Verificar se pode ser cancelado (24h de antecedência)
+    if not agendamento.pode_ser_cancelado():
+        flash('Não é possível cancelar agendamentos com menos de 24h de antecedência.', 'error')
+        return redirect(url_for('appointments.meus_agendamentos'))
+    
+    # Cancelar agendamento
+    agendamento.status = 'cancelado'
+    db.session.commit()
+    
+    flash('Agendamento cancelado com sucesso.', 'success')
+    return redirect(url_for('appointments.meus_agendamentos'))
+
 @bp.route('/meus-agendamentos')
 @login_required
 def meus_agendamentos():

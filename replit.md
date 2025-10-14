@@ -92,6 +92,25 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 - Comparações de data/hora consistentes (UTC vs UTC)
 - Sistema robusto com melhor observabilidade via logs
 
+### ✅ Problema: Erro "Internal Server Error" em "Meus Agendamentos" no Railway (14/10/2025)
+**Causa**:
+- Conflito de importação de `timezone` (tentativa de usar atributo em instância)
+- Rotas faltantes: `appointments.detalhes` e `appointments.cancelar`
+- Template `detalhes.html` não existia
+
+**Solução**:
+- ✅ Corrigido conflito de importação renomeando `timezone` para `tz`
+- ✅ Criada rota `/detalhes/<int:agendamento_id>` com conversão de timezone
+- ✅ Criada rota `/cancelar/<int:agendamento_id>` com validação de 24h
+- ✅ Criado template `detalhes.html` completo
+- ✅ Validações de segurança (verificação de propriedade do agendamento)
+
+**Resultados**:
+- Página "Meus Agendamentos" funciona corretamente
+- Usuários podem visualizar detalhes completos de agendamentos
+- Sistema de cancelamento funcional com regra de 24h
+- Todas as rotas do template resolvem corretamente
+
 ### ✅ Problema: Chatbot não acessava banco de dados corretamente (02/10/2025)
 **Causa**: 
 - Função `get_doctor_schedules` gerava horários simulados em vez de buscar da tabela `agendas`
