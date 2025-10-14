@@ -1,248 +1,69 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-    }
+<!-- Hero Section Revolucionário -->
+<section class="relative overflow-hidden min-h-screen flex items-center bg-gradient-to-br from-primary-600 via-primary-500 to-teal-400">
+    <!-- Animated Background Patterns -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl -top-48 -left-48 animate-float"></div>
+        <div class="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl top-1/2 -right-48 animate-float" style="animation-delay: 1s;"></div>
+        <div class="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl -bottom-48 left-1/2 animate-float" style="animation-delay: 2s;"></div>
+    </div>
     
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes fadeInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    @keyframes fadeInRight {
-        from {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(45, 212, 191, 0.4); }
-        50% { box-shadow: 0 0 40px rgba(45, 212, 191, 0.6); }
-    }
-    
-    @keyframes gradient-shift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    @keyframes scale-in {
-        from {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    .animate-float {
-        animation: float 3s ease-in-out infinite;
-    }
-    
-    .animate-fadeInUp {
-        animation: fadeInUp 0.8s ease-out forwards;
-    }
-    
-    .animate-fadeInLeft {
-        animation: fadeInLeft 0.8s ease-out forwards;
-    }
-    
-    .animate-fadeInRight {
-        animation: fadeInRight 0.8s ease-out forwards;
-    }
-    
-    .animate-scale-in {
-        animation: scale-in 0.6s ease-out forwards;
-    }
-    
-    .gradient-animate {
-        background: linear-gradient(-45deg, #14b8a6, #0d9488, #0f766e, #115e59);
-        background-size: 400% 400%;
-        animation: gradient-shift 15s ease infinite;
-    }
-    
-    .card-hover {
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .card-hover:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    }
-    
-    .btn-hero {
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-hero::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    .btn-hero:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .step-number {
-        background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-        transition: all 0.3s ease;
-    }
-    
-    .step-card:hover .step-number {
-        transform: rotate(360deg) scale(1.1);
-    }
-    
-    .parallax-bg {
-        background-attachment: fixed;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-    }
-    
-    .reveal {
-        opacity: 0;
-        transform: translateY(50px);
-        transition: all 0.8s ease-out;
-    }
-    
-    .reveal.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .badge-pulse {
-        animation: pulse-glow 2s ease-in-out infinite;
-    }
-    
-    .specialty-card {
-        background: white;
-        border-radius: 1.5rem;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 2px solid transparent;
-    }
-    
-    .specialty-card:hover {
-        border-color: #14b8a6;
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px -12px rgba(20, 184, 166, 0.3);
-    }
-    
-    .stat-card {
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s;
-    }
-    
-    .stat-card:hover::before {
-        left: 100%;
-    }
-</style>
-
-<!-- Hero Section with Parallax -->
-<section class="relative overflow-hidden min-h-screen flex items-center">
-    <!-- Animated Background -->
-    <div class="absolute inset-0 gradient-animate"></div>
-    
-    <!-- Pattern Overlay -->
+    <!-- Grid Pattern Overlay -->
     <div class="absolute inset-0 opacity-10">
         <svg width="100%" height="100%">
-            <pattern id="pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                <circle cx="20" cy="20" r="1" fill="white"/>
+            <pattern id="grid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                <circle cx="25" cy="25" r="1" fill="white"/>
             </pattern>
-            <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern)"/>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#grid)"/>
         </svg>
     </div>
     
-    <!-- Floating Elements -->
-    <div class="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-float" style="animation-delay: 0s;"></div>
-    <div class="absolute top-40 right-20 w-16 h-16 bg-white/10 rounded-full animate-float" style="animation-delay: 1s;"></div>
-    <div class="absolute bottom-40 left-1/4 w-24 h-24 bg-white/10 rounded-full animate-float" style="animation-delay: 2s;"></div>
-    
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
         <div class="text-center">
-            <!-- Badge com Animação -->
-            <div class="mb-8 animate-fadeInUp" style="animation-delay: 0.2s;">
-                <div class="inline-flex items-center bg-white/20 rounded-full px-8 py-4 text-sm font-medium backdrop-blur-md border border-white/40 badge-pulse">
-                    <span class="w-3 h-3 bg-white rounded-full mr-3 animate-pulse"></span>
-                    <span class="text-white font-semibold text-lg">Mais de 30 anos de experiência</span>
+            <!-- Badge Pulsante -->
+            <div class="mb-8" data-aos="fade-up" data-aos-delay="100">
+                <div class="inline-flex items-center glass rounded-full px-6 py-3">
+                    <div class="w-3 h-3 bg-accent-300 rounded-full mr-3 animate-pulse"></div>
+                    <span class="text-white font-semibold text-lg">✨ Mais de 30 anos de experiência</span>
                 </div>
             </div>
             
-            <!-- Título Principal com Animação -->
-            <h1 class="text-5xl md:text-7xl font-display font-bold mb-10 leading-tight text-white animate-fadeInUp" style="animation-delay: 0.4s;">
+            <!-- Título Impactante -->
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display font-bold mb-8 text-white leading-tight" data-aos="fade-up" data-aos-delay="200">
                 Humanização,<br>
-                <span class="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">excelência</span> e<br>
+                <span class="inline-block bg-gradient-to-r from-accent-200 via-accent-300 to-accent-400 bg-clip-text text-transparent">
+                    excelência
+                </span> e<br>
                 <span class="text-white">dedicação à saúde da mulher</span>
             </h1>
             
             <!-- Subtítulo -->
-            <p class="text-xl md:text-2xl mb-12 text-white/95 max-w-4xl mx-auto leading-relaxed font-light animate-fadeInUp" style="animation-delay: 0.6s;">
-                Com mais de 30 anos de experiência em medicina, o Dr. Raimundo Nunes é especialista em ginecologia e obstetrícia, oferecendo atendimento humanizado e de alta qualidade.
+            <p class="text-xl sm:text-2xl lg:text-3xl mb-12 text-white/95 max-w-4xl mx-auto leading-relaxed font-light" data-aos="fade-up" data-aos-delay="300">
+                Especialistas em ginecologia e obstetrícia oferecendo atendimento humanizado e de alta qualidade
             </p>
             
-            <!-- Botões de Ação -->
-            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12 animate-fadeInUp" style="animation-delay: 0.8s;">
-                <a href="{{ url_for('appointments.agendar') }}" class="btn-hero bg-white text-teal-600 font-bold text-xl px-14 py-6 rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                    <span class="relative z-10">📅 Agendar Consulta</span>
+            <!-- CTAs -->
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16" data-aos="fade-up" data-aos-delay="400">
+                <a href="{{ url_for('appointments.agendar') }}" class="group relative btn-accent text-lg sm:text-xl px-10 sm:px-14 py-5 sm:py-6 overflow-hidden">
+                    <span class="relative z-10 flex items-center">
+                        <svg class="w-6 h-6 mr-2 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Agendar Consulta
+                    </span>
                 </a>
-                <a href="{{ url_for('auth.register') }}" class="btn-hero bg-teal-700/30 backdrop-blur-sm border-2 border-white/50 text-white font-bold text-xl px-14 py-6 rounded-2xl shadow-2xl hover:bg-white/20 transition-all duration-300">
-                    <span class="relative z-10">✨ Criar Conta</span>
+                <a href="{{ url_for('auth.register') }}" class="glass text-white font-semibold text-lg sm:text-xl px-10 sm:px-14 py-5 sm:py-6 rounded-2xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+                    Criar Conta
                 </a>
             </div>
             
             <!-- Scroll Indicator -->
-            <div class="animate-fadeInUp" style="animation-delay: 1s;">
-                <a href="#agendamento" class="inline-flex flex-col items-center text-white/80 hover:text-white transition-colors duration-300">
-                    <span class="text-sm font-medium mb-2">Saiba mais</span>
-                    <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="animate-bounce" data-aos="fade-up" data-aos-delay="500">
+                <a href="#features" class="inline-flex flex-col items-center text-white/80 hover:text-white transition-colors duration-300">
+                    <span class="text-sm font-medium mb-2">Descubra Mais</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
                 </a>
@@ -251,43 +72,101 @@
     </div>
 </section>
 
-<!-- Agendamento Rápido -->
-<section id="agendamento" class="section-spacing bg-gradient-to-br from-gray-50 to-blue-50">
+<!-- Destaques / Features -->
+<section id="features" class="py-20 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-20 reveal">
-            <h2 class="text-5xl font-display font-bold text-gray-900 mb-6">Agendamento Rápido</h2>
-            <p class="text-2xl text-gray-600 font-light">Agende sua consulta em apenas 3 passos</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="card-interactive p-8 text-center" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6 animate-glow">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">30+ Anos</h3>
+                <p class="text-gray-600 leading-relaxed">De experiência e excelência em saúde da mulher</p>
+            </div>
+            
+            <div class="card-interactive p-8 text-center" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-20 h-20 gradient-accent rounded-2xl flex items-center justify-center mx-auto mb-6 animate-glow">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Equipe Especializada</h3>
+                <p class="text-gray-600 leading-relaxed">Profissionais qualificados e dedicados ao seu bem-estar</p>
+            </div>
+            
+            <div class="card-interactive p-8 text-center" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-glow">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-gray-900">Atendimento Humanizado</h3>
+                <p class="text-gray-600 leading-relaxed">Cuidado personalizado pensando em você</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Como Agendar -->
+<section class="py-24 bg-gradient-to-br from-gray-50 to-primary-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-gray-900 mb-6">Agende em 3 Passos</h2>
+            <p class="text-xl sm:text-2xl text-gray-600 font-light">Rápido, fácil e seguro</p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
-            <!-- Passo 1 -->
-            <div class="step-card text-center bg-white p-10 rounded-3xl shadow-xl card-hover reveal" style="transition-delay: 0.1s;">
-                <div class="step-number text-white w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg">1</div>
-                <div class="text-6xl mb-6">🏥</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            <div class="relative card p-10 text-center group" data-aos="fade-up" data-aos-delay="100">
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 gradient-primary rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    1
+                </div>
+                <div class="mt-8 mb-6">
+                    <div class="w-24 h-24 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-4 transform group-hover:rotate-6 transition-transform duration-300">
+                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                </div>
                 <h3 class="text-2xl font-bold mb-4 text-gray-900">Escolha a Especialidade</h3>
-                <p class="text-gray-600 text-lg">Selecione a área médica de sua consulta</p>
+                <p class="text-gray-600 text-lg leading-relaxed">Selecione a área médica da sua consulta</p>
             </div>
             
-            <!-- Passo 2 -->
-            <div class="step-card text-center bg-white p-10 rounded-3xl shadow-xl card-hover reveal" style="transition-delay: 0.2s;">
-                <div class="step-number text-white w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg">2</div>
-                <div class="text-6xl mb-6">👨‍⚕️</div>
+            <div class="relative card p-10 text-center group" data-aos="fade-up" data-aos-delay="200">
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 gradient-accent rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    2
+                </div>
+                <div class="mt-8 mb-6">
+                    <div class="w-24 h-24 gradient-accent rounded-3xl flex items-center justify-center mx-auto mb-4 transform group-hover:rotate-6 transition-transform duration-300">
+                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                </div>
                 <h3 class="text-2xl font-bold mb-4 text-gray-900">Escolha o Médico</h3>
-                <p class="text-gray-600 text-lg">Veja os próximos horários disponíveis</p>
+                <p class="text-gray-600 text-lg leading-relaxed">Veja horários disponíveis e agende</p>
             </div>
             
-            <!-- Passo 3 -->
-            <div class="step-card text-center bg-white p-10 rounded-3xl shadow-xl card-hover reveal" style="transition-delay: 0.3s;">
-                <div class="step-number text-white w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg">3</div>
-                <div class="text-6xl mb-6">✅</div>
+            <div class="relative card p-10 text-center group" data-aos="fade-up" data-aos-delay="300">
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    3
+                </div>
+                <div class="mt-8 mb-6">
+                    <div class="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl flex items-center justify-center mx-auto mb-4 transform group-hover:rotate-6 transition-transform duration-300">
+                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
                 <h3 class="text-2xl font-bold mb-4 text-gray-900">Confirme os Dados</h3>
-                <p class="text-gray-600 text-lg">Finalize seu agendamento</p>
+                <p class="text-gray-600 text-lg leading-relaxed">Finalize seu agendamento rapidamente</p>
             </div>
         </div>
         
-        <div class="text-center reveal">
-            <a href="{{ url_for('appointments.agendar') }}" class="inline-block bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-xl px-16 py-6 rounded-2xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                🚀 Começar Agendamento
+        <div class="text-center mt-16" data-aos="fade-up" data-aos-delay="400">
+            <a href="{{ url_for('appointments.agendar') }}" class="btn-primary text-xl">
+                🚀 Começar Agora
             </a>
         </div>
     </div>
@@ -295,52 +174,66 @@
 
 <!-- Especialidades -->
 {% if especialidades %}
-<section class="section-spacing bg-white">
+<section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-20 reveal">
-            <h2 class="text-5xl font-display font-bold text-gray-900 mb-6">Nossas Especialidades</h2>
-            <p class="text-2xl text-gray-600 font-light">Atendimento completo para a saúde da mulher</p>
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-gray-900 mb-6">Nossas Especialidades</h2>
+            <p class="text-xl sm:text-2xl text-gray-600 font-light">Atendimento completo para a saúde da mulher</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for especialidade in especialidades %}
-            <div class="specialty-card p-8 reveal" style="transition-delay: {{ loop.index0 * 0.1 }}s;">
-                <div class="text-5xl mb-6">💊</div>
-                <h3 class="text-2xl font-bold text-gray-900 mb-4">{{ especialidade.nome }}</h3>
-                <p class="text-gray-600 mb-6 text-lg leading-relaxed">{{ especialidade.descricao or 'Especialidade médica com atendimento de qualidade.' }}</p>
-                <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" 
-                   class="inline-flex items-center text-teal-600 font-semibold text-lg hover:text-teal-700 transition-colors duration-300">
-                    Agendar consulta
-                    <svg class="w-5 h-5 ml-2 transform group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </a>
+            <div class="card-interactive overflow-hidden group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                <div class="h-2 gradient-primary"></div>
+                <div class="p-8">
+                    <div class="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-900">{{ especialidade.nome }}</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">{{ especialidade.descricao or 'Especialidade médica com atendimento de qualidade.' }}</p>
+                    <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" class="inline-flex items-center text-primary-600 font-semibold hover:text-primary-700 group-hover:translate-x-2 transition-transform duration-300">
+                        Agendar consulta
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
             </div>
             {% endfor %}
+        </div>
+        
+        <div class="text-center mt-12" data-aos="fade-up">
+            <a href="{{ url_for('main.especialidades') }}" class="btn-outline text-lg">
+                Ver Todas as Especialidades
+            </a>
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- Nossos Médicos -->
+<!-- Médicos -->
 {% if medicos %}
-<section class="section-spacing bg-gradient-to-br from-blue-50 to-teal-50">
+<section class="py-24 bg-gradient-to-br from-primary-50 to-teal-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-20 reveal">
-            <h2 class="text-5xl font-display font-bold text-gray-900 mb-6">Nossa Equipe</h2>
-            <p class="text-2xl text-gray-600 font-light">Médicos especializados e experientes</p>
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-gray-900 mb-6">Nossa Equipe Médica</h2>
+            <p class="text-xl sm:text-2xl text-gray-600 font-light">Profissionais experientes e dedicados</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {% for medico in medicos %}
-            <div class="bg-white rounded-3xl overflow-hidden shadow-xl card-hover reveal" style="transition-delay: {{ loop.index0 * 0.1 }}s;">
+            {% for medico in medicos[:6] %}
+            <div class="card-interactive overflow-hidden group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
                 {% if medico.foto_url %}
-                    <div class="relative overflow-hidden h-64">
-                        <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500">
+                    <div class="relative overflow-hidden h-80">
+                        <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                 {% else %}
-                    <div class="h-64 bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="h-80 gradient-primary flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 shimmer"></div>
+                        <svg class="w-24 h-24 text-white/80 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </div>
@@ -348,12 +241,12 @@
                 
                 <div class="p-8">
                     <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ medico.usuario.nome }}</h3>
-                    <p class="text-teal-600 mb-4 font-semibold text-lg">CRM: {{ medico.crm }}</p>
+                    <p class="text-primary-600 mb-4 font-semibold">CRM: {{ medico.crm }}</p>
                     
                     {% if medico.especialidades %}
                         <div class="mb-6 flex flex-wrap gap-2">
-                            {% for especialidade in medico.especialidades %}
-                                <span class="inline-block bg-teal-100 text-teal-700 text-sm px-4 py-2 rounded-full font-medium">
+                            {% for especialidade in medico.especialidades[:2] %}
+                                <span class="inline-block bg-primary-100 text-primary-700 text-sm px-4 py-2 rounded-full font-medium">
                                     {{ especialidade.nome }}
                                 </span>
                             {% endfor %}
@@ -361,11 +254,10 @@
                     {% endif %}
                     
                     {% if medico.bio %}
-                        <p class="text-gray-600 text-base mb-6 leading-relaxed">{{ medico.bio[:120] }}{% if medico.bio|length > 120 %}...{% endif %}</p>
+                        <p class="text-gray-600 mb-6 leading-relaxed">{{ medico.bio[:100] }}{% if medico.bio|length > 100 %}...{% endif %}</p>
                     {% endif %}
                     
-                    <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
-                       class="block bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-center px-6 py-4 rounded-xl hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" class="block btn-primary text-center">
                         📅 Agendar Consulta
                     </a>
                 </div>
@@ -373,9 +265,9 @@
             {% endfor %}
         </div>
         
-        <div class="text-center mt-16 reveal">
-            <a href="{{ url_for('main.medicos') }}" class="inline-flex items-center text-teal-600 font-bold text-xl hover:text-teal-700 transition-colors duration-300">
-                Ver todos os médicos
+        <div class="text-center mt-16" data-aos="fade-up">
+            <a href="{{ url_for('main.medicos') }}" class="inline-flex items-center text-primary-600 font-bold text-xl hover:text-primary-700">
+                Ver Toda a Equipe
                 <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
@@ -385,89 +277,81 @@
 </section>
 {% endif %}
 
-<!-- Sobre a Clínica -->
-<section class="section-spacing bg-white">
+<!-- Sobre / Destaque DIU -->
+<section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div class="reveal">
-                <h2 class="text-5xl font-display font-bold text-gray-900 mb-8">Referência em DIU Hormonal</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div data-aos="fade-right">
+                <div class="mb-6">
+                    <span class="inline-block bg-gradient-to-r from-primary-100 to-teal-100 text-primary-700 px-6 py-3 rounded-full text-sm font-semibold">
+                        🏆 Referência Nacional
+                    </span>
+                </div>
+                <h2 class="text-4xl sm:text-5xl font-display font-bold text-gray-900 mb-8">Especialistas em DIU Hormonal</h2>
                 <p class="text-xl text-gray-700 mb-6 leading-relaxed">
                     A Clínica Dr. Raimundo é referência nacional na inserção de DIU hormonal, 
-                    especialmente os modelos Mirena e Kyleena. Desde o lançamento do DIU hormonal no Brasil, 
-                    em 2000, a clínica acumula anos de experiência e se destaca como uma das mais 
-                    especializadas nesse procedimento.
+                    especialmente os modelos Mirena e Kyleena.
                 </p>
                 <p class="text-xl text-gray-700 mb-10 leading-relaxed">
-                    Se você busca um ginecologista experiente e humanizado em São Paulo, 
-                    o Dr. Raimundo Nunes e sua equipe estão prontos para oferecer o melhor em saúde feminina.
+                    Desde o lançamento do DIU hormonal no Brasil em 2000, acumulamos anos de 
+                    experiência como uma das clínicas mais especializadas nesse procedimento.
                 </p>
-                <a href="{{ url_for('main.sobre') }}" class="inline-block bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-lg px-12 py-5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                <a href="{{ url_for('main.sobre') }}" class="btn-primary text-lg">
                     Saiba Mais Sobre Nós
                 </a>
             </div>
             
-            <div class="grid grid-cols-2 gap-6 reveal">
-                <div class="stat-card bg-gradient-to-br from-teal-50 to-teal-100 p-10 rounded-3xl text-center transform hover:scale-105 transition-all duration-300">
-                    <div class="text-6xl font-bold text-teal-600 mb-3">30+</div>
-                    <div class="text-gray-700 text-lg font-medium">Anos de Experiência</div>
-                </div>
-                <div class="stat-card bg-gradient-to-br from-emerald-50 to-emerald-100 p-10 rounded-3xl text-center transform hover:scale-105 transition-all duration-300">
-                    <div class="text-6xl font-bold text-emerald-600 mb-3">2</div>
-                    <div class="text-gray-700 text-lg font-medium">Unidades</div>
-                </div>
-                <div class="stat-card bg-gradient-to-br from-blue-50 to-blue-100 p-10 rounded-3xl text-center transform hover:scale-105 transition-all duration-300">
-                    <div class="text-6xl font-bold text-blue-600 mb-3">9</div>
-                    <div class="text-gray-700 text-lg font-medium">Especialidades</div>
-                </div>
-                <div class="stat-card bg-gradient-to-br from-cyan-50 to-cyan-100 p-10 rounded-3xl text-center transform hover:scale-105 transition-all duration-300">
-                    <div class="text-6xl font-bold text-cyan-600 mb-3">5</div>
-                    <div class="text-gray-700 text-lg font-medium">Especialistas</div>
+            <div data-aos="fade-left">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="card p-8 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);">
+                        <div class="text-6xl font-bold text-white mb-3">30+</div>
+                        <div class="text-white text-lg font-medium">Anos de Experiência</div>
+                    </div>
+                    <div class="card p-8 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+                        <div class="text-6xl font-bold text-white mb-3">2</div>
+                        <div class="text-white text-lg font-medium">Unidades em SP</div>
+                    </div>
+                    <div class="card p-8 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div class="text-6xl font-bold text-white mb-3">9</div>
+                        <div class="text-white text-lg font-medium">Especialidades</div>
+                    </div>
+                    <div class="card p-8 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                        <div class="text-6xl font-bold text-white mb-3">5</div>
+                        <div class="text-white text-lg font-medium">Especialistas</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- WhatsApp Floating Button -->
-<a href="https://wa.me/5511999999999" target="_blank" class="fixed bottom-8 right-8 bg-green-500 text-white p-6 rounded-full shadow-2xl hover:bg-green-600 transform hover:scale-110 transition-all duration-300 z-50 animate-float">
-    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-    </svg>
-</a>
-
-<script>
-// Intersection Observer para animações no scroll
-document.addEventListener('DOMContentLoaded', function() {
-    const reveals = document.querySelectorAll('.reveal');
+<!-- CTA Final -->
+<section class="py-24 gradient-multi text-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <svg width="100%" height="100%">
+            <pattern id="cta-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <circle cx="20" cy="20" r="2" fill="white"/>
+            </pattern>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#cta-pattern)"/>
+        </svg>
+    </div>
     
-    const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-            }
-        });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
-    
-    reveals.forEach(reveal => {
-        revealObserver.observe(reveal);
-    });
-});
-
-// Smooth scroll para links internos
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-</script>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10" data-aos="zoom-in">
+        <h2 class="text-4xl sm:text-5xl lg:text-6xl font-display font-bold mb-8">Pronta para cuidar da sua saúde?</h2>
+        <p class="text-xl sm:text-2xl text-white/95 mb-12 leading-relaxed font-light">
+            Agende sua consulta agora e conte com profissionais experientes e dedicados ao seu bem-estar
+        </p>
+        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <a href="{{ url_for('appointments.agendar') }}" class="btn-accent text-xl">
+                📅 Agendar Agora
+            </a>
+            <a href="https://wa.me/5511912951245" target="_blank" class="glass text-white font-semibold text-xl px-14 py-6 rounded-2xl hover:bg-white/20 transition-all duration-300 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                </svg>
+                WhatsApp
+            </a>
+        </div>
+    </div>
+</section>
 {% endblock %}
