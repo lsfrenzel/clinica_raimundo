@@ -2,7 +2,15 @@
 
 {% block content %}
 <!-- Hero Section Elegante -->
-<section class="relative overflow-hidden min-h-screen flex items-center bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700">
+<section class="relative overflow-hidden min-h-screen flex items-center">
+    <!-- Background Image -->
+    <div class="absolute inset-0">
+        <img src="{{ url_for('static', filename='images/itaim-08.jpg') }}" 
+             alt="Clínica Dr. Raimundo Nunes" 
+             class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-900/75 to-primary-800/60"></div>
+    </div>
+    
     <!-- Elegant Pattern Overlay -->
     <div class="absolute inset-0 opacity-[0.03]">
         <svg width="100%" height="100%">
@@ -17,57 +25,51 @@
         </svg>
     </div>
     
-    <!-- Subtle Glow Effects -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute w-[600px] h-[600px] bg-accent-400/20 rounded-full blur-[120px] -top-48 -left-48 animate-float"></div>
-        <div class="absolute w-[500px] h-[500px] bg-primary-400/15 rounded-full blur-[100px] top-1/3 -right-32 animate-float" style="animation-delay: 2s;"></div>
-    </div>
-    
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
         <div class="text-center">
             <!-- Elegant Badge -->
             <div class="mb-10" data-aos="fade-up" data-aos-delay="100">
-                <div class="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
-                    <svg class="w-5 h-5 text-primary-300 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <div class="inline-flex items-center bg-accent-500/20 backdrop-blur-sm border border-accent-400/40 rounded-full px-6 py-3">
+                    <svg class="w-5 h-5 text-accent-300 mr-3" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
-                    <span class="text-white/90 font-medium tracking-wide">Mais de 30 anos de excelência</span>
+                    <span class="text-white font-semibold tracking-wide drop-shadow-lg">Mais de 30 anos de excelência</span>
                 </div>
             </div>
             
             <!-- Elegant Title -->
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold mb-8 text-white leading-tight tracking-tight" data-aos="fade-up" data-aos-delay="200">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold mb-8 text-white leading-tight tracking-tight drop-shadow-2xl" data-aos="fade-up" data-aos-delay="200">
                 Cuidado dedicado à<br>
-                <span class="inline-block bg-gradient-to-r from-accent-200 via-accent-300 to-accent-400 bg-clip-text text-transparent">
+                <span class="inline-block bg-gradient-to-r from-accent-200 via-accent-300 to-accent-400 bg-clip-text text-transparent drop-shadow-lg">
                     saúde da mulher
                 </span><br>
-                <span class="text-white/95">com humanização e excelência</span>
+                <span class="text-white">com humanização e excelência</span>
             </h1>
             
             <!-- Elegant Subtitle -->
-            <p class="text-lg sm:text-xl lg:text-2xl mb-14 text-white/80 max-w-3xl mx-auto leading-relaxed font-light" data-aos="fade-up" data-aos-delay="300">
+            <p class="text-lg sm:text-xl lg:text-2xl mb-14 text-white max-w-3xl mx-auto leading-relaxed font-medium drop-shadow-lg" data-aos="fade-up" data-aos-delay="300">
                 Especialistas em ginecologia e obstetrícia comprometidos com seu bem-estar e qualidade de vida
             </p>
             
             <!-- Refined CTAs -->
             <div class="flex flex-col sm:flex-row gap-5 justify-center items-center mb-20" data-aos="fade-up" data-aos-delay="400">
-                <a href="{{ url_for('appointments.agendar') }}" class="group relative bg-white text-slate-900 font-semibold text-lg px-10 py-4 rounded-xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center">
+                <a href="{{ url_for('appointments.agendar') }}" class="group relative bg-accent-400 hover:bg-accent-500 text-primary-900 font-bold text-lg px-10 py-4 rounded-xl shadow-2xl hover:shadow-accent-500/50 transform hover:scale-105 transition-all duration-300 flex items-center">
                     <svg class="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Agendar Consulta
                 </a>
-                <a href="{{ url_for('auth.register') }}" class="bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold text-lg px-10 py-4 rounded-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+                <a href="{{ url_for('auth.register') }}" class="bg-white backdrop-blur-sm border-2 border-white text-primary-900 font-bold text-lg px-10 py-4 rounded-xl hover:bg-white/90 transition-all duration-300 transform hover:scale-105">
                     Criar Conta
                 </a>
             </div>
             
             <!-- Refined Scroll Indicator -->
             <div class="animate-bounce" data-aos="fade-up" data-aos-delay="500">
-                <a href="#features" class="inline-flex flex-col items-center text-white/60 hover:text-white/90 transition-colors duration-300 group">
-                    <span class="text-sm font-light tracking-wider uppercase mb-3">Explore</span>
-                    <div class="w-6 h-10 border-2 border-white/40 rounded-full flex items-start justify-center p-2 group-hover:border-white/60 transition-colors duration-300">
-                        <div class="w-1 h-2 bg-white/60 rounded-full animate-pulse"></div>
+                <a href="#features" class="inline-flex flex-col items-center text-white hover:text-accent-300 transition-colors duration-300 group">
+                    <span class="text-sm font-semibold tracking-wider uppercase mb-3 drop-shadow-lg">Explore</span>
+                    <div class="w-6 h-10 border-2 border-white rounded-full flex items-start justify-center p-2 group-hover:border-accent-300 transition-colors duration-300 drop-shadow-lg">
+                        <div class="w-1 h-2 bg-white rounded-full animate-pulse"></div>
                     </div>
                 </a>
             </div>
