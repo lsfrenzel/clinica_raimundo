@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Correção de Timezone - Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Correção de Timezone de Agendamentos</h1>
+        <p class="text-gray-600">Visualize as correções que serão aplicadas aos agendamentos antigos</p>
+    </div>
+
+    <!-- Informações -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8 rounded-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-lg font-medium text-blue-800 mb-2">Sobre esta correção</h3>
+                <div class="text-sm text-blue-700 space-y-1">
+                    <p>• <strong>Data de corte:</strong> {{ cutoff_date.strftime('%d/%m/%Y %H:%M:%S') }} UTC</p>
+                    <p>• <strong>Agendamentos encontrados:</strong> {{ total }}</p>
+                    <p>• <strong>Ação:</strong> Adicionar 3 horas (converter de Brasília UTC-3 para UTC)</p>
+                    <p>• <strong>Proteção:</strong> Apenas agendamentos de API/chatbot criados antes da data de corte</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if total > 0 %}
+    <!-- Tabela de agendamentos -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horário Atual</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horário Corrigido</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origem</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criado em</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for agendamento in agendamentos %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            #{{ agendamento.id }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ agendamento.paciente }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <div class="text-gray-900">{{ agendamento.inicio_atual }}</div>
+                            <div class="text-gray-500 text-xs">até {{ agendamento.fim_atual }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <div class="text-green-600 font-medium">{{ agendamento.inicio_corrigido }}</div>
+                            <div class="text-green-500 text-xs">até {{ agendamento.fim_corrigido }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if agendamento.origem == 'mobile' %}bg-blue-100 text-blue-800
+                                {% elif agendamento.origem == 'chatbot' %}bg-purple-100 text-purple-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ agendamento.origem }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ agendamento.criado_em }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-6 mb-8 rounded-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div class="ml-3 flex-1">
+                <h3 class="text-lg font-medium text-yellow-800 mb-2">⚠️ Atenção!</h3>
+                <p class="text-sm text-yellow-700 mb-4">
+                    Você está prestes a corrigir <strong>{{ total }} agendamentos</strong>. 
+                    Esta ação é irreversível. Certifique-se de que:
+                </p>
+                <ul class="text-sm text-yellow-700 list-disc list-inside space-y-1 mb-4">
+                    <li>Você fez o deploy do código corrigido</li>
+                    <li>A data de corte está correta</li>
+                    <li>Os horários acima fazem sentido</li>
+                </ul>
+                <div class="flex gap-4">
+                    <a href="{{ url_for('admin.corrigir_timezone_agendamentos', cutoff_date=request.args.get('cutoff_date'), modo='aplicar') }}" 
+                       class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
+                       onclick="return confirm('Tem certeza? Esta ação não pode ser desfeita!')">
+                        ✅ Aplicar Correções
+                    </a>
+                    <a href="{{ url_for('admin.dashboard') }}" 
+                       class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-lg transition-all duration-300">
+                        ❌ Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Nenhum agendamento para corrigir -->
+    <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-lg font-medium text-green-800 mb-2">✅ Tudo certo!</h3>
+                <p class="text-sm text-green-700">
+                    Não há agendamentos para corrigir. Todos os agendamentos já estão com timezone correto.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
