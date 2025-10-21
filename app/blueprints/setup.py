@@ -199,7 +199,30 @@ def setup_database():
         db.session.commit()
         resultado['mensagens'].append(f'✅ {agenda_count} slots de agenda criados!')
         
-        # 7. Resumo final
+        # 7. Criar paciente Ana Silva
+        resultado['mensagens'].append('👥 Criando paciente Ana Silva...')
+        paciente_ana = User.query.filter_by(email='ana.silva@email.com').first()
+        
+        if paciente_ana:
+            resultado['mensagens'].append(f'✅ Paciente Ana Silva já existe: {paciente_ana.email}')
+            if not paciente_ana.check_password("paciente123"):
+                paciente_ana.set_password("paciente123")
+                paciente_ana.ativo = True
+                db.session.commit()
+                resultado['mensagens'].append('✅ Senha da paciente Ana Silva resetada para: paciente123')
+        else:
+            paciente_ana = User()
+            paciente_ana.nome = "Ana Silva Santos"
+            paciente_ana.email = "ana.silva@email.com"
+            paciente_ana.telefone = "(11) 99876-5432"
+            paciente_ana.role = "paciente"
+            paciente_ana.ativo = True
+            paciente_ana.set_password("paciente123")
+            db.session.add(paciente_ana)
+            db.session.commit()
+            resultado['mensagens'].append('✅ Paciente Ana Silva criada!')
+        
+        # 8. Resumo final
         resultado['status'] = 'sucesso'
         resultado['dados_criados'] = {
             'especialidades': Especialidade.query.count(),
@@ -210,8 +233,19 @@ def setup_database():
         resultado['mensagens'].append('🎉 BANCO POPULADO COM SUCESSO!')
         resultado['mensagens'].append('')
         resultado['mensagens'].append('🔑 CREDENCIAIS DE LOGIN:')
-        resultado['mensagens'].append('Email: admin@clinicadrraimundonunes.com.br')
-        resultado['mensagens'].append('Senha: admin123')
+        resultado['mensagens'].append('👨‍💼 ADMIN:')
+        resultado['mensagens'].append('   Email: admin@clinicadrraimundonunes.com.br')
+        resultado['mensagens'].append('   Senha: admin123')
+        resultado['mensagens'].append('')
+        resultado['mensagens'].append('👨‍⚕️ DR. RAIMUNDO NUNES (Médico):')
+        resultado['mensagens'].append('   Email: raimundo@clinicadrraimundonunes.com.br')
+        resultado['mensagens'].append('   Senha: medico123')
+        resultado['mensagens'].append('')
+        resultado['mensagens'].append('👥 ANA SILVA (Paciente):')
+        resultado['mensagens'].append('   Email: ana.silva@email.com')
+        resultado['mensagens'].append('   Senha: paciente123')
+        resultado['mensagens'].append('')
+        resultado['mensagens'].append('ℹ️ Todos os outros médicos também usam a senha: medico123')
         
         return jsonify(resultado), 200
         
