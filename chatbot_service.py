@@ -410,7 +410,19 @@ Responda sempre em formato JSON com esta estrutura:
             
             # Converter data_hora para datetime
             try:
-                inicio = datetime.fromisoformat(booking_data['data_hora'])
+                from datetime import timezone
+                inicio_str = booking_data['data_hora']
+                inicio_naive = datetime.fromisoformat(inicio_str.replace('Z', '+00:00') if 'Z' in inicio_str else inicio_str)
+                
+                # Se não tem timezone info, assumir horário de Brasília e converter para UTC
+                if inicio_naive.tzinfo is None:
+                    brasilia_offset = timezone(timedelta(hours=-3))
+                    inicio_brasilia = inicio_naive.replace(tzinfo=brasilia_offset)
+                    inicio = inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
+                else:
+                    # Já tem timezone, converter para UTC e remover tzinfo
+                    inicio = inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
+                
                 fim = inicio + timedelta(minutes=30)  # Duração padrão
             except ValueError:
                 return {

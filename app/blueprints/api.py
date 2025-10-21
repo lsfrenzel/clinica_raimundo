@@ -104,8 +104,27 @@ class AgendamentoAPI(Resource):
         try:
             medico_id = data['medico_id']
             especialidade_id = data['especialidade_id']
-            inicio = datetime.fromisoformat(data['inicio'])
-            fim = datetime.fromisoformat(data['fim'])
+            inicio_str = data['inicio']
+            fim_str = data['fim']
+            
+            # Converter datetime de Brasília (UTC-3) para UTC
+            # Se a string já tem timezone info, usa direto; senão assume Brasília
+            from datetime import timezone
+            inicio_naive = datetime.fromisoformat(inicio_str.replace('Z', '+00:00') if 'Z' in inicio_str else inicio_str)
+            fim_naive = datetime.fromisoformat(fim_str.replace('Z', '+00:00') if 'Z' in fim_str else fim_str)
+            
+            # Se não tem timezone info, assumir horário de Brasília e converter para UTC
+            if inicio_naive.tzinfo is None:
+                brasilia_offset = timezone(timedelta(hours=-3))
+                inicio_brasilia = inicio_naive.replace(tzinfo=brasilia_offset)
+                inicio = inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
+                
+                fim_brasilia = fim_naive.replace(tzinfo=brasilia_offset)
+                fim = fim_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
+            else:
+                # Já tem timezone, converter para UTC e remover tzinfo
+                inicio = inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
+                fim = fim_naive.astimezone(timezone.utc).replace(tzinfo=None)
             
             # Dados do paciente
             nome = data['nome']
@@ -145,6 +164,8 @@ class AgendamentoAPI(Resource):
         except KeyError as e:
             return {'error': f'Campo obrigatório ausente: {str(e)}'}, 400
         except Exception as e:
+            import logging
+            logging.error(f'Erro ao criar agendamento via API: {str(e)}', exc_info=True)
             return {'error': 'Erro interno do servidor'}, 500
 
 class ConfirmarAgendamentoAPI(Resource):
