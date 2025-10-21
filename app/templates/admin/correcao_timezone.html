@@ -99,17 +99,19 @@
                     <li>A data de corte está correta</li>
                     <li>Os horários acima fazem sentido</li>
                 </ul>
-                <div class="flex gap-4">
-                    <a href="{{ url_for('admin.corrigir_timezone_agendamentos', cutoff_date=request.args.get('cutoff_date'), modo='aplicar') }}" 
-                       class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-300"
-                       onclick="return confirm('Tem certeza? Esta ação não pode ser desfeita!')">
-                        ✅ Aplicar Correções
-                    </a>
-                    <a href="{{ url_for('admin.dashboard') }}" 
-                       class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-lg transition-all duration-300">
-                        ❌ Cancelar
-                    </a>
-                </div>
+                <form method="POST" action="{{ url_for('admin.corrigir_timezone_agendamentos_aplicar') }}" onsubmit="return confirm('Tem certeza? Esta ação não pode ser desfeita!')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="cutoff_date" value="{{ cutoff_date_str }}">
+                    <div class="flex gap-4">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg transition-all duration-300">
+                            ✅ Aplicar Correções
+                        </button>
+                        <a href="{{ url_for('admin.dashboard') }}" 
+                           class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold px-6 py-2 rounded-lg transition-all duration-300">
+                            ❌ Cancelar
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

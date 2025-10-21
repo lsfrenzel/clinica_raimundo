@@ -917,23 +917,21 @@ def excluir_agenda(id):
     flash('Horário excluído com sucesso!', 'success')
     return redirect(url_for('admin.gerenciar_agenda'))
 
-@bp.route('/corrigir-timezone-agendamentos')
+@bp.route('/corrigir-timezone-agendamentos', methods=['GET'])
 @login_required
 @admin_required
-def corrigir_timezone_agendamentos():
+def corrigir_timezone_agendamentos_preview():
     """
-    Rota administrativa para corrigir timezone de agendamentos antigos.
-    Converte agendamentos de Brasília (UTC-3) para UTC.
-    Apenas corrige agendamentos criados via API/chatbot que ainda não foram corrigidos.
+    Rota administrativa para VISUALIZAR as correções de timezone (GET).
+    Mostra preview dos agendamentos que serão corrigidos.
     """
     from models import Agendamento
     
-    modo = request.args.get('modo', 'preview')
     cutoff_date_str = request.args.get('cutoff_date')
     
     # Validar cutoff_date
     if not cutoff_date_str:
-        flash('ERRO: cutoff_date é obrigatória! Use ?cutoff_date=YYYY-MM-DD-HH-MM-SS&modo=preview', 'error')
+        flash('ERRO: cutoff_date é obrigatória! Use ?cutoff_date=YYYY-MM-DD-HH-MM-SS', 'error')
         return redirect(url_for('admin.dashboard'))
     
     try:
@@ -954,71 +952,101 @@ def corrigir_timezone_agendamentos():
         flash('Nenhum agendamento para corrigir!', 'info')
         return redirect(url_for('admin.dashboard'))
     
-    # Modo preview: apenas mostra o que seria alterado
-    if modo == 'preview':
-        resultado = []
-        for agendamento in agendamentos:
-            inicio_atual = agendamento.inicio
-            fim_atual = agendamento.fim
+    # Modo preview (GET): apenas mostra o que seria alterado
+    resultado = []
+    for agendamento in agendamentos:
+        inicio_atual = agendamento.inicio
+        fim_atual = agendamento.fim
+        
+        # Adicionar 3 horas (converter de Brasília UTC-3 para UTC)
+        inicio_corrigido = inicio_atual + timedelta(hours=3)
+        fim_corrigido = fim_atual + timedelta(hours=3)
+        
+        resultado.append({
+            'id': agendamento.id,
+            'paciente': agendamento.paciente.nome if agendamento.paciente else 'N/A',
+            'inicio_atual': inicio_atual.strftime('%d/%m/%Y %H:%M'),
+            'inicio_corrigido': inicio_corrigido.strftime('%d/%m/%Y %H:%M'),
+            'fim_atual': fim_atual.strftime('%d/%m/%Y %H:%M'),
+            'fim_corrigido': fim_corrigido.strftime('%d/%m/%Y %H:%M'),
+            'origem': agendamento.origem,
+            'criado_em': agendamento.created_at.strftime('%d/%m/%Y %H:%M:%S') if agendamento.created_at else 'N/A'
+        })
+    
+    return render_template('admin/correcao_timezone.html',
+                         modo='preview',
+                         agendamentos=resultado,
+                         total=len(resultado),
+                         cutoff_date=cutoff_date,
+                         cutoff_date_str=cutoff_date_str)
+
+@bp.route('/corrigir-timezone-agendamentos/aplicar', methods=['POST'])
+@login_required
+@admin_required
+def corrigir_timezone_agendamentos_aplicar():
+    """
+    Rota administrativa para APLICAR as correções de timezone (POST com CSRF).
+    Converte agendamentos de Brasília (UTC-3) para UTC.
+    """
+    from models import Agendamento
+    
+    cutoff_date_str = request.form.get('cutoff_date')
+    
+    # Validar cutoff_date
+    if not cutoff_date_str:
+        flash('ERRO: cutoff_date é obrigatória!', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    try:
+        cutoff_date = datetime.strptime(cutoff_date_str, "%Y-%m-%d-%H-%M-%S")
+    except ValueError:
+        flash('ERRO: Formato de data inválido.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    # Buscar agendamentos criados via API ou chatbot ANTES da data de corte
+    # que ainda não foram corrigidos
+    agendamentos = Agendamento.query.filter(
+        Agendamento.origem.in_(['mobile', 'chatbot']),
+        Agendamento.created_at < cutoff_date,
+        ~Agendamento.observacoes.contains('[TIMEZONE_CORRIGIDO]')
+    ).all()
+    
+    if not agendamentos:
+        flash('Nenhum agendamento para corrigir!', 'info')
+        return redirect(url_for('admin.dashboard'))
+    
+    # Modo aplicar (POST): faz as correções
+    corrigidos = 0
+    erros = []
+    
+    for agendamento in agendamentos:
+        try:
+            # Verificar novamente se já não foi corrigido (proteção dupla)
+            if agendamento.observacoes and '[TIMEZONE_CORRIGIDO]' in agendamento.observacoes:
+                continue
+            
+            # Verificar se foi criado antes da data de corte
+            if agendamento.created_at and agendamento.created_at >= cutoff_date:
+                continue
             
             # Adicionar 3 horas (converter de Brasília UTC-3 para UTC)
-            inicio_corrigido = inicio_atual + timedelta(hours=3)
-            fim_corrigido = fim_atual + timedelta(hours=3)
+            agendamento.inicio = agendamento.inicio + timedelta(hours=3)
+            agendamento.fim = agendamento.fim + timedelta(hours=3)
             
-            resultado.append({
-                'id': agendamento.id,
-                'paciente': agendamento.paciente.nome if agendamento.paciente else 'N/A',
-                'inicio_atual': inicio_atual.strftime('%d/%m/%Y %H:%M'),
-                'inicio_corrigido': inicio_corrigido.strftime('%d/%m/%Y %H:%M'),
-                'fim_atual': fim_atual.strftime('%d/%m/%Y %H:%M'),
-                'fim_corrigido': fim_corrigido.strftime('%d/%m/%Y %H:%M'),
-                'origem': agendamento.origem,
-                'criado_em': agendamento.created_at.strftime('%d/%m/%Y %H:%M:%S') if agendamento.created_at else 'N/A'
-            })
-        
-        return render_template('admin/correcao_timezone.html',
-                             modo='preview',
-                             agendamentos=resultado,
-                             total=len(resultado),
-                             cutoff_date=cutoff_date)
+            # Marcar como corrigido
+            obs_atual = agendamento.observacoes or ''
+            agendamento.observacoes = f"{obs_atual}\n[TIMEZONE_CORRIGIDO em {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC]".strip()
+            
+            corrigidos += 1
+        except Exception as e:
+            erros.append(f"Agendamento ID {agendamento.id}: {str(e)}")
     
-    # Modo aplicar: faz as correções
-    elif modo == 'aplicar':
-        corrigidos = 0
-        erros = []
-        
-        for agendamento in agendamentos:
-            try:
-                # Verificar novamente se já não foi corrigido (proteção dupla)
-                if agendamento.observacoes and '[TIMEZONE_CORRIGIDO]' in agendamento.observacoes:
-                    continue
-                
-                # Verificar se foi criado antes da data de corte
-                if agendamento.created_at and agendamento.created_at >= cutoff_date:
-                    continue
-                
-                # Adicionar 3 horas (converter de Brasília UTC-3 para UTC)
-                agendamento.inicio = agendamento.inicio + timedelta(hours=3)
-                agendamento.fim = agendamento.fim + timedelta(hours=3)
-                
-                # Marcar como corrigido
-                obs_atual = agendamento.observacoes or ''
-                agendamento.observacoes = f"{obs_atual}\n[TIMEZONE_CORRIGIDO em {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC]".strip()
-                
-                corrigidos += 1
-            except Exception as e:
-                erros.append(f"Agendamento ID {agendamento.id}: {str(e)}")
-        
-        # Commit apenas se não houver erros
-        if not erros:
-            db.session.commit()
-            flash(f'✅ Sucesso! {corrigidos} agendamentos foram corrigidos.', 'success')
-        else:
-            db.session.rollback()
-            flash(f'❌ Erro ao corrigir agendamentos: {"; ".join(erros)}', 'error')
-        
-        return redirect(url_for('admin.dashboard'))
-    
+    # Commit apenas se não houver erros
+    if not erros:
+        db.session.commit()
+        flash(f'✅ Sucesso! {corrigidos} agendamentos foram corrigidos.', 'success')
     else:
-        flash('Modo inválido. Use modo=preview ou modo=aplicar', 'error')
-        return redirect(url_for('admin.dashboard'))
+        db.session.rollback()
+        flash(f'❌ Erro ao corrigir agendamentos: {"; ".join(erros)}', 'error')
+    
+    return redirect(url_for('admin.dashboard'))
