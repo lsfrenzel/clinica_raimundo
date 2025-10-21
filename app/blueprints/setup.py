@@ -9,6 +9,117 @@ from datetime import datetime, timedelta, time
 
 bp = Blueprint('setup', __name__)
 
+@bp.route('/verificar-usuarios')
+def verificar_usuarios():
+    """
+    Rota para verificar se os usuários existem e testar senhas
+    Acesse: https://seu-app.railway.app/verificar-usuarios
+    """
+    from models import User
+    
+    resultado = {
+        'status': 'verificacao',
+        'usuarios_verificados': []
+    }
+    
+    # Usuários para verificar
+    usuarios_teste = [
+        {'email': 'ana.silva@email.com', 'senha': 'paciente123', 'nome_esperado': 'Ana Silva'},
+        {'email': 'raimundo@clinicadrraimundonunes.com.br', 'senha': 'medico123', 'nome_esperado': 'Dr. Raimundo'},
+        {'email': 'admin@clinicadrraimundonunes.com.br', 'senha': 'admin123', 'nome_esperado': 'Admin'}
+    ]
+    
+    for teste in usuarios_teste:
+        user = User.query.filter_by(email=teste['email']).first()
+        
+        info = {
+            'email': teste['email'],
+            'existe': bool(user),
+            'ativo': user.ativo if user else None,
+            'nome': user.nome if user else None,
+            'role': user.role if user else None,
+            'senha_hash_length': len(user.senha_hash) if user and user.senha_hash else 0,
+            'senha_correta': user.check_password(teste['senha']) if user else False
+        }
+        
+        resultado['usuarios_verificados'].append(info)
+    
+    # Total de usuários no banco
+    resultado['total_usuarios'] = User.query.count()
+    resultado['todos_usuarios'] = [{'email': u.email, 'nome': u.nome, 'role': u.role, 'ativo': u.ativo} 
+                                     for u in User.query.all()]
+    
+    return jsonify(resultado), 200
+
+@bp.route('/reset-senhas')
+def reset_senhas():
+    """
+    Rota para forçar o reset de todas as senhas
+    Acesse: https://seu-app.railway.app/reset-senhas
+    """
+    from models import User
+    
+    resultado = {
+        'status': 'resetando',
+        'mensagens': [],
+        'usuarios_resetados': []
+    }
+    
+    try:
+        # Resetar senha da Ana Silva
+        ana = User.query.filter_by(email='ana.silva@email.com').first()
+        if ana:
+            ana.set_password('paciente123')
+            ana.ativo = True
+            db.session.add(ana)
+            resultado['mensagens'].append(f'✅ Senha de Ana Silva resetada')
+            resultado['usuarios_resetados'].append({'email': ana.email, 'senha': 'paciente123'})
+        else:
+            # Criar Ana Silva se não existir
+            ana = User()
+            ana.nome = "Ana Silva Santos"
+            ana.email = "ana.silva@email.com"
+            ana.telefone = "(11) 99876-5432"
+            ana.role = "paciente"
+            ana.ativo = True
+            ana.set_password("paciente123")
+            db.session.add(ana)
+            resultado['mensagens'].append(f'✅ Ana Silva criada')
+            resultado['usuarios_resetados'].append({'email': ana.email, 'senha': 'paciente123'})
+        
+        # Resetar senha do Dr. Raimundo
+        raimundo = User.query.filter_by(email='raimundo@clinicadrraimundonunes.com.br').first()
+        if raimundo:
+            raimundo.set_password('medico123')
+            raimundo.ativo = True
+            db.session.add(raimundo)
+            resultado['mensagens'].append(f'✅ Senha de Dr. Raimundo Nunes resetada')
+            resultado['usuarios_resetados'].append({'email': raimundo.email, 'senha': 'medico123'})
+        else:
+            resultado['mensagens'].append(f'❌ Dr. Raimundo Nunes não encontrado - execute /setup-database primeiro')
+        
+        # Resetar senha do Admin
+        admin = User.query.filter_by(email='admin@clinicadrraimundonunes.com.br').first()
+        if admin:
+            admin.set_password('admin123')
+            admin.ativo = True
+            db.session.add(admin)
+            resultado['mensagens'].append(f'✅ Senha de Admin resetada')
+            resultado['usuarios_resetados'].append({'email': admin.email, 'senha': 'admin123'})
+        
+        db.session.commit()
+        resultado['status'] = 'sucesso'
+        resultado['mensagens'].append('🎉 Todas as senhas foram resetadas!')
+        
+        return jsonify(resultado), 200
+        
+    except Exception as e:
+        resultado['status'] = 'erro'
+        resultado['mensagens'].append(f'❌ ERRO: {str(e)}')
+        import traceback
+        resultado['mensagens'].append(traceback.format_exc())
+        return jsonify(resultado), 500
+
 @bp.route('/setup-database')
 def setup_database():
     """
