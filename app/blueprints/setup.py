@@ -120,6 +120,62 @@ def reset_senhas():
         resultado['mensagens'].append(traceback.format_exc())
         return jsonify(resultado), 500
 
+@bp.route('/testar-login/<email>/<senha>')
+def testar_login(email, senha):
+    """
+    Rota para testar login de qualquer usuário
+    Exemplo: https://seu-app.railway.app/testar-login/raimundo@clinicadrraimundonunes.com.br/medico123
+    """
+    from models import User
+    import sys
+    
+    resultado = {
+        'email_testado': email,
+        'senha_testada': senha,
+        'detalhes': {}
+    }
+    
+    # Buscar usuário
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        resultado['status'] = 'usuario_nao_encontrado'
+        resultado['detalhes']['existe'] = False
+        return jsonify(resultado), 404
+    
+    # Detalhes do usuário
+    resultado['detalhes']['existe'] = True
+    resultado['detalhes']['nome'] = user.nome
+    resultado['detalhes']['role'] = user.role
+    resultado['detalhes']['ativo'] = user.ativo
+    resultado['detalhes']['tem_senha_hash'] = bool(user.senha_hash)
+    resultado['detalhes']['tamanho_hash'] = len(user.senha_hash) if user.senha_hash else 0
+    
+    # Testar senha
+    try:
+        senha_correta = user.check_password(senha)
+        resultado['detalhes']['senha_correta'] = senha_correta
+        resultado['detalhes']['erro_verificacao'] = None
+        
+        if senha_correta:
+            resultado['status'] = 'login_ok'
+            resultado['mensagem'] = '✅ Login funcionaria!'
+        else:
+            resultado['status'] = 'senha_incorreta'
+            resultado['mensagem'] = '❌ Senha incorreta'
+            
+            # Tentar resetar a senha
+            user.set_password(senha)
+            db.session.commit()
+            resultado['mensagem'] += ' - Senha resetada! Tente novamente.'
+            
+    except Exception as e:
+        resultado['status'] = 'erro_verificacao'
+        resultado['detalhes']['erro_verificacao'] = str(e)
+        resultado['mensagem'] = f'❌ Erro ao verificar senha: {str(e)}'
+    
+    return jsonify(resultado), 200
+
 @bp.route('/setup-database')
 def setup_database():
     """
