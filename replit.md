@@ -110,6 +110,28 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 
 ## Resolução de Problemas Recentes
 
+### ✅ Problema: Painel Médico não mostrava agendamentos (21/10/2025)
+**Causa**: 
+- Query com filtro de data no SQL sem considerar timezone UTC
+- Ordem incorreta (mais distantes primeiro em vez de próximos)
+- Falta de conversão de timezone para exibição
+- Lógica diferente de "Meus Agendamentos" (que funcionava corretamente)
+
+**Solução**:
+- ✅ Replicada a lógica bem-sucedida de "Meus Agendamentos"
+- ✅ Query busca TODOS os agendamentos do médico
+- ✅ Filtragem de próximos 30 dias feita em memória (com UTC)
+- ✅ Conversão UTC → Brasília para exibição (`inicio_local`, `fim_local`)
+- ✅ Ordenação cronológica (próximos primeiro)
+- ✅ Logging detalhado para diagnóstico
+- ✅ Template atualizado com horários locais e indicação de fuso
+
+**Resultados**:
+- Painel médico agora mostra agendamentos corretamente
+- Estatísticas precisas (próximos 30 dias)
+- Horários exibidos em horário de Brasília
+- Lógica consistente entre painel médico e paciente
+
 ### ✅ Problema: Agendamentos não aparecem em "Meus Agendamentos" (14/10/2025)
 **Causa**: 
 - Conflito de timezone entre horário local e UTC
