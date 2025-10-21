@@ -427,26 +427,34 @@
     </main>
     
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white mt-20" data-aos="fade-up">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <footer class="bg-gradient-to-br from-gray-900 via-primary-900 to-gray-900 text-white mt-20 relative overflow-hidden" data-aos="fade-up">
+        <!-- Decorative Elements -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute top-0 left-0 w-96 h-96 bg-primary-400 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 right-0 w-96 h-96 bg-accent-400 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="col-span-1 md:col-span-2">
                     <div class="mb-6">
                         <img src="{{ url_for('static', filename='images/logo-dr-raimundo-text.png') }}" 
                              alt="Clínica Dr. Raimundo Nunes" 
-                             class="h-16 w-auto">
+                             class="h-16 w-auto brightness-0 invert">
                     </div>
-                    <p class="text-gray-400 mb-6 leading-relaxed">
-                        Mais de 30 anos de experiência em ginecologia e obstetrícia, oferecendo cuidado humanizado e especializado para a saúde da mulher.
+                    <p class="text-gray-300 mb-6 leading-relaxed text-base">
+                        <strong class="text-accent-400 font-semibold">Mais de 30 anos de excelência</strong> em ginecologia e obstetrícia, oferecendo cuidado humanizado e especializado para a saúde da mulher.
                     </p>
-                    <div class="flex space-x-4">
-                        <a href="https://www.instagram.com/clinicadrraimundonunes/" target="_blank" class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary-500 transition-all duration-300 hover:scale-110">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <div class="flex space-x-3">
+                        <a href="https://www.instagram.com/clinicadrraimundonunes/" target="_blank" 
+                           class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center hover:from-accent-400 hover:to-accent-500 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-accent-400/50">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                             </svg>
                         </a>
-                        <a href="https://web.facebook.com/clinicadrraimundonunes/" target="_blank" class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-primary-500 transition-all duration-300 hover:scale-110">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <a href="https://web.facebook.com/clinicadrraimundonunes/" target="_blank" 
+                           class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center hover:from-accent-400 hover:to-accent-500 transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-accent-400/50">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                             </svg>
                         </a>
@@ -454,37 +462,73 @@
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
+                    <h4 class="text-xl font-bold mb-5 text-accent-300 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Links Rápidos
+                    </h4>
                     <ul class="space-y-3">
-                        <li><a href="{{ url_for('main.index') }}" class="text-gray-400 hover:text-primary-400 transition-colors duration-300">Início</a></li>
-                        <li><a href="{{ url_for('main.especialidades') }}" class="text-gray-400 hover:text-primary-400 transition-colors duration-300">Especialidades</a></li>
-                        <li><a href="{{ url_for('main.medicos') }}" class="text-gray-400 hover:text-primary-400 transition-colors duration-300">Médicos</a></li>
-                        <li><a href="{{ url_for('appointments.agendar') }}" class="text-gray-400 hover:text-primary-400 transition-colors duration-300">Agendar Consulta</a></li>
+                        <li><a href="{{ url_for('main.index') }}" class="text-gray-300 hover:text-accent-400 transition-all duration-300 flex items-center group">
+                            <span class="mr-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                            Início
+                        </a></li>
+                        <li><a href="{{ url_for('main.especialidades') }}" class="text-gray-300 hover:text-accent-400 transition-all duration-300 flex items-center group">
+                            <span class="mr-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                            Especialidades
+                        </a></li>
+                        <li><a href="{{ url_for('main.medicos') }}" class="text-gray-300 hover:text-accent-400 transition-all duration-300 flex items-center group">
+                            <span class="mr-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                            Médicos
+                        </a></li>
+                        <li><a href="{{ url_for('appointments.agendar') }}" class="text-gray-300 hover:text-accent-400 transition-all duration-300 flex items-center group">
+                            <span class="mr-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                            Agendar Consulta
+                        </a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Contato</h4>
-                    <ul class="space-y-3 text-gray-400">
-                        <li class="flex items-start space-x-2">
-                            <svg class="w-5 h-5 mt-0.5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>São Paulo - SP<br>Itapeva e Itaim Bibi</span>
+                    <h4 class="text-xl font-bold mb-5 text-accent-300 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Contato
+                    </h4>
+                    <ul class="space-y-4 text-gray-300">
+                        <li class="flex items-start space-x-3 group">
+                            <div class="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-accent-400/30 transition-colors">
+                                <svg class="w-5 h-5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <span class="leading-relaxed">São Paulo - SP<br><span class="text-sm text-gray-400">Itapeva e Itaim Bibi</span></span>
                         </li>
-                        <li class="flex items-center space-x-2">
-                            <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            <span>clinica@drraimundonunes.com.br</span>
+                        <li class="flex items-center space-x-3 group">
+                            <div class="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-accent-400/30 transition-colors">
+                                <svg class="w-5 h-5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm">clinica@drraimundonunes.com.br</span>
                         </li>
                     </ul>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 pt-8 text-center">
-                <p class="text-gray-400">&copy; 2025 Clínica Dr. Raimundo Nunes. Todos os direitos reservados.</p>
+            <div class="border-t border-white/10 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <p class="text-gray-400 text-sm">&copy; 2025 Clínica Dr. Raimundo Nunes. Todos os direitos reservados.</p>
+                    <div class="flex items-center space-x-4 text-sm text-gray-400">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                            </svg>
+                            Feito com carinho
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
