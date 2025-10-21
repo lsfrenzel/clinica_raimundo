@@ -109,19 +109,25 @@
                                     {% if medico.ativo %}Ativo{% else %}Inativo{% endif %}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                <a href="{{ url_for('admin.editar_medico', id=medico.id) }}" 
-                                   class="text-teal hover:text-teal-dark transition-colors">
-                                    ✏️ Editar
-                                </a>
-                                <form method="POST" action="{{ url_for('admin.excluir_medico', id=medico.id) }}" 
-                                      class="inline" 
-                                      onsubmit="return confirm('Tem certeza que deseja excluir este médico? Esta ação não pode ser desfeita.')">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
-                                        🗑️ Excluir
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex flex-col gap-2">
+                                    <a href="{{ url_for('admin.editar_medico', id=medico.id) }}" 
+                                       class="text-teal hover:text-teal-dark transition-colors">
+                                        ✏️ Editar
+                                    </a>
+                                    <button onclick="resetarSenhaMedico({{ medico.id }}, '{{ medico.usuario.nome }}')" 
+                                            class="text-blue-600 hover:text-blue-800 transition-colors text-left">
+                                        🔑 Resetar Senha
                                     </button>
-                                </form>
+                                    <form method="POST" action="{{ url_for('admin.excluir_medico', id=medico.id) }}" 
+                                          class="inline" 
+                                          onsubmit="return confirm('Tem certeza que deseja excluir este médico? Esta ação não pode ser desfeita.')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
+                                            🗑️ Excluir
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -149,4 +155,39 @@
         </div>
     </div>
 </div>
+
+<script>
+function resetarSenhaMedico(medicoId, medicoNome) {
+    const novaSenha = prompt(`Digite a nova senha para ${medicoNome}:\n\n(Deixe em branco para usar a senha padrão: medico123)`);
+    
+    if (novaSenha === null) {
+        // Usuário cancelou
+        return;
+    }
+    
+    // Criar formulário para enviar requisição POST
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/medicos/${medicoId}/resetar-senha`;
+    
+    // Adicionar CSRF token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrf_token';
+    csrfInput.value = '{{ csrf_token() }}';
+    form.appendChild(csrfInput);
+    
+    // Adicionar nova senha (se fornecida)
+    if (novaSenha.trim()) {
+        const senhaInput = document.createElement('input');
+        senhaInput.type = 'hidden';
+        senhaInput.name = 'nova_senha';
+        senhaInput.value = novaSenha.trim();
+        form.appendChild(senhaInput);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
 {% endblock %}

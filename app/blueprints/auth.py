@@ -36,8 +36,15 @@ def login():
             next_page = request.args.get('next')
             if next_page:
                 return redirect(next_page)
-            # Redirecionar para chatbot após login
-            return redirect(url_for('main.chatbot'))
+            
+            # Redirecionar baseado na role do usuário
+            if user.is_admin():
+                return redirect(url_for('admin.dashboard'))
+            elif user.is_medico():
+                return redirect(url_for('main.painel_medico'))
+            else:
+                # Pacientes vão para o chatbot
+                return redirect(url_for('main.chatbot'))
         else:
             print(f"[LOGIN] Senha incorreta para: {email}", file=sys.stderr)
             flash('Email ou senha inválidos.', 'error')

@@ -509,7 +509,12 @@ def criar_medico():
         user.telefone = telefone
         user.role = 'medico'
         user.ativo = True
-        user.set_password('123456')  # Senha temporária
+        
+        # Senha personalizada ou padrão
+        senha = request.form.get('senha', '').strip()
+        if not senha:
+            senha = 'medico123'  # Senha padrão
+        user.set_password(senha)
         
         db.session.add(user)
         db.session.flush()  # Para obter o ID
@@ -536,7 +541,7 @@ def criar_medico():
         
         db.session.commit()
         
-        flash(f'Médico {nome} criado com sucesso! Senha temporária: 123456', 'success')
+        flash(f'Médico {nome} criado com sucesso! Email: {email} | Senha: {senha}', 'success')
         return redirect(url_for('admin.medicos'))
     
     from models import Especialidade
@@ -801,6 +806,24 @@ def criar_agenda():
     
     medicos = Medico.query.filter_by(ativo=True).all()
     return render_template('admin/criar_agenda.html', medicos=medicos)
+
+@bp.route('/medicos/<int:id>/resetar-senha', methods=['POST'])
+@login_required
+@admin_required
+def resetar_senha_medico(id):
+    """Resetar senha de um médico"""
+    from models import Medico, User
+    medico = Medico.query.get_or_404(id)
+    
+    nova_senha = request.form.get('nova_senha', '').strip()
+    if not nova_senha:
+        nova_senha = 'medico123'
+    
+    medico.usuario.set_password(nova_senha)
+    db.session.commit()
+    
+    flash(f'Senha de {medico.usuario.nome} resetada para: {nova_senha}', 'success')
+    return redirect(url_for('admin.medicos'))
 
 @bp.route('/medicos/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
