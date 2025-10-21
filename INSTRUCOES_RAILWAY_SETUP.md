@@ -67,7 +67,7 @@ Após popular o banco de dados, você pode fazer login com as seguintes credenci
 - **Senha:** admin123
 
 ### 👨‍⚕️ Dr. Raimundo Nunes (Médico)
-- **Email:** raimundo@clinicadrraimundonunes.com.br
+- **Email:** raimundo.nunes@clinicadrraimundonunes.com.br
 - **Senha:** medico123
 
 ### 👥 Ana Silva (Paciente)

@@ -25,7 +25,7 @@ def verificar_usuarios():
     # Usuários para verificar
     usuarios_teste = [
         {'email': 'ana.silva@email.com', 'senha': 'paciente123', 'nome_esperado': 'Ana Silva'},
-        {'email': 'raimundo@clinicadrraimundonunes.com.br', 'senha': 'medico123', 'nome_esperado': 'Dr. Raimundo'},
+        {'email': 'raimundo.nunes@clinicadrraimundonunes.com.br', 'senha': 'medico123', 'nome_esperado': 'Dr. Raimundo'},
         {'email': 'admin@clinicadrraimundonunes.com.br', 'senha': 'admin123', 'nome_esperado': 'Admin'}
     ]
     
@@ -88,7 +88,7 @@ def reset_senhas():
             resultado['usuarios_resetados'].append({'email': ana.email, 'senha': 'paciente123'})
         
         # Resetar senha do Dr. Raimundo
-        raimundo = User.query.filter_by(email='raimundo@clinicadrraimundonunes.com.br').first()
+        raimundo = User.query.filter_by(email='raimundo.nunes@clinicadrraimundonunes.com.br').first()
         if raimundo:
             raimundo.set_password('medico123')
             raimundo.ativo = True
@@ -124,7 +124,7 @@ def reset_senhas():
 def testar_login(email, senha):
     """
     Rota para testar login de qualquer usuário
-    Exemplo: https://seu-app.railway.app/testar-login/raimundo@clinicadrraimundonunes.com.br/medico123
+    Exemplo: https://seu-app.railway.app/testar-login/raimundo.nunes@clinicadrraimundonunes.com.br/medico123
     """
     from models import User
     import sys
@@ -259,7 +259,7 @@ def setup_database():
         medicos_data = [
             {
                 'nome': 'Dr. Raimundo Nunes',
-                'email': 'raimundo@clinicadrraimundonunes.com.br',
+                'email': 'raimundo.nunes@clinicadrraimundonunes.com.br',
                 'telefone': '(11) 98765-4321',
                 'crm': 'CRM/SP 12345',
                 'bio': 'Mais de 30 anos de experiência em ginecologia e obstetrícia. Especialista em pré-natal de alto risco e cirurgia ginecológica.',
@@ -405,7 +405,7 @@ def setup_database():
         resultado['mensagens'].append('   Senha: admin123')
         resultado['mensagens'].append('')
         resultado['mensagens'].append('👨‍⚕️ DR. RAIMUNDO NUNES (Médico):')
-        resultado['mensagens'].append('   Email: raimundo@clinicadrraimundonunes.com.br')
+        resultado['mensagens'].append('   Email: raimundo.nunes@clinicadrraimundonunes.com.br')
         resultado['mensagens'].append('   Senha: medico123')
         resultado['mensagens'].append('')
         resultado['mensagens'].append('👥 ANA SILVA (Paciente):')

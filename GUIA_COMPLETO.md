@@ -44,7 +44,7 @@ Execute as rotas nesta ordem no Railway/Replit:
 ### Teste 1: Login como Médico
 ```
 1. Acesse: /auth/login
-2. Email: raimundo@clinicadrraimundonunes.com.br
+2. Email: raimundo.nunes@clinicadrraimundonunes.com.br
 3. Senha: medico123
 4. Você será redirecionado para /painel-medico
 5. Deve ver os agendamentos criados
@@ -91,7 +91,7 @@ Execute as rotas nesta ordem no Railway/Replit:
 | Tipo | Email | Senha | Redireciona para |
 |------|-------|-------|------------------|
 | Admin | admin@clinicadrraimundonunes.com.br | admin123 | /admin |
-| Dr. Raimundo | raimundo@clinicadrraimundonunes.com.br | medico123 | /painel-medico |
+| Dr. Raimundo | raimundo.nunes@clinicadrraimundonunes.com.br | medico123 | /painel-medico |
 | Paciente Ana | ana.silva@email.com | paciente123 | /chatbot |
 
 ---

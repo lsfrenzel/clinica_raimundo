@@ -5,7 +5,7 @@
 Execute esta URL no seu navegador Railway para diagnosticar o problema:
 
 ```
-https://seu-app.railway.app/testar-login/raimundo@clinicadrraimundonunes.com.br/medico123
+https://seu-app.railway.app/testar-login/raimundo.nunes@clinicadrraimundonunes.com.br/medico123
 ```
 
 ### O que você deve ver:
@@ -46,7 +46,7 @@ https://seu-app.railway.app/testar-login/raimundo@clinicadrraimundonunes.com.br/
 
 ### **PASSO 1: Diagnóstico**
 ```
-https://seu-app.railway.app/testar-login/raimundo@clinicadrraimundonunes.com.br/medico123
+https://seu-app.railway.app/testar-login/raimundo.nunes@clinicadrraimundonunes.com.br/medico123
 ```
 
 ### **PASSO 2: Reset (se necessário)**
@@ -70,7 +70,7 @@ https://seu-app.railway.app/testar-login/ana.silva@email.com/paciente123
 
 ### Testar Dr. Raimundo (Médico):
 ```
-https://seu-app.railway.app/testar-login/raimundo@clinicadrraimundonunes.com.br/medico123
+https://seu-app.railway.app/testar-login/raimundo.nunes@clinicadrraimundonunes.com.br/medico123
 ```
 
 ### Testar Admin:
@@ -84,11 +84,11 @@ https://seu-app.railway.app/testar-login/admin@clinicadrraimundonunes.com.br/adm
 
 Execute na ordem:
 
-- [ ] **1.** Acesse `/testar-login/raimundo@clinicadrraimundonunes.com.br/medico123`
+- [ ] **1.** Acesse `/testar-login/raimundo.nunes@clinicadrraimundonunes.com.br/medico123`
 - [ ] **2.** Se mostrar "senha_incorreta", a senha foi resetada automaticamente
 - [ ] **3.** Aguarde 10 segundos
 - [ ] **4.** Tente fazer login em `/auth/login` com:
-  - Email: `raimundo@clinicadrraimundonunes.com.br`
+  - Email: `raimundo.nunes@clinicadrraimundonunes.com.br`
   - Senha: `medico123`
 - [ ] **5.** Se ainda não funcionar, execute `/reset-senhas`
 - [ ] **6.** Repita os passos 1-4
@@ -121,7 +121,7 @@ Execute na ordem:
 
 ### Dr. Raimundo Nunes
 ```
-Email: raimundo@clinicadrraimundonunes.com.br
+Email: raimundo.nunes@clinicadrraimundonunes.com.br
 Senha: medico123
 Role: medico
 ```

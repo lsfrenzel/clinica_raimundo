@@ -55,7 +55,7 @@ Você deve ver algo como:
       "senha_correta": true
     },
     {
-      "email": "raimundo@clinicadrraimundonunes.com.br",
+      "email": "raimundo.nunes@clinicadrraimundonunes.com.br",
       "existe": true,
       "ativo": true,
       "role": "medico",
@@ -81,7 +81,7 @@ Você deve ver algo como:
 - **Senha:** paciente123
 
 ### 👨‍⚕️ **Dr. Raimundo Nunes (Médico)**
-- **Email:** raimundo@clinicadrraimundonunes.com.br
+- **Email:** raimundo.nunes@clinicadrraimundonunes.com.br
 - **Senha:** medico123
 
 ### 👨‍💼 **Administrador**

@@ -104,7 +104,7 @@ def create_seed_data():
         medicos_data = [
             {
                 'nome': 'Dr. Raimundo Nunes',
-                'email': 'raimundo@clinicadrraimundonunes.com.br',
+                'email': 'raimundo.nunes@clinicadrraimundonunes.com.br',
                 'telefone': '(11) 98765-4321',
                 'crm': 'CRM/SP 12345',
                 'bio': 'Mais de 30 anos de experiência em ginecologia e obstetrícia. Especialista em pré-natal de alto risco e cirurgia ginecológica. Reconhecido por sua atuação em casos de alta complexidade.',

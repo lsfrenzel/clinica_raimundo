@@ -53,8 +53,8 @@ def painel_medico():
         return render_template('error.html', 
                              message="Perfil médico não encontrado"), 404
     
-    # Data de hoje e próximos dias (usando UTC para consistência com agendamentos)
-    hoje = datetime.utcnow()
+    # Data de hoje e próximos dias
+    hoje = datetime.now()
     data_limite = hoje + timedelta(days=30)
     
     # Agendamentos futuros
