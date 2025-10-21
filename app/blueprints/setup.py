@@ -422,3 +422,105 @@ def setup_database():
         import traceback
         resultado['mensagens'].append(traceback.format_exc())
         return jsonify(resultado), 500
+
+@bp.route('/criar-agendamentos-teste')
+def criar_agendamentos_teste():
+    """
+    Cria agendamentos de teste para visualizar no painel médico
+    Acesse: /criar-agendamentos-teste
+    """
+    from models import User, Medico, Agendamento, Especialidade
+    import random
+    
+    resultado = {
+        'status': 'criando',
+        'mensagens': [],
+        'agendamentos_criados': []
+    }
+    
+    try:
+        # Buscar paciente Ana Silva
+        ana = User.query.filter_by(email='ana.silva@email.com').first()
+        if not ana:
+            resultado['status'] = 'erro'
+            resultado['mensagens'].append('❌ Paciente Ana Silva não encontrada. Execute /reset-senhas primeiro')
+            return jsonify(resultado), 404
+        
+        # Buscar todos os médicos
+        medicos = Medico.query.filter_by(ativo=True).all()
+        if not medicos:
+            resultado['status'] = 'erro'
+            resultado['mensagens'].append('❌ Nenhum médico encontrado. Execute /setup-database primeiro')
+            return jsonify(resultado), 404
+        
+        # Buscar todas as especialidades
+        especialidades = Especialidade.query.filter_by(ativo=True).all()
+        if not especialidades:
+            resultado['status'] = 'erro'
+            resultado['mensagens'].append('❌ Nenhuma especialidade encontrada. Execute /setup-database primeiro')
+            return jsonify(resultado), 404
+        
+        # Criar 5 agendamentos nos próximos 7 dias
+        agendamentos_criados = 0
+        hoje = datetime.now()
+        
+        for i in range(5):
+            # Escolher médico aleatório
+            medico = random.choice(medicos)
+            
+            # Escolher especialidade aleatória do médico
+            if medico.especialidades:
+                especialidade = random.choice(list(medico.especialidades))
+            else:
+                especialidade = random.choice(especialidades)
+            
+            # Criar horário aleatório nos próximos 7 dias
+            dias_futuro = random.randint(1, 7)
+            hora = random.choice([8, 9, 10, 11, 14, 15, 16])
+            
+            inicio = hoje + timedelta(days=dias_futuro)
+            inicio = inicio.replace(hour=hora, minute=0, second=0, microsecond=0)
+            fim = inicio + timedelta(minutes=30)
+            
+            # Verificar se já existe agendamento para este horário
+            existe = Agendamento.query.filter_by(
+                medico_id=medico.id,
+                inicio=inicio
+            ).first()
+            
+            if not existe:
+                agendamento = Agendamento()
+                agendamento.paciente_id = ana.id
+                agendamento.medico_id = medico.id
+                agendamento.especialidade_id = especialidade.id
+                agendamento.inicio = inicio
+                agendamento.fim = fim
+                agendamento.status = random.choice(['agendado', 'confirmado'])
+                agendamento.observacoes = f'Consulta de teste #{i+1}'
+                
+                db.session.add(agendamento)
+                agendamentos_criados += 1
+                
+                user_medico = User.query.get(medico.user_id)
+                resultado['agendamentos_criados'].append({
+                    'medico': user_medico.nome if user_medico else 'N/A',
+                    'especialidade': especialidade.nome,
+                    'data_hora': inicio.strftime('%d/%m/%Y %H:%M'),
+                    'status': agendamento.status
+                })
+        
+        db.session.commit()
+        
+        resultado['status'] = 'sucesso'
+        resultado['mensagens'].append(f'✅ {agendamentos_criados} agendamentos de teste criados!')
+        resultado['total_agendamentos_banco'] = Agendamento.query.count()
+        
+        return jsonify(resultado), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        resultado['status'] = 'erro'
+        resultado['mensagens'].append(f'❌ ERRO: {str(e)}')
+        import traceback
+        resultado['traceback'] = traceback.format_exc()
+        return jsonify(resultado), 500
