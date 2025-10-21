@@ -7,7 +7,7 @@
     <title>{% block title %}Clínica Dr. Raimundo Nunes{% endblock %}</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%232563eb%22><path d=%22M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z%22/%3E</svg>">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo-dr-raimundo.png') }}">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -301,11 +301,9 @@
                 <!-- Logo -->
                 <div class="flex items-center">
                     <a href="{{ url_for('main.index') }}" class="flex items-center space-x-3 group">
-                        <div class="w-12 h-12 gradient-primary rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transform group-hover:scale-110 transition-all duration-300">
-                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                        </div>
+                        <img src="{{ url_for('static', filename='images/logo-dr-raimundo-text.png') }}" 
+                             alt="Clínica Dr. Raimundo Nunes" 
+                             class="h-16 w-auto transform group-hover:scale-105 transition-all duration-300">
                         <div>
                             <div class="text-xl font-bold text-gray-900 font-display">
                                 Clínica Dr. Raimundo Nunes
