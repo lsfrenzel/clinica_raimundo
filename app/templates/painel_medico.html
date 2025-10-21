@@ -59,10 +59,11 @@
                                             </div>
                                             <div>
                                                 <div class="text-lg font-semibold text-dark-gray font-heading">
-                                                    {{ agendamento.inicio.strftime('%d/%m/%Y') }}
+                                                    {{ agendamento.inicio_local.strftime('%d/%m/%Y') }}
                                                 </div>
                                                 <div class="text-teal font-medium font-body">
-                                                    {{ agendamento.inicio.strftime('%H:%M') }} - {{ agendamento.fim.strftime('%H:%M') }}
+                                                    {{ agendamento.inicio_local.strftime('%H:%M') }} - {{ agendamento.fim_local.strftime('%H:%M') }}
+                                                    <span class="text-xs text-gray-500">(horário de Brasília)</span>
                                                 </div>
                                             </div>
                                         </div>

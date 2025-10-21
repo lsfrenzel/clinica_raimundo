@@ -44,34 +44,65 @@ def painel_medico():
         return render_template('error.html', 
                              message="Acesso restrito a médicos"), 403
     
-    from models import Medico, Agendamento
-    from datetime import datetime, timedelta
+    from models import Medico, Agendamento, Especialidade
+    from datetime import datetime, timedelta, timezone as tz
+    from sqlalchemy.orm import joinedload
+    import logging
+    
+    logger = logging.getLogger(__name__)
     
     # Buscar médico logado
     medico = Medico.query.filter_by(user_id=current_user.id).first()
     if not medico:
+        logger.error(f"Perfil médico não encontrado para user_id={current_user.id}")
         return render_template('error.html', 
                              message="Perfil médico não encontrado"), 404
     
-    # Data de hoje e próximos dias
-    hoje = datetime.now()
-    data_limite = hoje + timedelta(days=30)
+    logger.info(f"Médico encontrado: ID={medico.id}, User={current_user.nome}")
     
-    # Agendamentos futuros
-    agendamentos = Agendamento.query.filter(
-        Agendamento.medico_id == medico.id,
-        Agendamento.inicio >= hoje,
-        Agendamento.inicio <= data_limite
-    ).order_by(Agendamento.inicio).all()
+    # Buscar TODOS os agendamentos do médico com relacionamentos carregados
+    agendamentos = Agendamento.query.options(
+        joinedload(Agendamento.especialidade),
+        joinedload(Agendamento.paciente)
+    ).filter(
+        Agendamento.medico_id == medico.id
+    ).order_by(Agendamento.inicio.desc()).all()
     
-    # Estatísticas básicas
-    total_agendamentos = len(agendamentos)
-    confirmados = len([a for a in agendamentos if a.status == 'confirmado'])
-    pendentes = len([a for a in agendamentos if a.status == 'agendado'])
+    logger.info(f"Total de agendamentos encontrados: {len(agendamentos)}")
+    
+    # Usar UTC para comparação consistente (como funciona em Meus Agendamentos)
+    agora = datetime.utcnow()
+    limite_30_dias = agora + timedelta(days=30)
+    
+    # Converter horários de UTC para timezone de Brasília para exibição
+    brasilia_offset = tz(timedelta(hours=-3))
+    
+    for agendamento in agendamentos:
+        # Converter de UTC para horário de Brasília
+        if agendamento.inicio:
+            agendamento.inicio_local = agendamento.inicio.replace(tzinfo=tz.utc).astimezone(brasilia_offset).replace(tzinfo=None)
+        if agendamento.fim:
+            agendamento.fim_local = agendamento.fim.replace(tzinfo=tz.utc).astimezone(brasilia_offset).replace(tzinfo=None)
+    
+    # Separar agendamentos futuros (próximos 30 dias) e passados (usando UTC)
+    agendamentos_futuros = [a for a in agendamentos if agora <= a.inicio <= limite_30_dias]
+    agendamentos_passados = [a for a in agendamentos if a.inicio < agora]
+    
+    # Ordenar agendamentos futuros por data (próximos primeiro)
+    agendamentos_futuros.sort(key=lambda a: a.inicio)
+    
+    logger.info(f"Agendamentos futuros (próximos 30 dias): {len(agendamentos_futuros)}")
+    logger.info(f"Agendamentos passados: {len(agendamentos_passados)}")
+    
+    # Estatísticas básicas (apenas futuros nos próximos 30 dias)
+    total_agendamentos = len(agendamentos_futuros)
+    confirmados = len([a for a in agendamentos_futuros if a.status == 'confirmado'])
+    pendentes = len([a for a in agendamentos_futuros if a.status == 'agendado'])
     
     return render_template('painel_medico.html', 
                          medico=medico,
-                         agendamentos=agendamentos,
+                         agendamentos=agendamentos_futuros,
+                         agendamentos_passados=agendamentos_passados,
                          total_agendamentos=total_agendamentos,
                          confirmados=confirmados,
                          pendentes=pendentes)
