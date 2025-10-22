@@ -526,15 +526,35 @@ inteligente e sempre busque a melhor experiência para a paciente!
                     'telefone': updated_context.get('patient_phone') or booking_data.get('telefone'),
                     'observacoes': booking_data.get('observacoes', '')
                 }
-                result["data"] = self.create_appointment(merged_data, context)
-                if result["data"].get("success"):
-                    # Limpar contexto após sucesso
-                    updated_context = {
-                        'user_id': context.get('user_id'),
-                        'authenticated': context.get('authenticated'),
-                        'user_name': context.get('user_name'),
-                        'user_email': context.get('user_email')
+                
+                # Validar se tem médico selecionado antes de tentar criar
+                if not merged_data.get('medico_id'):
+                    result["message"] = "Para agendar, preciso que você escolha um médico. Posso mostrar os médicos disponíveis?"
+                    result["action"] = "need_more_info"
+                    result["data"] = {"missing_field": "medico_id"}
+                    result["suggestions"] = ["Ver médicos disponíveis"]
+                elif not merged_data.get('especialidade_id'):
+                    result["message"] = "Preciso saber qual especialidade você deseja. Posso mostrar as especialidades disponíveis?"
+                    result["action"] = "need_more_info"
+                    result["data"] = {"missing_field": "especialidade_id"}
+                    result["suggestions"] = ["Ver especialidades"]
+                elif not merged_data.get('data_hora'):
+                    result["message"] = "Preciso saber qual data e horário você prefere. Posso mostrar os horários disponíveis?"
+                    result["action"] = "search_availability"
+                    result["data"] = {
+                        "medico_id": merged_data['medico_id'],
+                        "especialidade_id": merged_data['especialidade_id']
                     }
+                else:
+                    result["data"] = self.create_appointment(merged_data, context)
+                    if result["data"].get("success"):
+                        # Limpar contexto após sucesso
+                        updated_context = {
+                            'user_id': context.get('user_id'),
+                            'authenticated': context.get('authenticated'),
+                            'user_name': context.get('user_name'),
+                            'user_email': context.get('user_email')
+                        }
                     
             elif action == "cancel_appointment":
                 appointment_id = result.get("data", {}).get("appointment_id")
@@ -841,20 +861,25 @@ inteligente e sempre busque a melhor experiência para a paciente!
                     'error': f'Dr(a). {medico.usuario.nome} não atende {especialidade.nome}'
                 }
             
-            # Converter data/hora
+            # Converter data/hora com tratamento correto de timezone
             try:
                 inicio_str = booking_data['data_hora']
-                inicio_naive = datetime.fromisoformat(inicio_str.replace('Z', '+00:00') if 'Z' in inicio_str else inicio_str)
                 
-                if inicio_naive.tzinfo is None:
-                    brasilia_offset = timezone(timedelta(hours=-3))
-                    inicio_brasilia = inicio_naive.replace(tzinfo=brasilia_offset)
-                    inicio = inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
+                # Parse ISO string (suporta com/sem timezone)
+                inicio_parsed = datetime.fromisoformat(inicio_str.replace('Z', '+00:00') if 'Z' in inicio_str else inicio_str)
+                
+                # Se já tem timezone, converter para UTC e remover tzinfo
+                if inicio_parsed.tzinfo is not None:
+                    inicio = inicio_parsed.astimezone(timezone.utc).replace(tzinfo=None)
                 else:
-                    inicio = inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
+                    # Se não tem timezone, assumir Brasília (UTC-3) e converter para UTC
+                    brasilia_offset = timezone(timedelta(hours=-3))
+                    inicio_brasilia = inicio_parsed.replace(tzinfo=brasilia_offset)
+                    inicio = inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
                 
-                # Verificar se data está no passado
-                if inicio < datetime.utcnow():
+                # Verificar se data está no passado (comparação timezone-aware)
+                now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+                if inicio < now_utc:
                     return {
                         'success': False,
                         'error': 'Não é possível agendar para uma data no passado'
@@ -961,8 +986,8 @@ inteligente e sempre busque a melhor experiência para a paciente!
                     "error": f"Agendamento com status '{agendamento.status}' não pode ser cancelado"
                 }
             
-            # Verificar prazo de 24h
-            now_utc = datetime.utcnow()
+            # Verificar prazo de 24h (comparação timezone-aware)
+            now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
             hours_until = (agendamento.inicio - now_utc).total_seconds() / 3600
             
             if hours_until < 24:
@@ -1006,8 +1031,8 @@ inteligente e sempre busque a melhor experiência para a paciente!
                     "error": f"Agendamento com status '{agendamento.status}' não pode ser remarcado"
                 }
             
-            # Verificar prazo de 24h para remarcação
-            now_utc = datetime.utcnow()
+            # Verificar prazo de 24h para remarcação (comparação timezone-aware)
+            now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
             hours_until = (agendamento.inicio - now_utc).total_seconds() / 3600
             
             if hours_until < 24:
@@ -1016,18 +1041,21 @@ inteligente e sempre busque a melhor experiência para a paciente!
                     "error": "Reagendamento deve ser feito com pelo menos 24 horas de antecedência"
                 }
             
-            # Converter nova data
+            # Converter nova data com tratamento correto de timezone
             try:
-                novo_inicio_naive = datetime.fromisoformat(new_datetime)
-                if novo_inicio_naive.tzinfo is None:
-                    brasilia_offset = timezone(timedelta(hours=-3))
-                    novo_inicio_brasilia = novo_inicio_naive.replace(tzinfo=brasilia_offset)
-                    novo_inicio = novo_inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
-                else:
-                    novo_inicio = novo_inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
+                novo_inicio_parsed = datetime.fromisoformat(new_datetime.replace('Z', '+00:00') if 'Z' in new_datetime else new_datetime)
                 
-                # Verificar se nova data está no passado
-                if novo_inicio < datetime.utcnow():
+                # Se já tem timezone, converter para UTC e remover tzinfo
+                if novo_inicio_parsed.tzinfo is not None:
+                    novo_inicio = novo_inicio_parsed.astimezone(timezone.utc).replace(tzinfo=None)
+                else:
+                    # Se não tem timezone, assumir Brasília (UTC-3) e converter para UTC
+                    brasilia_offset = timezone(timedelta(hours=-3))
+                    novo_inicio_brasilia = novo_inicio_parsed.replace(tzinfo=brasilia_offset)
+                    novo_inicio = novo_inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
+                
+                # Verificar se nova data está no passado (comparação timezone-aware)
+                if novo_inicio < now_utc:
                     return {
                         "success": False,
                         "error": "Não é possível reagendar para uma data no passado"
