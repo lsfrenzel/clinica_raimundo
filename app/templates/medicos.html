@@ -147,9 +147,9 @@
                 {% for medico in medicos %}
                 <div class="card-interactive overflow-hidden group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
                     {% if medico.foto_url %}
-                        <div class="relative overflow-hidden h-80">
-                            <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="relative overflow-hidden h-80 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+                            <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </div>
                     {% else %}
                         <div class="h-80 gradient-primary flex items-center justify-center relative overflow-hidden">
