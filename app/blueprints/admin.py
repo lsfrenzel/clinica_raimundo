@@ -737,6 +737,75 @@ def gerenciar_agenda():
                          timedelta=timedelta,
                          calcular_duracao=calcular_duracao)
 
+@bp.route('/agenda/api/eventos')
+@login_required
+@admin_required
+def api_agenda_eventos():
+    """API para fornecer eventos da agenda em formato JSON para o calendário"""
+    from models import Medico, Agenda, Agendamento, User
+    
+    start = request.args.get('start')
+    end = request.args.get('end')
+    medico_id = request.args.get('medico_id')
+    
+    if not start or not end:
+        return jsonify([])
+    
+    try:
+        data_inicio = datetime.fromisoformat(start.replace('Z', '+00:00')).date()
+        data_fim = datetime.fromisoformat(end.replace('Z', '+00:00')).date()
+    except (ValueError, AttributeError):
+        return jsonify([])
+    
+    query = Agenda.query.filter(
+        Agenda.data >= data_inicio,
+        Agenda.data <= data_fim,
+        Agenda.ativo == True
+    )
+    
+    if medico_id:
+        query = query.filter(Agenda.medico_id == int(medico_id))
+    
+    agendas = query.order_by(Agenda.data, Agenda.hora_inicio).all()
+    
+    eventos = []
+    for agenda in agendas:
+        agendamento = Agendamento.query.filter_by(
+            agenda_id=agenda.id,
+            status='confirmado'
+        ).first()
+        
+        disponivel = agendamento is None
+        
+        data_hora_inicio = datetime.combine(agenda.data, agenda.hora_inicio)
+        data_hora_fim = datetime.combine(agenda.data, agenda.hora_fim)
+        
+        duracao = (agenda.hora_fim.hour * 60 + agenda.hora_fim.minute) - (agenda.hora_inicio.hour * 60 + agenda.hora_inicio.minute)
+        
+        medico_nome = f"Dr(a). {agenda.medico.usuario.nome}"
+        
+        evento = {
+            'id': f'agenda_{agenda.id}',
+            'title': f"{medico_nome} - {'Disponível' if disponivel else 'Ocupado'}",
+            'start': data_hora_inicio.isoformat(),
+            'end': data_hora_fim.isoformat(),
+            'backgroundColor': '#10b981' if disponivel else '#ef4444',
+            'borderColor': '#10b981' if disponivel else '#ef4444',
+            'textColor': '#ffffff',
+            'extendedProps': {
+                'agenda_id': agenda.id,
+                'medico_id': agenda.medico_id,
+                'medico_nome': medico_nome,
+                'disponivel': disponivel,
+                'duracao': duracao,
+                'paciente_nome': agendamento.paciente.nome if agendamento and agendamento.paciente else None
+            }
+        }
+        
+        eventos.append(evento)
+    
+    return jsonify(eventos)
+
 @bp.route('/agenda/criar', methods=['GET', 'POST'])
 @login_required
 @admin_required
