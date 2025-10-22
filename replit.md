@@ -133,3 +133,32 @@ The system features a modern and revolutionary design characterized by:
 - ✅ Sistema mantém compatibilidade total com PostgreSQL em produção
 
 **Nota Técnica**: A solução segue o padrão de armazenar datetimes em UTC no banco de dados e converter para timezone local (Brasília UTC-3) apenas para display e comparações lógicas. Este é o padrão recomendado para aplicações multi-timezone.
+
+### ✅ Refinamento de Lógica de Timezone - Boundary Handling (22/10/2025)
+
+**Problema Identificado**: A implementação anterior usava `datetime.max.time()` que pode causar problemas de precisão de ponto flutuante e comportamento indefinido em comparações de limite de dia.
+
+**Solução Implementada**:
+
+1. **Boundary Exclusivo (Exclusive End)**:
+   - Alterado de `fim_dia_brasilia = datetime.combine(data, datetime.max.time())` para usar o próximo dia à meia-noite
+   - Novo padrão: `[00:00 Brasília, próximo dia 00:00 Brasília)` (exclusive)
+   - Isso é mais determinístico e evita problemas de precisão
+
+2. **Operador de Comparação**:
+   - Alterado de `Agendamento.inicio <= fim_dia_utc` para `Agendamento.inicio < fim_dia_utc`
+   - Garante que agendamentos exatamente à meia-noite sejam contabilizados apenas no próximo dia
+   - Elimina duplicação de slots entre dias consecutivos
+
+3. **Arquivos Modificados**:
+   - `app/blueprints/appointments.py`:
+     - Função `medicos_por_especialidade()` (linhas 69-85)
+     - Função `horarios_medico()` (linhas 177-194)
+
+**Benefícios**:
+- ✅ Lógica de boundary mais robusta e determinística
+- ✅ Não há mais problemas de precisão com datetime.max.time()
+- ✅ Garantia de que slots não são duplicados em transições de dia
+- ✅ Consultas ao banco de dados são mais precisas
+
+**Aprovação Técnica**: Revisado e aprovado pelo Architect. Código produção-ready para Railway deployment.
