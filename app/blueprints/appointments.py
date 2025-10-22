@@ -64,8 +64,11 @@ def medicos_por_especialidade(especialidade_id):
             ).order_by(Agenda.hora_inicio).all()
             
             # Calcular início e fim do dia em horário de Brasília, depois converter para UTC
+            # Início: 00:00:00 em Brasília
             inicio_dia_brasilia = datetime.combine(data, datetime.min.time()).replace(tzinfo=brasilia_offset)
-            fim_dia_brasilia = datetime.combine(data, datetime.max.time()).replace(tzinfo=brasilia_offset)
+            # Fim: próximo dia 00:00:00 em Brasília (exclusive)
+            proximo_dia = data + timedelta(days=1)
+            fim_dia_brasilia = datetime.combine(proximo_dia, datetime.min.time()).replace(tzinfo=brasilia_offset)
             
             inicio_dia_utc = inicio_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
             fim_dia_utc = fim_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
@@ -74,7 +77,7 @@ def medicos_por_especialidade(especialidade_id):
             agendamentos = Agendamento.query.filter(
                 Agendamento.medico_id == medico.id,
                 Agendamento.inicio >= inicio_dia_utc,
-                Agendamento.inicio <= fim_dia_utc,
+                Agendamento.inicio < fim_dia_utc,
                 Agendamento.status.in_(['agendado', 'confirmado'])
             ).all()
             
@@ -170,8 +173,11 @@ def horarios_medico(medico_id):
         
         # Calcular início e fim do dia em horário de Brasília, depois converter para UTC
         # Isso garante que busquemos os agendamentos corretos considerando o timezone
+        # Início: 00:00:00 em Brasília
         inicio_dia_brasilia = datetime.combine(data_atual, datetime.min.time()).replace(tzinfo=brasilia_offset)
-        fim_dia_brasilia = datetime.combine(data_atual, datetime.max.time()).replace(tzinfo=brasilia_offset)
+        # Fim: próximo dia 00:00:00 em Brasília (exclusive)
+        proximo_dia = data_atual + timedelta(days=1)
+        fim_dia_brasilia = datetime.combine(proximo_dia, datetime.min.time()).replace(tzinfo=brasilia_offset)
         
         inicio_dia_utc = inicio_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
         fim_dia_utc = fim_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
@@ -180,7 +186,7 @@ def horarios_medico(medico_id):
         agendamentos = Agendamento.query.filter(
             Agendamento.medico_id == medico.id,
             Agendamento.inicio >= inicio_dia_utc,
-            Agendamento.inicio <= fim_dia_utc,
+            Agendamento.inicio < fim_dia_utc,
             Agendamento.status.in_(['agendado', 'confirmado'])
         ).all()
         
