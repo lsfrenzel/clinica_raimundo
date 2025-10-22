@@ -98,3 +98,38 @@ The system features a modern and revolutionary design characterized by:
 - ✅ Menos cliques necessários para completar agendamento
 
 **Compatibilidade**: Totalmente compatível com Railway deployment. Todas as queries usam SQLAlchemy ORM.
+
+### ✅ Correção de Timezone no Filtro de Horários (22/10/2025)
+
+**Problema Identificado**: O filtro de horários disponíveis não estava funcionando corretamente no Railway com PostgreSQL devido a um problema de timezone. Agendamentos salvos em UTC (horário universal) não estavam sendo corretamente comparados com as agendas em horário local de Brasília (UTC-3).
+
+**Cenário do Bug**:
+- Paciente agenda consulta para 15/10/2025 às 21:00 (Brasília)
+- Sistema salva como 16/10/2025 às 00:00 (UTC)
+- Ao buscar horários disponíveis para 15/10, o sistema não encontrava esse agendamento
+- Resultado: horário aparecia como disponível mesmo já estando agendado
+
+**Solução Implementada**:
+
+1. **Conversão Correta de Range de Datas**:
+   - Cada dia de busca é convertido para um range completo em horário de Brasília
+   - O range é então convertido para UTC para consultar o banco de dados
+   - Exemplo: dia 15/10 em Brasília = 15/10 03:00 UTC até 16/10 02:59 UTC
+
+2. **Normalização de Horários para Comparação**:
+   - Agendamentos recuperados do banco (em UTC) são convertidos para Brasília
+   - Apenas o horário (time) é extraído para comparar com `agenda.hora_inicio`
+   - Garante comparação precisa entre horários ocupados e disponíveis
+
+3. **Arquivos Modificados**:
+   - `app/blueprints/appointments.py`:
+     - Função `horarios_medico()` (linha 113-221)
+     - Função `medicos_por_especialidade()` (linha 25-126)
+
+**Benefícios**:
+- ✅ Filtros de horários agora funcionam corretamente no Railway
+- ✅ Agendamentos noturnos são corretamente identificados
+- ✅ Não há mais conflitos de duplo agendamento
+- ✅ Sistema mantém compatibilidade total com PostgreSQL em produção
+
+**Nota Técnica**: A solução segue o padrão de armazenar datetimes em UTC no banco de dados e converter para timezone local (Brasília UTC-3) apenas para display e comparações lógicas. Este é o padrão recomendado para aplicações multi-timezone.
