@@ -112,31 +112,31 @@ def popular_railway():
                 'nome': 'Dr. Raimundo Nunes', 
                 'crm': 'CRM/SP 123456', 
                 'especialidade': 'Pré-Natal de Alto Risco',
-                'foto_url': '/static/images/professional_male_do_55c38d12.jpg'
+                'foto_url': '/static/images/dr-raimundo-nunes-new.png'
             },
             {
                 'nome': 'Dra. Ana Silva', 
                 'crm': 'CRM/SP 234567', 
                 'especialidade': 'Mastologia',
-                'foto_url': '/static/images/professional_female__98725e36.jpg'
+                'foto_url': '/static/images/dra-ana-silva-new.png'
             },
             {
                 'nome': 'Dr. Carlos Oliveira', 
                 'crm': 'CRM/SP 345678', 
                 'especialidade': 'Reprodução Humana',
-                'foto_url': '/static/images/professional_male_do_f99c6925.jpg'
+                'foto_url': '/static/images/dr-carlos-oliveira-new.jpg'
             },
             {
                 'nome': 'Dra. Maria Santos', 
                 'crm': 'CRM/SP 456789', 
                 'especialidade': 'Uroginecologia',
-                'foto_url': '/static/images/professional_female__90265671.jpg'
+                'foto_url': '/static/images/dra-maria-santos-new.png'
             },
             {
                 'nome': 'Dr. Ricardo Mendes', 
                 'crm': 'CRM/SP 567890', 
                 'especialidade': 'Climatério e Menopausa',
-                'foto_url': '/static/images/professional_male_do_57c90351.jpg'
+                'foto_url': '/static/images/dr-ricardo-mendes-new.png'
             }
         ]
         
