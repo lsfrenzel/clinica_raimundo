@@ -4,11 +4,11 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="bg-gradient-to-r from-clinic-primary to-clinic-accent text-white py-20">
+<section class="clinic-gradient text-white py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-6">Sobre a Clínica Dr. Raimundo Nunes</h1>
-            <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white">Sobre a Clínica Dr. Raimundo Nunes</h1>
+            <p class="text-xl clinic-accent font-medium max-w-3xl mx-auto">
                 Mais de 30 anos dedicados à saúde da mulher com humanização, excelência e cuidado personalizado
             </p>
         </div>
@@ -96,12 +96,12 @@
 <!-- CTA -->
 <section class="py-16 bg-clinic-primary text-white">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl font-bold mb-4">Pronta para cuidar da sua saúde?</h2>
-        <p class="text-xl text-blue-100 mb-8">
+        <h2 class="text-3xl font-bold mb-4 text-white">Pronta para cuidar da sua saúde?</h2>
+        <p class="text-xl clinic-accent font-medium mb-8">
             Agende sua consulta conosco e experimente o atendimento humanizado que você merece
         </p>
         <a href="{{ url_for('appointments.agendar') }}" 
-           class="bg-white text-clinic-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all duration-300 shadow-xl">
+           class="bg-white clinic-primary px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all duration-300 shadow-xl">
             Agendar Consulta
         </a>
     </div>
