@@ -5,6 +5,14 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="relative overflow-hidden min-h-[70vh] flex items-center bg-gradient-to-br from-primary-700 via-primary-600 to-accent-600">
+    <!-- Background Image -->
+    <div class="absolute inset-0">
+        <img src="{{ url_for('static', filename='images/clinica.jpg') }}" 
+             alt="Clínica Dr. Raimundo Nunes" 
+             class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-800/85 to-primary-700/80"></div>
+    </div>
+    
     <!-- Animated Background -->
     <div class="absolute inset-0">
         <div class="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl top-20 left-20 animate-float"></div>

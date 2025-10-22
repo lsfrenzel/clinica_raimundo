@@ -108,11 +108,36 @@ def popular_railway():
         # 5. Criar médicos
         print("\n👨‍⚕️ Criando médicos...")
         medicos_data = [
-            {'nome': 'Dr. Raimundo Nunes', 'crm': 'CRM/SP 123456', 'especialidade': 'Pré-Natal de Alto Risco'},
-            {'nome': 'Dra. Ana Silva', 'crm': 'CRM/SP 234567', 'especialidade': 'Mastologia'},
-            {'nome': 'Dr. Carlos Oliveira', 'crm': 'CRM/SP 345678', 'especialidade': 'Reprodução Humana'},
-            {'nome': 'Dra. Maria Santos', 'crm': 'CRM/SP 456789', 'especialidade': 'Uroginecologia'},
-            {'nome': 'Dr. Ricardo Mendes', 'crm': 'CRM/SP 567890', 'especialidade': 'Climatério e Menopausa'}
+            {
+                'nome': 'Dr. Raimundo Nunes', 
+                'crm': 'CRM/SP 123456', 
+                'especialidade': 'Pré-Natal de Alto Risco',
+                'foto_url': '/static/images/professional_male_do_55c38d12.jpg'
+            },
+            {
+                'nome': 'Dra. Ana Silva', 
+                'crm': 'CRM/SP 234567', 
+                'especialidade': 'Mastologia',
+                'foto_url': '/static/images/professional_female__98725e36.jpg'
+            },
+            {
+                'nome': 'Dr. Carlos Oliveira', 
+                'crm': 'CRM/SP 345678', 
+                'especialidade': 'Reprodução Humana',
+                'foto_url': '/static/images/professional_male_do_f99c6925.jpg'
+            },
+            {
+                'nome': 'Dra. Maria Santos', 
+                'crm': 'CRM/SP 456789', 
+                'especialidade': 'Uroginecologia',
+                'foto_url': '/static/images/professional_female__90265671.jpg'
+            },
+            {
+                'nome': 'Dr. Ricardo Mendes', 
+                'crm': 'CRM/SP 567890', 
+                'especialidade': 'Climatério e Menopausa',
+                'foto_url': '/static/images/professional_male_do_57c90351.jpg'
+            }
         ]
         
         medicos = []
@@ -139,6 +164,7 @@ def popular_railway():
                 medico.user_id = user.id
                 medico.crm = med_data['crm']
                 medico.bio = f"Especialista em {med_data['especialidade']} com mais de 10 anos de experiência."
+                medico.foto_url = med_data.get('foto_url', '')
                 medico.ativo = True
                 db.session.add(medico)
                 
