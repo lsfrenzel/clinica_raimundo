@@ -23,6 +23,7 @@ def agendar_logado():
 def medicos_por_especialidade(especialidade_id):
     """Passo 2: Escolher médico da especialidade"""
     from models import Especialidade, Agenda, Agendamento
+    from datetime import timezone as tz
     especialidade = Especialidade.query.get_or_404(especialidade_id)
     medicos = especialidade.medicos.filter_by(ativo=True).all()
     
@@ -43,6 +44,9 @@ def medicos_por_especialidade(especialidade_id):
     if not data_busca:
         data_busca = data_inicial.strftime('%Y-%m-%d')
     
+    # Timezone de Brasília (UTC-3)
+    brasilia_offset = tz(timedelta(hours=-3))
+    
     # Buscar próximos horários disponíveis para cada médico com filtros
     for medico in medicos:
         medico.proximos_horarios = []
@@ -59,16 +63,27 @@ def medicos_por_especialidade(especialidade_id):
                 Agenda.ativo == True
             ).order_by(Agenda.hora_inicio).all()
             
-            # Buscar agendamentos já existentes
-            agendamentos_existentes = set()
+            # Calcular início e fim do dia em horário de Brasília, depois converter para UTC
+            inicio_dia_brasilia = datetime.combine(data, datetime.min.time()).replace(tzinfo=brasilia_offset)
+            fim_dia_brasilia = datetime.combine(data, datetime.max.time()).replace(tzinfo=brasilia_offset)
+            
+            inicio_dia_utc = inicio_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
+            fim_dia_utc = fim_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
+            
+            # Buscar agendamentos já existentes (em UTC, mas filtrando pelo range correto)
             agendamentos = Agendamento.query.filter(
                 Agendamento.medico_id == medico.id,
-                db.func.date(Agendamento.inicio) == data,
+                Agendamento.inicio >= inicio_dia_utc,
+                Agendamento.inicio <= fim_dia_utc,
                 Agendamento.status.in_(['agendado', 'confirmado'])
             ).all()
             
+            # Criar set com horários ocupados (convertendo de UTC para horário local de Brasília)
+            agendamentos_existentes = set()
             for agendamento in agendamentos:
-                agendamentos_existentes.add(agendamento.inicio.time())
+                # Converter de UTC para Brasília para comparar com agenda.hora_inicio
+                inicio_brasilia = agendamento.inicio.replace(tzinfo=tz.utc).astimezone(brasilia_offset)
+                agendamentos_existentes.add(inicio_brasilia.time())
             
             # Verificar horários livres
             for agenda in agendas_dia:
@@ -111,6 +126,7 @@ def medicos_por_especialidade(especialidade_id):
 def horarios_medico(medico_id):
     """Passo 3: Escolher horário específico do médico com filtros avançados"""
     from models import Medico, Agenda, Agendamento
+    from datetime import timezone as tz
     medico = Medico.query.get_or_404(medico_id)
     
     # Parâmetros de busca
@@ -135,6 +151,9 @@ def horarios_medico(medico_id):
     else:
         data_inicial = datetime.now().date()
     
+    # Timezone de Brasília (UTC-3)
+    brasilia_offset = tz(timedelta(hours=-3))
+    
     # Buscar horários disponíveis para múltiplos dias
     horarios_por_dia = {}
     
@@ -149,16 +168,28 @@ def horarios_medico(medico_id):
             Agenda.ativo == True
         ).order_by(Agenda.hora_inicio).all()
         
-        # Buscar agendamentos já existentes para este dia
-        agendamentos_existentes = set()
+        # Calcular início e fim do dia em horário de Brasília, depois converter para UTC
+        # Isso garante que busquemos os agendamentos corretos considerando o timezone
+        inicio_dia_brasilia = datetime.combine(data_atual, datetime.min.time()).replace(tzinfo=brasilia_offset)
+        fim_dia_brasilia = datetime.combine(data_atual, datetime.max.time()).replace(tzinfo=brasilia_offset)
+        
+        inicio_dia_utc = inicio_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
+        fim_dia_utc = fim_dia_brasilia.astimezone(tz.utc).replace(tzinfo=None)
+        
+        # Buscar agendamentos já existentes para este dia (em UTC, mas filtrando pelo range correto)
         agendamentos = Agendamento.query.filter(
             Agendamento.medico_id == medico.id,
-            db.func.date(Agendamento.inicio) == data_atual,
+            Agendamento.inicio >= inicio_dia_utc,
+            Agendamento.inicio <= fim_dia_utc,
             Agendamento.status.in_(['agendado', 'confirmado'])
         ).all()
         
+        # Criar set com horários ocupados (convertendo de UTC para horário local de Brasília)
+        agendamentos_existentes = set()
         for agendamento in agendamentos:
-            agendamentos_existentes.add(agendamento.inicio.time())
+            # Converter de UTC para Brasília para comparar com agenda.hora_inicio
+            inicio_brasilia = agendamento.inicio.replace(tzinfo=tz.utc).astimezone(brasilia_offset)
+            agendamentos_existentes.add(inicio_brasilia.time())
         
         # Filtrar apenas horários livres
         for agenda in agendas_dia:
