@@ -782,11 +782,24 @@ def api_agenda_eventos():
         
         duracao = (agenda.hora_fim.hour * 60 + agenda.hora_fim.minute) - (agenda.hora_inicio.hour * 60 + agenda.hora_inicio.minute)
         
-        medico_nome = f"Dr(a). {agenda.medico.usuario.nome}"
+        medico_nome_completo = agenda.medico.usuario.nome
+        medico_nome_curto = medico_nome_completo.split()[0] if medico_nome_completo else "Médico"
+        
+        hora_inicio_str = agenda.hora_inicio.strftime('%H:%M')
+        hora_fim_str = agenda.hora_fim.strftime('%H:%M')
+        
+        if disponivel:
+            titulo = f"{hora_inicio_str} - Dr(a). {medico_nome_curto}"
+            tooltip = f"Dr(a). {medico_nome_completo}\n{hora_inicio_str} - {hora_fim_str}\nDisponível"
+        else:
+            titulo = f"{hora_inicio_str} - Dr(a). {medico_nome_curto} (Ocupado)"
+            tooltip = f"Dr(a). {medico_nome_completo}\n{hora_inicio_str} - {hora_fim_str}\nOcupado"
+            if agendamento and agendamento.paciente:
+                tooltip += f"\nPaciente: {agendamento.paciente.nome}"
         
         evento = {
             'id': f'agenda_{agenda.id}',
-            'title': f"{medico_nome} - {'Disponível' if disponivel else 'Ocupado'}",
+            'title': titulo,
             'start': data_hora_inicio.isoformat(),
             'end': data_hora_fim.isoformat(),
             'backgroundColor': '#10b981' if disponivel else '#ef4444',
@@ -795,10 +808,11 @@ def api_agenda_eventos():
             'extendedProps': {
                 'agenda_id': agenda.id,
                 'medico_id': agenda.medico_id,
-                'medico_nome': medico_nome,
+                'medico_nome': f"Dr(a). {medico_nome_completo}",
                 'disponivel': disponivel,
                 'duracao': duracao,
-                'paciente_nome': agendamento.paciente.nome if agendamento and agendamento.paciente else None
+                'paciente_nome': agendamento.paciente.nome if agendamento and agendamento.paciente else None,
+                'tooltip': tooltip
             }
         }
         
