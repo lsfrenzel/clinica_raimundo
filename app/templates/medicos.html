@@ -148,8 +148,8 @@
                 <div class="card-interactive overflow-hidden group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
                     {% if medico.foto_url %}
                         <div class="relative h-80 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
-                            <div class="w-64 h-64 rounded-full overflow-hidden shadow-2xl ring-4 ring-white group-hover:ring-primary-300 transition-all duration-500">
-                                <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            <div class="w-64 h-64 rounded-full overflow-hidden shadow-2xl ring-4 ring-white group-hover:ring-primary-300 transition-all duration-500 bg-white flex items-center justify-center">
+                                <img src="{{ medico.foto_url }}" alt="{{ medico.usuario.nome }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500">
                             </div>
                         </div>
                     {% else %}
