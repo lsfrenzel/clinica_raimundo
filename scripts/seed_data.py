@@ -117,7 +117,7 @@ def create_seed_data():
                 'telefone': '(11) 98765-4322',
                 'crm': 'CRM/SP 67890',
                 'bio': 'Ginecologista e obstetra formada pela Febrasgo. Especialização em laparoscopia e endometriose. Atendimento humanizado focado na saúde integral da mulher.',
-                'foto_url': '/static/images/dra-ana-silva.jpg',
+                'foto_url': '/static/images/dra-ana-costa.jpg',
                 'especialidades': ['Mastologia', 'Uroginecologia', 'Sexualidade']
             },
             {
@@ -126,7 +126,7 @@ def create_seed_data():
                 'telefone': '(11) 98765-4323', 
                 'crm': 'CRM/SP 54321',
                 'bio': 'Médico ginecologista especialista em reprodução humana e climatério. Formação complementar em medicina reprodutiva e endocrinologia ginecológica.',
-                'foto_url': '/static/images/dr-ricardo-mendes.jpg',
+                'foto_url': '/static/images/dr-pedro-alves.jpg',
                 'especialidades': ['Climatério e Menopausa', 'Reprodução Humana', 'PTGI']
             },
             {
@@ -135,7 +135,7 @@ def create_seed_data():
                 'telefone': '(11) 98765-4324',
                 'crm': 'CRM/SP 98765',
                 'bio': 'Especialista em ginecologia preventiva e mastologia. Ampla experiência em rastreamento de câncer ginecológico e acompanhamento de pacientes oncológicas.',
-                'foto_url': '/static/images/dra-maria-santos.jpg',
+                'foto_url': '/static/images/dra-maria-silva.jpg',
                 'especialidades': ['Mastologia', 'DIU e Implanon']
             },
             {
@@ -144,7 +144,7 @@ def create_seed_data():
                 'telefone': '(11) 98765-4325',
                 'crm': 'CRM/SP 11111',
                 'bio': 'Ginecologista e obstetra com especialização em uroginecologia. Experiência em cirurgias minimamente invasivas para correção de incontinência urinária.',
-                'foto_url': '/static/images/dra-patricia-lima.jpg',
+                'foto_url': '/static/images/dra-julia-santos.jpg',
                 'especialidades': ['Uroginecologia', 'Pré-Natal de Alto Risco']
             }
         ]

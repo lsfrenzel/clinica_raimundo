@@ -41,6 +41,91 @@
     </div>
 </section>
 
+<!-- Destaque Dr. Raimundo -->
+<section class="py-24 bg-gradient-to-br from-white to-primary-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="card-interactive p-12 lg:p-16 bg-white shadow-2xl">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="text-center lg:order-2" data-aos="fade-left">
+                    <div class="w-96 h-96 mx-auto mb-10 shadow-2xl relative rounded-3xl overflow-hidden">
+                        <img src="{{ url_for('static', filename='images/dr-raimundo-nunes.jpg') }}" 
+                             alt="Dr. Raimundo Nunes" 
+                             class="w-full h-full object-cover"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="w-full h-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center" style="display: none;">
+                            <svg class="w-32 h-32 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-primary-900/20 to-transparent"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6 max-w-md mx-auto">
+                        <div class="card p-6 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);">
+                            <div class="text-4xl font-bold text-white mb-2">30+</div>
+                            <div class="text-white text-sm font-medium">Anos</div>
+                        </div>
+                        <div class="card p-6 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+                            <div class="text-4xl font-bold text-white mb-2">1º</div>
+                            <div class="text-white text-sm font-medium">Referência DIU</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:order-1" data-aos="fade-right">
+                    <div class="mb-6">
+                        <span class="inline-block gradient-accent text-white px-6 py-3 rounded-full text-sm font-semibold shadow-lg">
+                            🏆 Diretor Clínico
+                        </span>
+                    </div>
+                    <h2 class="text-4xl sm:text-5xl font-display font-bold text-gray-900 mb-8">Dr. Raimundo Nunes</h2>
+                    <p class="text-xl text-gray-700 mb-8 leading-relaxed">
+                        Com mais de 30 anos de experiência em ginecologia e obstetrícia, 
+                        Dr. Raimundo é referência nacional em procedimentos ginecológicos.
+                    </p>
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Especialização</p>
+                                <p class="text-gray-600">Ginecologia e Obstetrícia</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 gradient-accent rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Experiência</p>
+                                <p class="text-gray-600">Mais de 30 anos</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Especialidade</p>
+                                <p class="text-gray-600">DIU Hormonal (Mirena, Kyleena)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('appointments.agendar') }}" class="btn-accent text-lg">
+                        Agendar com Dr. Raimundo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Médicos Grid -->
 <section class="py-24 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -118,84 +203,6 @@
     </div>
 </section>
 
-<!-- Destaque Dr. Raimundo -->
-<section class="py-24 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="card-interactive p-12 lg:p-16 bg-gradient-to-br from-gray-50 to-white">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div data-aos="fade-right">
-                    <div class="mb-6">
-                        <span class="inline-block gradient-accent text-white px-6 py-3 rounded-full text-sm font-semibold shadow-lg">
-                            🏆 Diretor Clínico
-                        </span>
-                    </div>
-                    <h2 class="text-4xl sm:text-5xl font-display font-bold text-gray-900 mb-8">Dr. Raimundo Nunes</h2>
-                    <p class="text-xl text-gray-700 mb-8 leading-relaxed">
-                        Com mais de 30 anos de experiência em ginecologia e obstetrícia, 
-                        Dr. Raimundo é referência nacional em procedimentos ginecológicos.
-                    </p>
-                    <div class="space-y-4 mb-8">
-                        <div class="flex items-start space-x-3">
-                            <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-900">Especialização</p>
-                                <p class="text-gray-600">Ginecologia e Obstetrícia</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-8 h-8 gradient-accent rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-900">Experiência</p>
-                                <p class="text-gray-600">Mais de 30 anos</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-900">Especialidade</p>
-                                <p class="text-gray-600">DIU Hormonal (Mirena, Kyleena)</p>
-                            </div>
-                        </div>
-                    </div>
-                    <a href="{{ url_for('appointments.agendar') }}" class="btn-accent text-lg">
-                        Agendar com Dr. Raimundo
-                    </a>
-                </div>
-                
-                <div class="text-center" data-aos="fade-left">
-                    <div class="w-80 h-80 mx-auto mb-10 shadow-2xl relative rounded-3xl overflow-hidden">
-                        <img src="{{ url_for('static', filename='images/dr-raimundo-nunes.jpg') }}" 
-                             alt="Dr. Raimundo Nunes" 
-                             class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-primary-900/20 to-transparent"></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-6 max-w-md mx-auto">
-                        <div class="card p-6 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);">
-                            <div class="text-4xl font-bold text-white mb-2">30+</div>
-                            <div class="text-white text-sm font-medium">Anos</div>
-                        </div>
-                        <div class="card p-6 text-center transform hover:scale-105 transition-all duration-300" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
-                            <div class="text-4xl font-bold text-white mb-2">1º</div>
-                            <div class="text-white text-sm font-medium">Referência DIU</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <!-- CTA -->
 <section class="py-24 gradient-multi text-white relative overflow-hidden">
