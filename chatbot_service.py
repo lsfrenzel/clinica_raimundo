@@ -315,6 +315,10 @@ inteligente e sempre busque a melhor experiência para a paciente!
         Resposta usando Gemini com contexto enriquecido
         """
         try:
+            # Verificar se Gemini está realmente disponível
+            if not self.gemini_client:
+                raise Exception("Gemini client não inicializado")
+            
             # Preparar system prompt com contexto do banco
             system_prompt = self.get_system_prompt(context)
             
@@ -332,19 +336,22 @@ inteligente e sempre busque a melhor experiência para a paciente!
             # Criar prompt completo
             full_prompt = f"{system_prompt}{context_str}\n\nUSUÁRIO: {user_message}\n\nResponda em JSON conforme especificado:"
             
-            if not types or not self.gemini_client:
-                raise Exception("Gemini não disponível")
-            
-            # Chamar Gemini
-            response = self.gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=full_prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.8,  # Mais criativo e natural
-                    max_output_tokens=2000,
-                    response_mime_type="application/json"
+            # Chamar Gemini com proteção
+            if types:
+                response = self.gemini_client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=full_prompt,
+                    config=types.GenerateContentConfig(
+                        temperature=0.8,
+                        max_output_tokens=2000,
+                        response_mime_type="application/json"
+                    )
                 )
-            )
+            else:
+                response = self.gemini_client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=full_prompt
+                )
             
             if not response.text:
                 raise Exception("Resposta vazia do Gemini")
@@ -790,7 +797,7 @@ inteligente e sempre busque a melhor experiência para a paciente!
             return {"error": str(e)}
     
     def create_appointment(self, booking_data: Dict, context: Dict) -> Dict[str, Any]:
-        """Cria um novo agendamento"""
+        """Cria um novo agendamento com validações completas"""
         try:
             # Validar dados obrigatórios
             required = ['medico_id', 'especialidade_id', 'data_hora']
@@ -811,6 +818,29 @@ inteligente e sempre busque a melhor experiência para a paciente!
                         'missing_field': 'nome ou email'
                     }
             
+            # Validar se médico existe e está ativo
+            medico = Medico.query.get(booking_data['medico_id'])
+            if not medico or not medico.ativo:
+                return {
+                    'success': False,
+                    'error': 'Médico não encontrado ou inativo'
+                }
+            
+            # Validar se especialidade existe e está ativa
+            especialidade = Especialidade.query.get(booking_data['especialidade_id'])
+            if not especialidade or not especialidade.ativo:
+                return {
+                    'success': False,
+                    'error': 'Especialidade não encontrada ou inativa'
+                }
+            
+            # Validar se médico atende essa especialidade
+            if especialidade not in medico.especialidades:
+                return {
+                    'success': False,
+                    'error': f'Dr(a). {medico.usuario.nome} não atende {especialidade.nome}'
+                }
+            
             # Converter data/hora
             try:
                 inicio_str = booking_data['data_hora']
@@ -823,17 +853,44 @@ inteligente e sempre busque a melhor experiência para a paciente!
                 else:
                     inicio = inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
                 
-                fim = inicio + timedelta(minutes=30)
+                # Verificar se data está no passado
+                if inicio < datetime.utcnow():
+                    return {
+                        'success': False,
+                        'error': 'Não é possível agendar para uma data no passado'
+                    }
+                
+                fim = inicio + timedelta(minutes=especialidade.duracao_padrao or 30)
             except ValueError as e:
                 return {
                     'success': False,
                     'error': f'Formato de data inválido: {str(e)}'
                 }
             
-            # Verificar disponibilidade
-            conflito = Agendamento.query.filter_by(
-                medico_id=booking_data['medico_id'],
-                inicio=inicio
+            # Verificar se existe agenda do médico para esse horário
+            inicio_brasilia = inicio.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=-3)))
+            data_agendamento = inicio_brasilia.date()
+            hora_agendamento = inicio_brasilia.time()
+            
+            agenda_disponivel = Agenda.query.filter(
+                Agenda.medico_id == booking_data['medico_id'],
+                Agenda.dia_semana == data_agendamento.weekday(),
+                Agenda.hora_inicio <= hora_agendamento,
+                Agenda.hora_fim > hora_agendamento,
+                Agenda.ativo == True
+            ).first()
+            
+            if not agenda_disponivel:
+                return {
+                    'success': False,
+                    'error': 'Médico não possui agenda disponível para este horário'
+                }
+            
+            # Verificar conflito de agendamento
+            conflito = Agendamento.query.filter(
+                Agendamento.medico_id == booking_data['medico_id'],
+                Agendamento.inicio == inicio,
+                Agendamento.status.in_(['agendado', 'confirmado'])
             ).first()
             
             if conflito:
@@ -848,6 +905,7 @@ inteligente e sempre busque a melhor experiência para a paciente!
             agendamento.especialidade_id = booking_data['especialidade_id']
             agendamento.inicio = inicio
             agendamento.fim = fim
+            agendamento.status = 'agendado'
             agendamento.origem = 'chatbot'
             agendamento.observacoes = booking_data.get('observacoes', '')
             
@@ -861,10 +919,6 @@ inteligente e sempre busque a melhor experiência para a paciente!
             db.session.add(agendamento)
             db.session.commit()
             
-            # Buscar informações para confirmação
-            medico = Medico.query.get(agendamento.medico_id)
-            esp = Especialidade.query.get(agendamento.especialidade_id)
-            
             return {
                 'success': True,
                 'agendamento_id': agendamento.id,
@@ -873,8 +927,8 @@ inteligente e sempre busque a melhor experiência para a paciente!
                     'id': agendamento.id,
                     'data': agendamento.inicio.strftime('%d/%m/%Y'),
                     'hora': agendamento.inicio.strftime('%H:%M'),
-                    'medico': medico.usuario.nome if medico else '',
-                    'especialidade': esp.nome if esp else '',
+                    'medico': medico.usuario.nome,
+                    'especialidade': especialidade.nome,
                     'paciente': agendamento.nome_paciente
                 }
             }
@@ -890,7 +944,7 @@ inteligente e sempre busque a melhor experiência para a paciente!
             }
     
     def cancel_appointment(self, appointment_id: int, user_id: Optional[int] = None) -> Dict[str, Any]:
-        """Cancela um agendamento"""
+        """Cancela um agendamento com validação de prazo de 24h"""
         try:
             agendamento = Agendamento.query.get(appointment_id)
             if not agendamento:
@@ -900,11 +954,21 @@ inteligente e sempre busque a melhor experiência para a paciente!
             if user_id and agendamento.paciente_id != user_id:
                 return {"success": False, "error": "Você não tem permissão para cancelar este agendamento"}
             
-            # Verificar se pode cancelar
-            if not agendamento.pode_ser_cancelado():
+            # Verificar se status permite cancelamento
+            if agendamento.status not in ['agendado', 'confirmado']:
                 return {
                     "success": False,
-                    "error": "Agendamento não pode ser cancelado (menos de 24h de antecedência)"
+                    "error": f"Agendamento com status '{agendamento.status}' não pode ser cancelado"
+                }
+            
+            # Verificar prazo de 24h
+            now_utc = datetime.utcnow()
+            hours_until = (agendamento.inicio - now_utc).total_seconds() / 3600
+            
+            if hours_until < 24:
+                return {
+                    "success": False,
+                    "error": "Cancelamento deve ser feito com pelo menos 24 horas de antecedência"
                 }
             
             agendamento.status = 'cancelado'
@@ -925,7 +989,7 @@ inteligente e sempre busque a melhor experiência para a paciente!
     
     def reschedule_appointment(self, appointment_id: int, new_datetime: str, 
                               user_id: Optional[int] = None) -> Dict[str, Any]:
-        """Remarca um agendamento"""
+        """Remarca um agendamento com validação de prazo de 24h"""
         try:
             agendamento = Agendamento.query.get(appointment_id)
             if not agendamento:
@@ -934,6 +998,23 @@ inteligente e sempre busque a melhor experiência para a paciente!
             # Verificar permissão
             if user_id and agendamento.paciente_id != user_id:
                 return {"success": False, "error": "Sem permissão"}
+            
+            # Verificar se status permite reagendamento
+            if agendamento.status not in ['agendado', 'confirmado']:
+                return {
+                    "success": False,
+                    "error": f"Agendamento com status '{agendamento.status}' não pode ser remarcado"
+                }
+            
+            # Verificar prazo de 24h para remarcação
+            now_utc = datetime.utcnow()
+            hours_until = (agendamento.inicio - now_utc).total_seconds() / 3600
+            
+            if hours_until < 24:
+                return {
+                    "success": False,
+                    "error": "Reagendamento deve ser feito com pelo menos 24 horas de antecedência"
+                }
             
             # Converter nova data
             try:
@@ -944,14 +1025,23 @@ inteligente e sempre busque a melhor experiência para a paciente!
                     novo_inicio = novo_inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
                 else:
                     novo_inicio = novo_inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
+                
+                # Verificar se nova data está no passado
+                if novo_inicio < datetime.utcnow():
+                    return {
+                        "success": False,
+                        "error": "Não é possível reagendar para uma data no passado"
+                    }
+                    
             except ValueError:
                 return {"success": False, "error": "Data inválida"}
             
-            # Verificar conflito
+            # Verificar conflito no novo horário
             conflito = Agendamento.query.filter(
                 Agendamento.medico_id == agendamento.medico_id,
                 Agendamento.inicio == novo_inicio,
-                Agendamento.id != appointment_id
+                Agendamento.id != appointment_id,
+                Agendamento.status.in_(['agendado', 'confirmado'])
             ).first()
             
             if conflito:

@@ -60,6 +60,77 @@ The system features a modern and revolutionary design characterized by:
 
 ## Recent Improvements
 
+### ✅ Assistente Virtual Sofia - Inteligência Avançada com Gemini AI (22/10/2025)
+
+**Objetivo**: Transformar o assistente virtual em uma ferramenta verdadeiramente inteligente com acesso completo ao banco de dados e capacidades conversacionais avançadas.
+
+**Funcionalidades Implementadas:**
+
+1. **Motor de IA Google Gemini** (`chatbot_service.py`):
+   - Integração completa com Google Gemini AI (modelo gemini-2.5-flash)
+   - System prompt avançado com contexto dinâmico do banco de dados
+   - Fallback automático para OpenAI (se disponível) ou sistema baseado em regras
+   - Temperatura configurada para conversas naturais e empáticas
+   - Respostas em formato JSON estruturado para processamento consistente
+
+2. **Acesso Completo ao Banco de Dados**:
+   - **Consultas**: Buscar especialidades, médicos, horários disponíveis, agendamentos
+   - **Criação**: Agendar novas consultas com validação completa
+   - **Modificação**: Cancelar e remarcar agendamentos existentes
+   - **Análise**: Estatísticas da clínica, histórico de consultas, métricas
+   - **Contexto do usuário**: Informações personalizadas baseadas no histórico
+
+3. **Capacidades Avançadas**:
+   - Gerenciamento de contexto conversacional (lembra informações da conversa)
+   - Validação inteligente de dados antes de criar agendamentos
+   - Sugestões contextuais baseadas no histórico do usuário
+   - Tratamento de timezone (Brasília UTC-3) automático
+   - Verificação de conflitos de agendamento em tempo real
+   - Respostas empáticas e personalizadas usando o nome do paciente
+
+4. **Interface Premium** (`app/templates/chatbot.html`):
+   - Design sofisticado com gradientes e glassmorphism
+   - Mensagens com avatares e animações suaves
+   - Renderização rica de dados (especialidades, médicos, horários)
+   - Botões interativos para ações rápidas
+   - Cards clicáveis para seleção de especialidades/médicos/horários
+   - Indicador de status online com animação pulsante
+   - Loading indicator premium durante processamento
+
+5. **Ações Rápidas Disponíveis**:
+   - Agendar Consulta
+   - Ver Especialidades
+   - Ver Médicos
+   - Meus Agendamentos
+   - Remarcar Consulta
+
+**System Prompt Contextual**:
+O assistente possui um system prompt extremamente detalhado que inclui:
+- Informações atualizadas da clínica (número de médicos, especialidades)
+- Personalidade definida (Sofia - empática e profissional)
+- Capacidades e limitações claramente definidas
+- Diretrizes de comunicação (o que fazer e o que evitar)
+- Contexto do usuário atual (agendamentos recentes, histórico)
+- Formato de resposta obrigatório em JSON
+
+**Tecnologias**:
+- Google Gemini API (gemini-2.5-flash) - Motor principal
+- OpenAI API - Fallback secundário
+- SQLAlchemy ORM - Acesso ao banco de dados
+- Flask - Backend API
+- JavaScript vanilla - Frontend interativo
+
+**Benefícios**:
+- ✅ Conversas naturais e inteligentes com IA avançada
+- ✅ Acesso completo aos dados da clínica em tempo real
+- ✅ Agendamento, cancelamento e reagendamento via chat
+- ✅ Interface visual rica e moderna
+- ✅ Respostas personalizadas baseadas no histórico do usuário
+- ✅ Fallback garantido mesmo sem API key
+- ✅ Experiência premium para os pacientes
+
+**Compatibilidade**: Totalmente compatível com Railway deployment. Suporta GEMINI_API_KEY via secrets.
+
 ### ✅ Sistema de Agendamento de Consultas - Pesquisa Avançada de Horários (22/10/2025)
 
 **Objetivo**: Melhorar significativamente a experiência do paciente ao pesquisar e agendar consultas, permitindo busca inteligente de horários disponíveis.
