@@ -60,12 +60,14 @@ Criados dois scripts utilitários:
 
 1. **Calendário carrega** horários da tabela `Agenda` (slots disponíveis)
 2. **Para cada horário**, verifica se existe um `Agendamento` correspondente
-3. **Horários disponíveis** aparecem em **verde** 🟢
-4. **Horários ocupados** aparecem em **vermelho** 🔴 com nome do paciente
-5. **Ao clicar** em qualquer horário, abre modal com:
+3. **Exibe apenas horários ocupados** em **vermelho** 🔴 com nome do paciente
+4. **Filtros disponíveis:**
+   - Selecionar médico específico ou ver todos
+   - Checkbox para mostrar/esconder ocupados
+5. **Ao clicar** em horário ocupado, abre modal com:
    - Detalhes do médico, data, hora
-   - Nome do paciente (se ocupado)
-   - Ações: Ver detalhes, Cancelar ou Excluir horário
+   - Nome do paciente
+   - Ações: Ver detalhes do agendamento, Cancelar agendamento
 
 ## Credenciais de Acesso
 

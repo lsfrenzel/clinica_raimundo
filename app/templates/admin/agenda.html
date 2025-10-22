@@ -45,10 +45,6 @@
 
                 <div class="flex items-center space-x-4">
                     <label class="flex items-center">
-                        <input type="checkbox" id="mostrar_disponiveis" checked class="rounded border-gray-300 text-gold focus:ring-gold">
-                        <span class="ml-2 text-sm text-gray-700">Mostrar disponíveis</span>
-                    </label>
-                    <label class="flex items-center">
                         <input type="checkbox" id="mostrar_ocupados" checked class="rounded border-gray-300 text-gold focus:ring-gold">
                         <span class="ml-2 text-sm text-gray-700">Mostrar ocupados</span>
                     </label>
@@ -64,12 +60,8 @@
         <!-- Legenda -->
         <div class="mt-6 flex items-center justify-center space-x-6">
             <div class="flex items-center">
-                <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
-                <span class="text-sm text-gray-700">Disponível</span>
-            </div>
-            <div class="flex items-center">
                 <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
-                <span class="text-sm text-gray-700">Ocupado</span>
+                <span class="text-sm text-gray-700">Horário Ocupado (Agendamento Confirmado)</span>
             </div>
         </div>
     </div>
@@ -99,7 +91,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var filtroMedico = document.getElementById('filtro_medico');
-    var mostrarDisponiveis = document.getElementById('mostrar_disponiveis');
     var mostrarOcupados = document.getElementById('mostrar_ocupados');
     
     var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -146,13 +137,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     var eventos = data.filter(function(evento) {
-                        if (evento.extendedProps.disponivel && !mostrarDisponiveis.checked) {
-                            return false;
+                        // Mostrar apenas ocupados
+                        if (!evento.extendedProps.disponivel && mostrarOcupados.checked) {
+                            return true;
                         }
-                        if (!evento.extendedProps.disponivel && !mostrarOcupados.checked) {
-                            return false;
-                        }
-                        return true;
+                        return false;
                     });
                     successCallback(eventos);
                 })
@@ -174,10 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Recarregar quando os filtros mudarem
     filtroMedico.addEventListener('change', function() {
-        calendar.refetchEvents();
-    });
-    
-    mostrarDisponiveis.addEventListener('change', function() {
         calendar.refetchEvents();
     });
     
