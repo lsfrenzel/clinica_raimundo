@@ -1,11 +1,13 @@
-# Medical clinic chatbot service - Gemini and OpenAI integration
-# Based on blueprint:python_gemini and python_openai integrations
+# Medical clinic chatbot service - Advanced AI Assistant with full database access
+# Using Gemini API for natural, intelligent conversations
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Any, Optional
 from openai import OpenAI
-from models import Especialidade, Medico, Agendamento, User
+from models import Especialidade, Medico, Agendamento, User, Agenda
 from extensions import db
+from sqlalchemy import and_, or_, func
 
 # Gemini integration - using blueprint:python_gemini
 try:
@@ -22,188 +24,324 @@ except ImportError:
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
+
 class ChatbotService:
+    """
+    Assistente Virtual Inteligente da Clínica Dr. Raimundo Nunes
+    
+    Capacidades:
+    - Agendamento completo de consultas
+    - Consulta de agendamentos existentes
+    - Cancelamento e reagendamento
+    - Informações sobre médicos e especialidades
+    - Respostas contextuais e naturais
+    - Acesso completo ao banco de dados
+    """
+    
     def __init__(self):
-        # Preferir Gemini, depois OpenAI, senão usar versão baseada em regras
         self.gemini_client = gemini_client
         self.openai_client = openai_client
         self.use_gemini = gemini_client is not None
-        self.use_openai = openai_client is not None  # OpenAI disponível como fallback mesmo com Gemini ativo
+        self.use_openai = openai_client is not None
         
-        # Log de configuração das APIs
-        print(f"[DEBUG] 🔧 Configuração do Chatbot:")
-        print(f"[DEBUG] - GEMINI_API_KEY presente: {'Sim ✅' if GEMINI_API_KEY else 'Não ❌'}")
-        print(f"[DEBUG] - Gemini Client configurado: {'Sim ✅' if self.use_gemini else 'Não ❌'}")
-        print(f"[DEBUG] - OPENAI_API_KEY presente: {'Sim ✅' if OPENAI_API_KEY else 'Não ❌'}")
-        print(f"[DEBUG] - OpenAI Client configurado: {'Sim ✅' if self.use_openai else 'Não ❌'}")
+        # Log de configuração
+        print(f"[CHATBOT] 🤖 Assistente Virtual Inicializado")
+        print(f"[CHATBOT] - Gemini API: {'✅ Ativo' if self.use_gemini else '❌ Inativo'}")
+        print(f"[CHATBOT] - OpenAI API: {'✅ Fallback Disponível' if self.use_openai else '❌ Indisponível'}")
         
         if self.use_gemini:
-            print(f"[DEBUG] ✅ API PRIMÁRIA: GEMINI")
+            print(f"[CHATBOT] 🎯 Modo: GEMINI (Inteligência Avançada)")
         elif self.use_openai:
-            print(f"[DEBUG] ✅ API PRIMÁRIA: OPENAI")
+            print(f"[CHATBOT] 🎯 Modo: OPENAI (Fallback)")
         else:
-            print(f"[DEBUG] ⚠️  API PRIMÁRIA: RULE-BASED (Nenhuma API configurada)")
+            print(f"[CHATBOT] ⚠️  Modo: RULE-BASED (Limitado)")
+    
+    def get_system_prompt(self, database_context: Optional[Dict] = None) -> str:
+        """
+        System prompt avançado com contexto do banco de dados em tempo real
+        """
+        # Obter informações do banco de dados
+        total_medicos = Medico.query.filter_by(ativo=True).count()
+        total_especialidades = Especialidade.query.filter_by(ativo=True).count()
         
-    def get_system_prompt(self):
-        """Define o contexto e comportamento do chatbot"""
-        return """Você é Sofia, assistente virtual inteligente e empática da Clínica Dr. Raimundo Nunes, especializada em ginecologia e obstetrícia com mais de 30 anos de experiência em saúde da mulher.
+        # Obter especialidades disponíveis
+        especialidades = Especialidade.query.filter_by(ativo=True).all()
+        especialidades_list = ", ".join([esp.nome for esp in especialidades])
+        
+        # Obter médicos disponíveis
+        medicos = Medico.query.filter_by(ativo=True).limit(10).all()
+        medicos_info = []
+        for medico in medicos:
+            especialidades_medico = [esp.nome for esp in medico.especialidades]
+            medicos_info.append(f"Dr(a). {medico.usuario.nome} - CRM {medico.crm} - Especialidades: {', '.join(especialidades_medico)}")
+        medicos_list = "\n".join(medicos_info)
+        
+        # Contexto adicional do usuário se disponível
+        user_context = ""
+        if database_context and database_context.get('user_id'):
+            user_agendamentos = Agendamento.query.filter_by(
+                paciente_id=database_context['user_id']
+            ).filter(
+                Agendamento.status.in_(['agendado', 'confirmado'])
+            ).order_by(Agendamento.inicio.desc()).limit(3).all()
+            
+            if user_agendamentos:
+                user_context = f"\n\nAGENDAMENTOS DO USUÁRIO ATUAL:\n"
+                for ag in user_agendamentos:
+                    medico = Medico.query.get(ag.medico_id)
+                    esp = Especialidade.query.get(ag.especialidade_id)
+                    user_context += f"- {ag.inicio.strftime('%d/%m/%Y %H:%M')} - {medico.usuario.nome} - {esp.nome} - Status: {ag.status}\n"
+        
+        return f"""Você é Sofia, a assistente virtual inteligente e empática da Clínica Dr. Raimundo Nunes.
 
-SOBRE A CLÍNICA:
-• Fundada há mais de 30 anos pelo Dr. Raimundo Nunes
-• Especializada em ginecologia, obstetrícia e saúde feminina
-• Referência nacional em inserção de DIU hormonal (Mirena e Kyleena)
-• Atendimento humanizado e personalizado
-• Equipamentos de última geração
-• Duas unidades em São Paulo: Itaim Bibi e Itapeva
+═══════════════════════════════════════════════════════════════════
+SOBRE VOCÊ - SOFIA
+═══════════════════════════════════════════════════════════════════
+• Nome: Sofia (Sistema Otimizado de Facilidades e Informações Avançadas)
+• Personalidade: Acolhedora, profissional, inteligente e proativa
+• Objetivo: Ser a melhor assistente de saúde da mulher, oferecendo experiência excepcional
+• Diferencial: Você tem acesso COMPLETO ao banco de dados e pode fazer QUALQUER operação
 
-ESPECIALIDADES OFERECIDAS:
-• Ginecologia Geral - Consultas preventivas, exames, tratamentos
-• Obstetrícia - Acompanhamento completo da gravidez e parto
-• Pré-natal de Alto Risco - Gestações que requerem cuidados especiais
-• Planejamento Familiar - Orientação contraceptiva e DIU
-• Medicina Preventiva - Check-ups e prevenção de doenças
-• Ultrassom Ginecológico e Obstétrico
+═══════════════════════════════════════════════════════════════════
+SOBRE A CLÍNICA DR. RAIMUNDO NUNES
+═══════════════════════════════════════════════════════════════════
+• Fundação: Mais de 30 anos de excelência em saúde da mulher
+• Especialização: Ginecologia, Obstetrícia e Saúde Feminina
+• Destaque: Referência nacional em inserção de DIU hormonal (Mirena e Kyleena)
+• Filosofia: Atendimento humanizado, personalizado e baseado em evidências
+• Tecnologia: Equipamentos de última geração e protocolos atualizados
+• Localização: São Paulo - Unidades no Itaim Bibi e Itapeva
+• Equipe: {total_medicos} médicos especializados em {total_especialidades} especialidades
 
-SUA MISSÃO:
-Ajudar pacientes a agendarem consultas de forma natural, acolhedora e eficiente, demonstrando empatia e profissionalismo.
+═══════════════════════════════════════════════════════════════════
+ESPECIALIDADES E SERVIÇOS DISPONÍVEIS
+═══════════════════════════════════════════════════════════════════
+{especialidades_list}
 
-DIRETRIZES DE COMUNICAÇÃO:
-1. Seja sempre empática, acolhedora e profissional - lembre-se que saúde é um tema sensível
-2. Use linguagem clara, acessível e natural - evite jargões médicos complexos
-3. Seja proativa em ajudar, mas sem ser insistente
-4. Mostre conhecimento sobre a clínica e seus diferenciais
-5. Personalize respostas usando o nome do paciente quando disponível
-6. Demonstre compreensão das necessidades da paciente
-7. Explique processos de forma didática e tranquilizadora
-8. Responda SEMPRE em português brasileiro
-9. Use emojis com moderação para tornar a conversa mais amigável
+MÉDICOS DISPONÍVEIS (Principais):
+{medicos_list}
 
-FLUXO COMPLETO DE AGENDAMENTO:
-1. Cumprimente e identifique a necessidade de agendamento
-2. Mostre especialidades disponíveis se solicitado
-3. Colete especialidade desejada
-4. Apresente médicos da especialidade escolhida
-5. Colete médico desejado
-6. Mostre horários disponíveis do médico
-7. Colete horário desejado
-8. Colete dados do paciente (nome, email, telefone)
-9. Confirme todos os dados
-10. Crie o agendamento no sistema
-11. Confirme o sucesso do agendamento
+═══════════════════════════════════════════════════════════════════
+SUAS CAPACIDADES AVANÇADAS
+═══════════════════════════════════════════════════════════════════
 
-AÇÕES DISPONÍVEIS:
-- get_specialties: Mostrar especialidades disponíveis
-- select_specialty: Processar especialidade escolhida
-- show_doctors: Mostrar médicos de uma especialidade
-- select_doctor: Processar médico escolhido
-- show_schedules: Mostrar horários disponíveis
-- select_schedule: Processar horário escolhido
-- collect_patient_data: Coletar dados do paciente
-- confirm_booking: Confirmar todos os dados antes do agendamento
-- create_booking: Criar agendamento no sistema
-- general_chat: Conversa geral
+🔹 CONSULTAS E INFORMAÇÕES:
+   - Consultar agendamentos existentes de qualquer paciente
+   - Ver histórico completo de consultas
+   - Obter informações detalhadas sobre médicos e especialidades
+   - Calcular estatísticas e métricas da clínica
+   - Verificar disponibilidade em tempo real
 
-Responda sempre em formato JSON com esta estrutura:
-{
-    "message": "sua resposta amigável",
-    "action": "uma das ações acima",
-    "data": {objeto com dados específicos da ação, se aplicável}
-}"""
+🔹 AGENDAMENTO INTELIGENTE:
+   - Criar novos agendamentos com validação automática
+   - Sugerir melhores horários baseado em histórico
+   - Agendar consultas de retorno
+   - Agendamento para múltiplas pessoas (família)
+   - Agendamento recorrente
 
-    def chat_response(self, user_message, context=None):
-        """Gera resposta do chatbot baseada na mensagem do usuário"""
+🔹 MODIFICAÇÕES:
+   - Cancelar agendamentos (com validação de prazo)
+   - Remarcar consultas
+   - Alterar dados do agendamento
+   - Transferir agendamento entre médicos
+
+🔹 ANÁLISE INTELIGENTE:
+   - Recomendar médico ideal baseado no caso
+   - Sugerir especialidade apropriada
+   - Identificar urgências e prioridades
+   - Otimizar horários de agendamento
+
+{user_context}
+
+═══════════════════════════════════════════════════════════════════
+DIRETRIZES DE COMUNICAÇÃO
+═══════════════════════════════════════════════════════════════════
+
+✅ SEMPRE FAÇA:
+1. Seja EXTREMAMENTE empática - saúde é assunto delicado
+2. Use linguagem clara, simples e acessível
+3. Personalize usando o nome da paciente
+4. Seja proativa em oferecer ajuda adicional
+5. Demonstre conhecimento profundo da clínica
+6. Explique processos de forma didática
+7. Confirme informações importantes
+8. Ofereça alternativas quando algo não for possível
+9. Use emojis COM MODERAÇÃO para humanizar
+10. Responda SEMPRE em português brasileiro natural
+
+❌ NUNCA FAÇA:
+1. Dar diagnósticos ou conselhos médicos específicos
+2. Compartilhar informações confidenciais de outros pacientes
+3. Fazer promessas que não pode cumprir
+4. Usar jargão médico complexo sem explicar
+5. Ser impessoal ou robótica
+6. Ignorar preocupações da paciente
+7. Apressar a conversa
+
+═══════════════════════════════════════════════════════════════════
+AÇÕES DISPONÍVEIS (Use conforme necessário)
+═══════════════════════════════════════════════════════════════════
+
+📊 CONSULTAS:
+- get_clinic_info: Informações gerais da clínica
+- get_specialties: Listar todas as especialidades
+- get_doctors: Listar médicos (pode filtrar por especialidade)
+- get_doctor_details: Detalhes completos de um médico específico
+- search_availability: Buscar horários disponíveis
+- get_my_appointments: Ver agendamentos do usuário atual
+- get_appointment_details: Detalhes de um agendamento específico
+
+📅 AGENDAMENTOS:
+- create_appointment: Criar novo agendamento
+- cancel_appointment: Cancelar agendamento existente
+- reschedule_appointment: Remarcar consulta
+- confirm_appointment: Confirmar agendamento
+
+💬 GERAL:
+- general_chat: Conversa geral, perguntas, informações
+- need_more_info: Solicitar mais informações do usuário
+
+═══════════════════════════════════════════════════════════════════
+FORMATO DE RESPOSTA OBRIGATÓRIO
+═══════════════════════════════════════════════════════════════════
+
+SEMPRE responda em JSON válido com esta estrutura:
+{{
+    "message": "Sua resposta natural e empática em português",
+    "action": "uma das ações listadas acima",
+    "data": {{
+        "campos específicos dependendo da ação escolhida"
+    }},
+    "suggestions": ["sugestão 1", "sugestão 2"],
+    "needs_confirmation": false
+}}
+
+═══════════════════════════════════════════════════════════════════
+EXEMPLOS DE INTERAÇÕES ESPERADAS
+═══════════════════════════════════════════════════════════════════
+
+Usuário: "Quero agendar uma consulta"
+Você: {{
+    "message": "Olá! Fico feliz em ajudá-la a agendar sua consulta na Clínica Dr. Raimundo Nunes. Para encontrar o melhor horário para você, preciso saber: qual especialidade ou tipo de consulta você precisa? Temos Ginecologia Geral, Obstetrícia, Inserção de DIU, Pré-natal e muito mais.",
+    "action": "get_specialties",
+    "data": {{}},
+    "suggestions": ["Ver especialidades disponíveis", "Falar com ginecologista", "Agendar pré-natal"]
+}}
+
+Usuário: "Preciso ver meus agendamentos"
+Você: {{
+    "message": "Claro! Vou buscar todos os seus agendamentos ativos. Um momento...",
+    "action": "get_my_appointments",
+    "data": {{}},
+    "suggestions": ["Cancelar agendamento", "Remarcar consulta", "Agendar nova consulta"]
+}}
+
+═══════════════════════════════════════════════════════════════════
+LEMBRE-SE: Você é uma assistente EXCEPCIONAL. Seja proativa,
+inteligente e sempre busque a melhor experiência para a paciente!
+═══════════════════════════════════════════════════════════════════"""
+
+    def chat_response(self, user_message: str, context: Optional[Dict] = None) -> Dict[str, Any]:
+        """
+        Processa mensagem do usuário e retorna resposta inteligente
+        """
         try:
+            # Enriquecer contexto com dados do banco
+            enriched_context = self._enrich_context(context or {})
+            
+            # Gerar resposta usando IA
             if self.use_gemini and self.gemini_client:
-                print(f"[DEBUG] 🤖 Usando GEMINI API para processar mensagem")
-                result = self._gemini_response(user_message, context)
+                print(f"[CHATBOT] 🤖 Processando com Gemini...")
+                result = self._gemini_response(user_message, enriched_context)
             elif self.use_openai and self.openai_client:
-                print(f"[DEBUG] 🤖 Usando OPENAI API para processar mensagem")
-                result = self._openai_response(user_message, context)
+                print(f"[CHATBOT] 🤖 Processando com OpenAI...")
+                result = self._openai_response(user_message, enriched_context)
             else:
-                print(f"[DEBUG] 🤖 Usando SISTEMA RULE-BASED para processar mensagem")
-                result = self._rule_based_response(user_message, context)
+                print(f"[CHATBOT] 🤖 Processando com regras...")
+                result = self._rule_based_response(user_message, enriched_context)
             
-            # Sempre processar ações específicas, independente do engine usado
-            result, updated_context = self._process_action(result, context)
+            # Processar ação e atualizar contexto
+            result, updated_context = self._process_action(result, enriched_context)
             
-            # Retornar resultado e contexto atualizado
             return {
                 **result,
                 '_updated_context': updated_context
             }
             
         except Exception as e:
-            # Fallback seguro para qualquer erro - não expor detalhes internos
-            try:
-                result = self._rule_based_response(user_message, context)
-                result, updated_context = self._process_action(result, context)
-                return {
-                    **result,
-                    '_updated_context': updated_context
-                }
-            except Exception:
-                # Último recurso - resposta genérica segura
-                return {
-                    "message": "Olá! Estou aqui para ajudar você a agendar sua consulta na Clínica Dr. Raimundo Nunes. Como posso ajudá-lo hoje?",
-                    "action": "general_chat",
-                    "data": {},
-                    "_updated_context": context or {}
-                }
-
-    def _openai_response(self, user_message, context=None):
-        """Resposta usando OpenAI (quando disponível)"""
-        messages = []
-        messages.append({"role": "system", "content": self.get_system_prompt()})
-        
-        # Adicionar contexto se fornecido
-        if context:
-            context_msg = f"Contexto da conversa: {json.dumps(context, ensure_ascii=False)}"
-            messages.append({"role": "assistant", "content": context_msg})
-        
-        messages.append({"role": "user", "content": user_message})
-        
-        response = self.openai_client.chat.completions.create(  # type: ignore
-            model="gpt-3.5-turbo",
-            messages=messages,  # type: ignore
-            response_format={"type": "json_object"},
-            max_tokens=1000
-        )
-        
-        content = response.choices[0].message.content
-        if content:
-            result = json.loads(content)
-        else:
-            raise Exception("Resposta vazia do modelo")
-        
-        return result
-
-    def _gemini_response(self, user_message, context=None):
-        """Resposta usando Gemini API (preferida quando disponível)"""
-        try:
-            # Preparar o prompt do sistema para Gemini
-            system_prompt = self.get_system_prompt()
+            print(f"[CHATBOT] ❌ Erro: {e}")
+            import traceback
+            traceback.print_exc()
             
-            # Adicionar contexto se fornecido
-            context_info = ""
+            # Resposta de fallback amigável
+            return {
+                "message": "Olá! Estou aqui para ajudá-la. Como posso auxiliá-la hoje? Posso ajudar com agendamentos, informações sobre a clínica, ou tirar suas dúvidas. 😊",
+                "action": "general_chat",
+                "data": {},
+                "suggestions": ["Agendar consulta", "Ver médicos", "Minhas consultas"],
+                "_updated_context": context or {}
+            }
+    
+    def _enrich_context(self, context: Dict) -> Dict:
+        """
+        Enriquece o contexto com informações do banco de dados
+        """
+        enriched = context.copy()
+        
+        # Se tem usuário autenticado, buscar informações
+        if context.get('user_id'):
+            try:
+                user = User.query.get(context['user_id'])
+                if user:
+                    enriched['user_name'] = user.nome
+                    enriched['user_email'] = user.email
+                    enriched['user_phone'] = user.telefone
+                    enriched['user_role'] = user.role
+                    
+                    # Buscar agendamentos recentes
+                    recent_appointments = Agendamento.query.filter_by(
+                        paciente_id=user.id
+                    ).order_by(Agendamento.created_at.desc()).limit(5).all()
+                    
+                    enriched['recent_appointments_count'] = len(recent_appointments)
+                    enriched['has_appointments'] = len(recent_appointments) > 0
+            except Exception as e:
+                print(f"[CHATBOT] Erro ao enriquecer contexto: {e}")
+        
+        return enriched
+    
+    def _gemini_response(self, user_message: str, context: Dict) -> Dict:
+        """
+        Resposta usando Gemini com contexto enriquecido
+        """
+        try:
+            # Preparar system prompt com contexto do banco
+            system_prompt = self.get_system_prompt(context)
+            
+            # Preparar contexto da conversa
+            context_str = ""
             if context:
-                context_info = f"\n\nContexto da conversa: {json.dumps(context, ensure_ascii=False)}"
+                relevant_context = {
+                    k: v for k, v in context.items()
+                    if k in ['user_name', 'especialidade_nome', 'medico_nome', 'datetime_slot', 
+                            'conversation_step', 'has_appointments', 'recent_appointments_count']
+                }
+                if relevant_context:
+                    context_str = f"\n\nCONTEXTO ATUAL:\n{json.dumps(relevant_context, ensure_ascii=False, indent=2)}"
             
             # Criar prompt completo
-            full_prompt = f"{system_prompt}{context_info}\n\nUsuário: {user_message}\n\nResponda em formato JSON conforme especificado:"
+            full_prompt = f"{system_prompt}{context_str}\n\nUSUÁRIO: {user_message}\n\nResponda em JSON conforme especificado:"
             
-            # Fazer chamada para Gemini
-            if not types:
-                raise Exception("Gemini types não disponível")
-                
-            if not self.gemini_client:
-                raise Exception("Gemini client não disponível")
-                
+            if not types or not self.gemini_client:
+                raise Exception("Gemini não disponível")
+            
+            # Chamar Gemini
             response = self.gemini_client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=full_prompt,
                 config=types.GenerateContentConfig(
-                    temperature=0.7,
-                    max_output_tokens=1000,
+                    temperature=0.8,  # Mais criativo e natural
+                    max_output_tokens=2000,
                     response_mime_type="application/json"
                 )
             )
@@ -211,253 +349,497 @@ Responda sempre em formato JSON com esta estrutura:
             if not response.text:
                 raise Exception("Resposta vazia do Gemini")
             
-            # Parse da resposta JSON
             result = json.loads(response.text)
+            
+            # Garantir campos obrigatórios
+            if 'message' not in result:
+                result['message'] = "Como posso ajudá-la?"
+            if 'action' not in result:
+                result['action'] = 'general_chat'
+            if 'data' not in result:
+                result['data'] = {}
+            if 'suggestions' not in result:
+                result['suggestions'] = []
             
             return result
             
         except Exception as e:
-            # Em caso de erro no Gemini, tentar OpenAI como fallback
+            print(f"[CHATBOT] Erro no Gemini: {e}")
+            # Fallback para OpenAI ou regras
             if self.use_openai and self.openai_client:
-                try:
-                    return self._openai_response(user_message, context)
-                except Exception:
-                    # Se OpenAI também falhar, usar sistema baseado em regras
-                    return self._rule_based_response(user_message, context)
+                return self._openai_response(user_message, context)
             else:
-                # Se não há OpenAI, usar sistema baseado em regras
                 return self._rule_based_response(user_message, context)
-
-    def _process_action(self, result, context=None):
-        """Processa as ações específicas do chatbot"""
-        action = result.get("action")
+    
+    def _openai_response(self, user_message: str, context: Dict) -> Dict:
+        """
+        Resposta usando OpenAI como fallback
+        """
+        try:
+            messages = [
+                {"role": "system", "content": self.get_system_prompt(context)},
+                {"role": "user", "content": user_message}
+            ]
+            
+            if context:
+                messages.insert(1, {
+                    "role": "assistant",
+                    "content": f"Contexto: {json.dumps(context, ensure_ascii=False)}"
+                })
+            
+            response = self.openai_client.chat.completions.create(  # type: ignore
+                model="gpt-4",
+                messages=messages,  # type: ignore
+                response_format={"type": "json_object"},
+                max_tokens=2000,
+                temperature=0.8
+            )
+            
+            content = response.choices[0].message.content
+            if content:
+                result = json.loads(content)
+                return result
+            else:
+                raise Exception("Resposta vazia")
+                
+        except Exception as e:
+            print(f"[CHATBOT] Erro no OpenAI: {e}")
+            return self._rule_based_response(user_message, context)
+    
+    def _rule_based_response(self, user_message: str, context: Dict) -> Dict:
+        """
+        Sistema baseado em regras quando IA não está disponível
+        """
+        message_lower = user_message.lower()
         
-        # Inicializar contexto se necessário
-        if context is None:
-            context = {}
+        # Detectar intenção
+        if any(word in message_lower for word in ['agendar', 'marcar', 'consulta', 'horário']):
+            return {
+                "message": "Olá! Vou ajudá-la a agendar sua consulta. Primeiro, qual especialidade você precisa? Temos Ginecologia, Obstetrícia, Pré-natal e muito mais.",
+                "action": "get_specialties",
+                "data": {},
+                "suggestions": ["Ver especialidades", "Ver médicos disponíveis"]
+            }
         
-        # Criar cópia do contexto para atualização
+        elif any(word in message_lower for word in ['cancelar', 'desmarcar']):
+            return {
+                "message": "Entendi que você precisa cancelar um agendamento. Vou buscar seus agendamentos ativos...",
+                "action": "get_my_appointments",
+                "data": {},
+                "suggestions": ["Ver meus agendamentos"]
+            }
+        
+        elif any(word in message_lower for word in ['meus agendamentos', 'minhas consultas', 'ver agendamentos']):
+            return {
+                "message": "Vou buscar todos os seus agendamentos. Um momento...",
+                "action": "get_my_appointments",
+                "data": {},
+                "suggestions": []
+            }
+        
+        elif any(word in message_lower for word in ['médico', 'doutor', 'doutora', 'profissionais']):
+            return {
+                "message": "Vou mostrar nossos médicos especializados. Temos uma equipe excepcional!",
+                "action": "get_doctors",
+                "data": {},
+                "suggestions": ["Ver especialidades também"]
+            }
+        
+        elif any(word in message_lower for word in ['especialidade', 'atendimento', 'serviços']):
+            return {
+                "message": "Aqui estão todas as especialidades que oferecemos:",
+                "action": "get_specialties",
+                "data": {},
+                "suggestions": ["Ver médicos"]
+            }
+        
+        else:
+            return {
+                "message": "Olá! Sou a Sofia, assistente virtual da Clínica Dr. Raimundo Nunes. Posso ajudá-la com:\n\n• Agendar consultas\n• Consultar seus agendamentos\n• Informações sobre médicos e especialidades\n• Cancelar ou remarcar consultas\n\nComo posso ajudá-la?",
+                "action": "general_chat",
+                "data": {},
+                "suggestions": ["Agendar consulta", "Ver meus agendamentos", "Conhecer a clínica"]
+            }
+    
+    def _process_action(self, result: Dict, context: Dict) -> tuple[Dict, Dict]:
+        """
+        Processa ações e executa operações no banco de dados
+        """
+        action = result.get("action", "general_chat")
         updated_context = context.copy()
         
-        # Rastrear etapa da conversa
-        current_step = updated_context.get('conversation_step', 'start')
+        print(f"[CHATBOT] 🎬 Processando ação: {action}")
         
-        if action == "get_specialties":
-            result["data"] = self.get_specialties()
-            updated_context['conversation_step'] = 'selecting_specialty'
-            
-        elif action == "show_doctors" or action == "select_specialty":
-            # Sempre definir que estamos mostrando médicos
-            updated_context['conversation_step'] = 'selecting_doctor'
-            
-            # Verificar se data é dict ou list  
-            data = result.get("data", {})
-            if isinstance(data, dict):
-                specialty_id = data.get("specialty_id")
-                specialty_name = data.get("specialty_name")
+        try:
+            if action == "get_specialties":
+                result["data"] = self.get_specialties()
+                updated_context['conversation_step'] = 'selecting_specialty'
                 
-                # Se o Gemini retornou um nome em vez de ID, tentar encontrar o ID
-                if specialty_name and not specialty_id:
-                    try:
-                        from models import Especialidade
-                        especialidade = Especialidade.query.filter(Especialidade.nome.ilike(f"%{specialty_name}%")).first()
-                        if especialidade:
-                            specialty_id = especialidade.id
-                            specialty_name = especialidade.nome
-                    except Exception as e:
-                        print(f"Erro ao buscar especialidade por nome: {e}")
+            elif action == "get_doctors":
+                specialty_id = result.get("data", {}).get("specialty_id")
+                result["data"] = self.get_doctors(specialty_id)
+                updated_context['conversation_step'] = 'selecting_doctor'
                 
-                # Se recebeu um valor que não é numérico como specialty_id, tentar converter nome
-                if specialty_id and isinstance(specialty_id, str) and not specialty_id.isdigit():
-                    try:
-                        from models import Especialidade
-                        especialidade = Especialidade.query.filter(Especialidade.nome.ilike(f"%{specialty_id}%")).first()
-                        if especialidade:
-                            specialty_id = especialidade.id
-                            specialty_name = especialidade.nome
-                    except Exception as e:
-                        print(f"Erro ao converter nome da especialidade para ID: {e}")
-                        specialty_id = None
-                
-                # Salvar especialidade selecionada no contexto
-                if specialty_id:
-                    updated_context['especialidade_id'] = specialty_id
-                    updated_context['especialidade_nome'] = specialty_name
-                
-                result["data"] = self.get_doctors_by_specialty(specialty_id)
-            else:
-                # Para ginecologia, usar ID 7 como padrão
-                updated_context['especialidade_id'] = 7
-                updated_context['especialidade_nome'] = 'Ginecologia'
-                result["data"] = self.get_doctors_by_specialty(7)
-            # Se data já é uma lista, não processar IDs
-            
-        elif action == "show_schedules" or action == "select_doctor":
-            # Verificar se data é dict ou list
-            data = result.get("data", {})
-            if isinstance(data, dict):
-                doctor_id = data.get("doctor_id")
-                doctor_name = data.get("doctor_name")
-                
-                # Se o Gemini retornou um nome em vez de ID, tentar encontrar o ID
-                if doctor_name and not doctor_id:
-                    try:
-                        from models import Medico, User
-                        # Buscar médico pelo nome
-                        user = User.query.filter(User.nome.ilike(f"%{doctor_name}%")).first()
-                        if user:
-                            medico = Medico.query.filter_by(user_id=user.id).first()
-                            if medico:
-                                doctor_id = medico.id
-                                doctor_name = user.nome
-                    except Exception as e:
-                        print(f"Erro ao buscar médico por nome: {e}")
-                
-                # Se recebeu um valor que não é numérico como doctor_id, tentar converter nome
-                if doctor_id and isinstance(doctor_id, str) and not doctor_id.isdigit():
-                    try:
-                        from models import Medico, User
-                        # Buscar médico pelo nome
-                        user = User.query.filter(User.nome.ilike(f"%{doctor_id}%")).first()
-                        if user:
-                            medico = Medico.query.filter_by(user_id=user.id).first()
-                            if medico:
-                                doctor_id = medico.id
-                                doctor_name = user.nome
-                    except Exception as e:
-                        print(f"Erro ao converter nome para ID: {e}")
-                        doctor_id = None
-                
-                # Salvar médico selecionado no contexto
+            elif action == "get_doctor_details":
+                doctor_id = result.get("data", {}).get("doctor_id")
                 if doctor_id:
-                    updated_context['medico_id'] = doctor_id
-                    updated_context['medico_nome'] = doctor_name
-                    updated_context['conversation_step'] = 'selecting_time'
+                    result["data"] = self.get_doctor_details(doctor_id)
                     
-                    result["data"] = self.get_doctor_schedules(doctor_id)
-                else:
-                    result["data"] = []
-            # Se data já é uma lista, não processar IDs
-            
-        elif action == "select_schedule":
-            # Salvar horário selecionado no contexto
-            schedule_data = result.get("data", {})
-            if schedule_data.get('datetime'):
-                updated_context['datetime_slot'] = schedule_data['datetime']
-            
-        elif action == "confirm_booking" or action == "collect_patient_data":
-            # Salvar dados do paciente no contexto
-            booking_data = result.get("data", {})
-            if booking_data.get('patient_name'):
-                updated_context['patient_name'] = booking_data['patient_name']
-            if booking_data.get('patient_email'):
-                updated_context['patient_email'] = booking_data['patient_email']
-            if booking_data.get('patient_phone'):
-                updated_context['patient_phone'] = booking_data['patient_phone']
-            if booking_data.get('datetime'):
-                updated_context['datetime_slot'] = booking_data['datetime']
+            elif action == "search_availability":
+                data = result.get("data", {})
+                result["data"] = self.search_availability(
+                    doctor_id=data.get("doctor_id"),
+                    specialty_id=data.get("specialty_id"),
+                    date_start=data.get("date_start")
+                )
+                updated_context['conversation_step'] = 'selecting_time'
                 
-        elif action == "create_booking":
-            booking_data = result.get("data", {})
+            elif action == "get_my_appointments":
+                user_id = context.get('user_id')
+                if user_id:
+                    result["data"] = self.get_user_appointments(user_id)
+                else:
+                    result["message"] = "Para ver seus agendamentos, você precisa estar logado. Posso ajudá-la com algo mais?"
+                    result["suggestions"] = ["Fazer login", "Agendar como visitante"]
+                    
+            elif action == "get_appointment_details":
+                appointment_id = result.get("data", {}).get("appointment_id")
+                if appointment_id:
+                    result["data"] = self.get_appointment_details(appointment_id, context.get('user_id'))
+                    
+            elif action == "create_appointment":
+                booking_data = result.get("data", {})
+                # Mesclar com contexto acumulado
+                merged_data = {
+                    'medico_id': updated_context.get('medico_id') or booking_data.get('medico_id'),
+                    'especialidade_id': updated_context.get('especialidade_id') or booking_data.get('especialidade_id'),
+                    'data_hora': updated_context.get('datetime_slot') or booking_data.get('datetime'),
+                    'nome': updated_context.get('patient_name') or booking_data.get('nome') or context.get('user_name'),
+                    'email': updated_context.get('patient_email') or booking_data.get('email') or context.get('user_email'),
+                    'telefone': updated_context.get('patient_phone') or booking_data.get('telefone'),
+                    'observacoes': booking_data.get('observacoes', '')
+                }
+                result["data"] = self.create_appointment(merged_data, context)
+                if result["data"].get("success"):
+                    # Limpar contexto após sucesso
+                    updated_context = {
+                        'user_id': context.get('user_id'),
+                        'authenticated': context.get('authenticated'),
+                        'user_name': context.get('user_name'),
+                        'user_email': context.get('user_email')
+                    }
+                    
+            elif action == "cancel_appointment":
+                appointment_id = result.get("data", {}).get("appointment_id")
+                if appointment_id:
+                    result["data"] = self.cancel_appointment(appointment_id, context.get('user_id'))
+                    
+            elif action == "reschedule_appointment":
+                data = result.get("data", {})
+                appointment_id = data.get("appointment_id")
+                new_datetime = data.get("new_datetime")
+                if appointment_id and new_datetime:
+                    result["data"] = self.reschedule_appointment(
+                        appointment_id, new_datetime, context.get('user_id')
+                    )
+                    
+            elif action == "get_clinic_info":
+                result["data"] = self.get_clinic_info()
+                
+            # Salvar seleções no contexto
+            data = result.get("data", {})
+            if isinstance(data, dict):
+                if data.get("specialty_id"):
+                    updated_context['especialidade_id'] = data["specialty_id"]
+                    updated_context['especialidade_nome'] = data.get("specialty_name", "")
+                if data.get("doctor_id"):
+                    updated_context['medico_id'] = data["doctor_id"]
+                    updated_context['medico_nome'] = data.get("doctor_name", "")
+                if data.get("datetime"):
+                    updated_context['datetime_slot'] = data["datetime"]
+                if data.get("nome"):
+                    updated_context['patient_name'] = data["nome"]
+                if data.get("email"):
+                    updated_context['patient_email'] = data["email"]
+                if data.get("telefone"):
+                    updated_context['patient_phone'] = data["telefone"]
+                    
+        except Exception as e:
+            print(f"[CHATBOT] ❌ Erro ao processar ação {action}: {e}")
+            import traceback
+            traceback.print_exc()
+            result["message"] = f"Desculpe, ocorreu um erro ao processar sua solicitação. Posso ajudá-la de outra forma?"
+            result["data"] = {"error": str(e)}
+        
+        return result, updated_context
+    
+    # ═══════════════════════════════════════════════════════════════════
+    # FUNÇÕES DE ACESSO AO BANCO DE DADOS
+    # ═══════════════════════════════════════════════════════════════════
+    
+    def get_specialties(self) -> Dict[str, Any]:
+        """Retorna todas as especialidades ativas"""
+        try:
+            especialidades = Especialidade.query.filter_by(ativo=True).all()
+            return {
+                "specialties": [
+                    {
+                        "id": esp.id,
+                        "nome": esp.nome,
+                        "descricao": esp.descricao or f"Especialidade em {esp.nome}",
+                        "duracao_padrao": esp.duracao_padrao
+                    }
+                    for esp in especialidades
+                ]
+            }
+        except Exception as e:
+            print(f"[CHATBOT] Erro ao buscar especialidades: {e}")
+            return {"specialties": [], "error": str(e)}
+    
+    def get_doctors(self, specialty_id: Optional[int] = None) -> Dict[str, Any]:
+        """Retorna médicos, opcionalmente filtrados por especialidade"""
+        try:
+            if specialty_id:
+                especialidade = Especialidade.query.get(specialty_id)
+                if especialidade:
+                    medicos = especialidade.medicos.filter_by(ativo=True).all()
+                else:
+                    medicos = []
+            else:
+                medicos = Medico.query.filter_by(ativo=True).all()
             
-            # DEBUG: Log dos dados recebidos
-            print(f"[DEBUG create_booking] Dados recebidos:")
-            print(f"  booking_data: {booking_data}")
-            print(f"  updated_context: {updated_context}")
+            return {
+                "doctors": [
+                    {
+                        "id": medico.id,
+                        "nome": medico.usuario.nome,
+                        "crm": medico.crm,
+                        "bio": medico.bio or f"Médico(a) especialista",
+                        "foto_url": medico.foto_url,
+                        "especialidades": [esp.nome for esp in medico.especialidades]
+                    }
+                    for medico in medicos
+                ]
+            }
+        except Exception as e:
+            print(f"[CHATBOT] Erro ao buscar médicos: {e}")
+            return {"doctors": [], "error": str(e)}
+    
+    def get_doctor_details(self, doctor_id: int) -> Dict[str, Any]:
+        """Retorna detalhes completos de um médico"""
+        try:
+            medico = Medico.query.get(doctor_id)
+            if not medico:
+                return {"error": "Médico não encontrado"}
             
-            # Mesclar dados do booking com contexto salvado
-            merged_booking_data = {
-                'medico_id': updated_context.get('medico_id'),
-                'especialidade_id': updated_context.get('especialidade_id'),
-                'data_hora': updated_context.get('datetime_slot'),
-                'nome': updated_context.get('patient_name'),
-                'email': updated_context.get('patient_email'),
-                'telefone': updated_context.get('patient_phone', ''),
+            # Calcular estatísticas
+            total_consultas = Agendamento.query.filter_by(
+                medico_id=doctor_id,
+                status='realizado'
+            ).count()
+            
+            proximos_horarios = medico.get_proximos_horarios_livres(limite=5)
+            
+            return {
+                "id": medico.id,
+                "nome": medico.usuario.nome,
+                "crm": medico.crm,
+                "bio": medico.bio,
+                "foto_url": medico.foto_url,
+                "especialidades": [esp.nome for esp in medico.especialidades],
+                "total_consultas_realizadas": total_consultas,
+                "proximos_horarios": proximos_horarios,
+                "ativo": medico.ativo
+            }
+        except Exception as e:
+            print(f"[CHATBOT] Erro ao buscar detalhes do médico: {e}")
+            return {"error": str(e)}
+    
+    def search_availability(self, doctor_id: Optional[int] = None, 
+                           specialty_id: Optional[int] = None,
+                           date_start: Optional[str] = None) -> Dict[str, Any]:
+        """Busca horários disponíveis"""
+        try:
+            if date_start:
+                try:
+                    data_inicio = datetime.fromisoformat(date_start)
+                except:
+                    data_inicio = datetime.now()
+            else:
+                data_inicio = datetime.now()
+            
+            if doctor_id:
+                medico = Medico.query.get(doctor_id)
+                if medico:
+                    horarios = medico.get_proximos_horarios_livres(data_inicio, limite=15)
+                    return {
+                        "schedules": [
+                            {
+                                "data": h['data'].strftime('%d/%m/%Y'),
+                                "hora": h['hora'].strftime('%H:%M'),
+                                "datetime": f"{h['data']}T{h['hora']}",
+                                "duracao": h['duracao']
+                            }
+                            for h in horarios
+                        ],
+                        "medico_id": doctor_id,
+                        "medico_nome": medico.usuario.nome
+                    }
+                    
+            elif specialty_id:
+                especialidade = Especialidade.query.get(specialty_id)
+                if especialidade:
+                    medicos = especialidade.medicos.filter_by(ativo=True).limit(5).all()
+                    all_schedules = []
+                    for medico in medicos:
+                        horarios = medico.get_proximos_horarios_livres(data_inicio, limite=3)
+                        for h in horarios:
+                            all_schedules.append({
+                                "data": h['data'].strftime('%d/%m/%Y'),
+                                "hora": h['hora'].strftime('%H:%M'),
+                                "datetime": f"{h['data']}T{h['hora']}",
+                                "duracao": h['duracao'],
+                                "medico_id": medico.id,
+                                "medico_nome": medico.usuario.nome
+                            })
+                    return {"schedules": all_schedules[:15]}
+            
+            return {"schedules": []}
+            
+        except Exception as e:
+            print(f"[CHATBOT] Erro ao buscar disponibilidade: {e}")
+            return {"schedules": [], "error": str(e)}
+    
+    def get_user_appointments(self, user_id: int) -> Dict[str, Any]:
+        """Retorna agendamentos do usuário"""
+        try:
+            # Buscar agendamentos ativos (futuros ou pendentes)
+            agendamentos = Agendamento.query.filter(
+                Agendamento.paciente_id == user_id,
+                Agendamento.status.in_(['agendado', 'confirmado'])
+            ).order_by(Agendamento.inicio).all()
+            
+            # Buscar histórico (realizados ou cancelados)
+            historico = Agendamento.query.filter(
+                Agendamento.paciente_id == user_id,
+                Agendamento.status.in_(['realizado', 'cancelado'])
+            ).order_by(Agendamento.inicio.desc()).limit(10).all()
+            
+            def format_appointment(ag):
+                medico = Medico.query.get(ag.medico_id)
+                esp = Especialidade.query.get(ag.especialidade_id)
+                return {
+                    "id": ag.id,
+                    "data": ag.inicio.strftime('%d/%m/%Y'),
+                    "hora": ag.inicio.strftime('%H:%M'),
+                    "medico": medico.usuario.nome if medico else "N/A",
+                    "especialidade": esp.nome if esp else "N/A",
+                    "status": ag.status,
+                    "pode_cancelar": ag.pode_ser_cancelado(),
+                    "observacoes": ag.observacoes
+                }
+            
+            return {
+                "appointments": [format_appointment(ag) for ag in agendamentos],
+                "history": [format_appointment(ag) for ag in historico],
+                "total_active": len(agendamentos),
+                "total_history": len(historico)
             }
             
-            # Sobrescrever com dados do booking se disponíveis
-            merged_booking_data.update({k: v for k, v in booking_data.items() if v})
-            
-            # DEBUG: Log dos dados mesclados
-            print(f"[DEBUG create_booking] Dados mesclados para create_appointment:")
-            print(f"  merged_booking_data: {merged_booking_data}")
-            
-            result["data"] = self.create_appointment(merged_booking_data, context)
-            
-            # DEBUG: Log do resultado
-            print(f"[DEBUG create_booking] Resultado do create_appointment:")
-            print(f"  result: {result['data']}")
-            
-            # Limpar contexto após agendamento bem-sucedido
-            if result["data"].get("success"):
-                updated_context = {'user_id': context.get('user_id'), 'authenticated': context.get('authenticated'), 'user_name': context.get('user_name')}
-            
-        return result, updated_context
-
-    def create_appointment(self, booking_data, context=None):
-        """Cria um agendamento no banco de dados"""
+        except Exception as e:
+            print(f"[CHATBOT] Erro ao buscar agendamentos: {e}")
+            return {"appointments": [], "history": [], "error": str(e)}
+    
+    def get_appointment_details(self, appointment_id: int, user_id: Optional[int] = None) -> Dict[str, Any]:
+        """Retorna detalhes de um agendamento específico"""
         try:
-            from models import Agendamento
-            from datetime import datetime, timedelta
+            agendamento = Agendamento.query.get(appointment_id)
+            if not agendamento:
+                return {"error": "Agendamento não encontrado"}
             
-            # Auto-preencher dados do usuário autenticado se necessário
-            if context and context.get('authenticated') and context.get('user_id'):
-                if not booking_data.get('nome'):
-                    booking_data['nome'] = context.get('user_name', '')
-                if not booking_data.get('email'):
-                    booking_data['email'] = context.get('user_email', '')
+            # Verificar permissão
+            if user_id and agendamento.paciente_id != user_id:
+                return {"error": "Você não tem permissão para ver este agendamento"}
             
+            medico = Medico.query.get(agendamento.medico_id)
+            esp = Especialidade.query.get(agendamento.especialidade_id)
+            
+            return {
+                "id": agendamento.id,
+                "data": agendamento.inicio.strftime('%d/%m/%Y'),
+                "hora": agendamento.inicio.strftime('%H:%M'),
+                "duracao": (agendamento.fim - agendamento.inicio).seconds // 60,
+                "medico": {
+                    "id": medico.id,
+                    "nome": medico.usuario.nome,
+                    "crm": medico.crm
+                } if medico else None,
+                "especialidade": {
+                    "id": esp.id,
+                    "nome": esp.nome
+                } if esp else None,
+                "status": agendamento.status,
+                "pode_cancelar": agendamento.pode_ser_cancelado(),
+                "observacoes": agendamento.observacoes,
+                "origem": agendamento.origem,
+                "created_at": agendamento.created_at.strftime('%d/%m/%Y %H:%M')
+            }
+            
+        except Exception as e:
+            print(f"[CHATBOT] Erro ao buscar detalhes: {e}")
+            return {"error": str(e)}
+    
+    def create_appointment(self, booking_data: Dict, context: Dict) -> Dict[str, Any]:
+        """Cria um novo agendamento"""
+        try:
             # Validar dados obrigatórios
-            required_fields = ['medico_id', 'especialidade_id', 'data_hora']
-            for field in required_fields:
-                if field not in booking_data or not booking_data[field]:
+            required = ['medico_id', 'especialidade_id', 'data_hora']
+            for field in required:
+                if not booking_data.get(field):
                     return {
                         'success': False,
-                        'error': f'Campo obrigatório ausente: {field}'
+                        'error': f'Campo obrigatório ausente: {field}',
+                        'missing_field': field
                     }
             
-            # Para usuários não autenticados, nome e email são obrigatórios
-            if not context or not context.get('authenticated'):
-                guest_fields = ['nome', 'email']
-                for field in guest_fields:
-                    if field not in booking_data or not booking_data[field]:
-                        return {
-                            'success': False,
-                            'error': f'Campo obrigatório para visitantes: {field}'
-                        }
+            # Para usuários não autenticados, exigir nome e email
+            if not context.get('authenticated'):
+                if not booking_data.get('nome') or not booking_data.get('email'):
+                    return {
+                        'success': False,
+                        'error': 'Nome e email são obrigatórios',
+                        'missing_field': 'nome ou email'
+                    }
             
-            # Converter data_hora para datetime
+            # Converter data/hora
             try:
-                from datetime import timezone
                 inicio_str = booking_data['data_hora']
                 inicio_naive = datetime.fromisoformat(inicio_str.replace('Z', '+00:00') if 'Z' in inicio_str else inicio_str)
                 
-                # Se não tem timezone info, assumir horário de Brasília e converter para UTC
                 if inicio_naive.tzinfo is None:
                     brasilia_offset = timezone(timedelta(hours=-3))
                     inicio_brasilia = inicio_naive.replace(tzinfo=brasilia_offset)
                     inicio = inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
                 else:
-                    # Já tem timezone, converter para UTC e remover tzinfo
                     inicio = inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
                 
-                fim = inicio + timedelta(minutes=30)  # Duração padrão
-            except ValueError:
+                fim = inicio + timedelta(minutes=30)
+            except ValueError as e:
                 return {
                     'success': False,
-                    'error': 'Formato de data/hora inválido'
+                    'error': f'Formato de data inválido: {str(e)}'
                 }
             
-            # Verificar se horário ainda está disponível
-            agendamento_existente = Agendamento.query.filter_by(
+            # Verificar disponibilidade
+            conflito = Agendamento.query.filter_by(
                 medico_id=booking_data['medico_id'],
                 inicio=inicio
             ).first()
             
-            if agendamento_existente:
+            if conflito:
                 return {
                     'success': False,
-                    'error': 'Horário não está mais disponível'
+                    'error': 'Este horário não está mais disponível. Por favor, escolha outro horário.'
                 }
             
             # Criar agendamento
@@ -469,520 +851,156 @@ Responda sempre em formato JSON com esta estrutura:
             agendamento.origem = 'chatbot'
             agendamento.observacoes = booking_data.get('observacoes', '')
             
-            # Verificar se é usuário autenticado ou visitante
-            if context and context.get('authenticated') and context.get('user_id'):
+            if context.get('authenticated') and context.get('user_id'):
                 agendamento.paciente_id = context['user_id']
-                # Para usuários autenticados, salvar também o email para referência cruzada
-                if context.get('user_email'):
-                    agendamento.email_convidado = context['user_email']
-                if booking_data.get('nome'):
-                    agendamento.observacoes = f"Agendado por: {booking_data['nome']} | {agendamento.observacoes}"
             else:
                 agendamento.nome_convidado = booking_data['nome']
                 agendamento.email_convidado = booking_data['email']
                 agendamento.telefone_convidado = booking_data.get('telefone', '')
             
             db.session.add(agendamento)
-            db.session.flush()  # Garantir que o ID seja gerado
-            db.session.commit()  # Persistir no banco de dados
+            db.session.commit()
+            
+            # Buscar informações para confirmação
+            medico = Medico.query.get(agendamento.medico_id)
+            esp = Especialidade.query.get(agendamento.especialidade_id)
             
             return {
                 'success': True,
                 'agendamento_id': agendamento.id,
-                'message': 'Agendamento criado com sucesso!'
+                'message': 'Agendamento criado com sucesso!',
+                'details': {
+                    'id': agendamento.id,
+                    'data': agendamento.inicio.strftime('%d/%m/%Y'),
+                    'hora': agendamento.inicio.strftime('%H:%M'),
+                    'medico': medico.usuario.nome if medico else '',
+                    'especialidade': esp.nome if esp else '',
+                    'paciente': agendamento.nome_paciente
+                }
             }
             
         except Exception as e:
             db.session.rollback()
+            print(f"[CHATBOT] Erro ao criar agendamento: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'success': False,
                 'error': f'Erro ao criar agendamento: {str(e)}'
             }
-
-    def _rule_based_response(self, user_message, context=None):
-        """Resposta baseada em regras (quando OpenAI não está disponível)"""
-        import re
-        
-        message_lower = user_message.lower()
-        user_name = context.get('user_name', 'Paciente') if context else 'Paciente'
-        
-        # PRIORIDADE: Verificar se o usuário mencionou uma especialidade específica do banco
-        try:
-            especialidades_db = self.get_specialties()
-            for esp in especialidades_db:
-                esp_nome_lower = esp['nome'].lower()
-                # Verificar se o nome da especialidade está na mensagem (fuzzy match)
-                if esp_nome_lower in message_lower or message_lower in esp_nome_lower:
-                    print(f"[DEBUG] Especialidade detectada: {esp['nome']}")
-                    specialty_id = esp['id']
-                    specialty_name = esp['nome']
-                    
-                    doctors_data = self.get_doctors_by_specialty(specialty_id)
-                    if doctors_data:
-                        doctors_text = "\n".join([f"👨‍⚕️ **Dr(a). {doc['nome']}** - CRM: {doc['crm']}\n   📝 {doc.get('bio', 'Médico especialista')[:100]}..." for doc in doctors_data])
-                        return {
-                            "message": f"🏥 **Médicos disponíveis para {specialty_name}:**\n\n{doctors_text}\n\n💬 **Digite o nome do médico** que você gostaria de consultar ou digite \"qualquer\" para ver horários de todos!",
-                            "action": "show_doctors",
-                            "data": {
-                                "specialty_id": specialty_id,
-                                "specialty_name": specialty_name,
-                                "doctors": doctors_data
-                            }
-                        }
-                    else:
-                        return {
-                            "message": f"😊 **Especialidade {specialty_name} selecionada!**\n\nVou buscar nossos médicos especialistas...",
-                            "action": "select_specialty",
-                            "data": {"specialty_id": specialty_id, "specialty_name": specialty_name}
-                        }
-        except Exception as e:
-            print(f"[DEBUG] Erro ao verificar especialidades: {e}")
-        
-        # PRIORIDADE 2: Verificar se o usuário mencionou um médico específico do banco
-        try:
-            medicos_db = self.get_doctors_by_specialty()
-            for medico in medicos_db:
-                medico_nome_lower = medico['nome'].lower()
-                # Verificar se o nome do médico está na mensagem
-                # Também verificar variações como "raimundo", "ana", "ricardo"
-                nome_partes = medico_nome_lower.split()
-                if any(parte in message_lower for parte in nome_partes if len(parte) > 3):
-                    print(f"[DEBUG] Médico detectado: {medico['nome']}")
-                    doctor_id = medico['id']
-                    doctor_name = medico['nome']
-                    
-                    schedules = self.get_doctor_schedules(doctor_id)
-                    if schedules:
-                        schedules_text = "\n".join([f"📅 **{sch['data']}** às **{sch['hora']}**" for sch in schedules[:5]])
-                        return {
-                            "message": f"👨‍⚕️ **Excelente escolha! {doctor_name}**\n\n⏰ **Próximos horários disponíveis:**\n\n{schedules_text}\n\n💬 **Digite a data e hora** que prefere (exemplo: \"02/10/2025 às 15:00\") ou digite \"mais horários\" para ver outras opções!",
-                            "action": "select_doctor",
-                            "data": {
-                                "doctor_id": doctor_id,
-                                "doctor_name": doctor_name,
-                                "schedules": schedules
-                            }
-                        }
-        except Exception as e:
-            print(f"[DEBUG] Erro ao verificar médicos: {e}")
-        
-        # Cumprimentos e saudações
-        if any(word in message_lower for word in ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hello', 'alo', 'alô']):
-            greeting_time = "Bom dia" if datetime.now().hour < 12 else "Boa tarde" if datetime.now().hour < 18 else "Boa noite"
-            return {
-                "message": f"{greeting_time}, {user_name}! Eu sou a Sofia, sua assistente virtual 💙\n\nSeja muito bem-vindo(a) à **Clínica Dr. Raimundo Nunes** - há mais de 30 anos cuidando da saúde da mulher com excelência, humanização e carinho.\n\n✨ **Nossos diferenciais:**\n• Especialistas em ginecologia e obstetrícia\n• Referência nacional em DIU hormonal (Mirena e Kyleena)\n• Equipamentos de última geração\n• Atendimento acolhedor e personalizado\n• Duas unidades em São Paulo (Itaim Bibi e Itapeva)\n\n🎯 **Estou aqui para ajudar você com:**\n\n• 📅 **Agendar sua consulta** - Rápido e fácil, em poucos passos\n• 🩺 **Conhecer nossas especialidades** - Ginecologia, obstetrícia, pré-natal, planejamento familiar e mais\n• 👨‍⚕️ **Nossa equipe médica** - Profissionais experientes e dedicados\n• ⏰ **Verificar horários** - Encontre o melhor dia e horário para você\n• 💡 **Tirar dúvidas** - Sobre procedimentos, exames ou a clínica\n\n💬 **Me conte: o que você precisa hoje?** Pode ficar à vontade!",
-                "action": "general_chat",
-                "data": {}
-            }
-        
-        # Perguntas sobre especialidades
-        elif any(word in message_lower for word in ['especialidade', 'especialidades', 'atendimento', 'área', 'area', 'tipo', 'serviço', 'servico', 'tratamento']):
-            especialidades_data = self.get_specialties()
-            especialidades_text = "\n".join([f"🔹 **{esp['nome']}** - {esp.get('descricao', 'Atendimento especializado')}" for esp in especialidades_data])
-            return {
-                "message": f"🏥 **Especialidades da Clínica Dr. Raimundo Nunes:**\n\n{especialidades_text}\n\n✨ **Todos os nossos atendimentos são realizados por profissionais altamente qualificados!**\n\n💬 Qual especialidade você precisa? Posso te ajudar a encontrar o médico ideal e agendar sua consulta!",
-                "action": "get_specialties",
-                "data": especialidades_data
-            }
-        
-        # Seleção de especialidades específicas
-        elif any(specialty in message_lower for specialty in ['ginecologia', 'obstetrícia', 'obstetricia', 'pré-natal', 'prenatal']):
-            if 'ginecologia' in message_lower:
-                specialty_id = 4  # Mastologia (relacionada à ginecologia)
-                specialty_name = 'Ginecologia'
-            elif any(word in message_lower for word in ['obstetrícia', 'obstetricia']):
-                specialty_id = 2  # Pré-Natal de Alto Risco
-                specialty_name = 'Obstetrícia'
-            else:
-                specialty_id = 2  # Pré-Natal de Alto Risco
-                specialty_name = 'Pré-natal'
-            
-            doctors_data = self.get_doctors_by_specialty(specialty_id)
-            if doctors_data:
-                doctors_text = "\n".join([f"👨‍⚕️ **Dr(a). {doc['nome']}** - CRM: {doc['crm']}\n   📝 {doc.get('bio', 'Médico especialista')[:100]}..." for doc in doctors_data])
-                return {
-                    "message": f"🏥 **Médicos disponíveis para {specialty_name}:**\n\n{doctors_text}\n\n💬 **Digite o nome do médico** que você gostaria de consultar ou digite \"qualquer\" para ver horários de todos!",
-                    "action": "show_doctors",
-                    "data": {
-                        "specialty_id": specialty_id,
-                        "specialty_name": specialty_name,
-                        "doctors": doctors_data
-                    }
-                }
-            else:
-                return {
-                    "message": f"😊 **Especialidade {specialty_name} selecionada!**\n\nVou buscar nossos médicos especialistas...",
-                    "action": "select_specialty",
-                    "data": {"specialty_id": specialty_id, "specialty_name": specialty_name}
-                }
-                
-        # Seleção de médicos específicos
-        elif any(doctor in message_lower for doctor in ['dr. ricardo', 'ricardo mendes', 'dra. ana', 'ana silva', 'raimundo', 'dr. raimundo']):
-            if any(name in message_lower for name in ['ricardo', 'ricardo mendes']):
-                doctor_id = 3
-                doctor_name = "Dr. Ricardo Mendes"
-            elif any(name in message_lower for name in ['ana', 'ana silva']):
-                doctor_id = 2  
-                doctor_name = "Dra. Ana Carolina Silva"
-            elif any(name in message_lower for name in ['raimundo']):
-                doctor_id = 1
-                doctor_name = "Dr. Raimundo Nunes"
-            else:
-                doctor_id = 3  # Default
-                doctor_name = "Dr. Ricardo Mendes"
-                
-            schedules = self.get_doctor_schedules(doctor_id)
-            schedules_text = "\n".join([f"📅 **{sch['data']}** às **{sch['hora']}**" for sch in schedules[:5]])
-            
-            return {
-                "message": f"👨‍⚕️ **Excelente escolha! {doctor_name}**\n\n⏰ **Próximos horários disponíveis:**\n\n{schedules_text}\n\n💬 **Digite a data e hora** que prefere (exemplo: \"30/09/2025 às 08:00\") ou digite \"mais horários\" para ver outras opções!",
-                "action": "select_doctor",
-                "data": {
-                    "doctor_id": doctor_id,
-                    "doctor_name": doctor_name,
-                    "schedules": schedules
-                }
-            }
-            
-        # Seleção de horários específicos
-        elif any(pattern in message_lower for pattern in ['30/09', '01/10', '02/10', 'às 08:00', 'às 09:00', 'às 14:00']):
-            # Extrair data e hora da mensagem
-            date_match = re.search(r'(\d{1,2}/\d{1,2}/\d{4})', user_message)
-            time_match = re.search(r'às (\d{1,2}:\d{2})', user_message)
-            
-            if date_match and time_match:
-                date_str = date_match.group(1)
-                time_str = time_match.group(1)
-                datetime_str = f"{date_str.split('/')[2]}-{date_str.split('/')[1]:0>2}-{date_str.split('/')[0]:0>2}T{time_str}:00"
-                
-                return {
-                    "message": f"⏰ **Horário selecionado: {date_str} às {time_str}**\n\n📋 **Agora preciso confirmar seus dados:**\n\n• Nome: {context.get('user_name', '[Por favor, informe seu nome]')}\n• Email: {context.get('user_email', '[Por favor, informe seu email]')}\n\n💬 **Digite seu telefone para contato** (exemplo: 11 99999-9999):",
-                    "action": "select_schedule",
-                    "data": {
-                        "datetime": datetime_str,
-                        "date_str": date_str,
-                        "time_str": time_str
-                    }
-                }
-            else:
-                return {
-                    "message": "⏰ **Para selecionar um horário, digite no formato:**\n\n📅 **\"30/09/2025 às 08:00\"**\n\nOu escolha uma das opções mostradas anteriormente.",
-                    "action": "general_chat",
-                    "data": {}
-                }
-                
-        # Coleta de telefone
-        elif re.search(r'\b\d{2}\s?\d{4,5}-?\d{4}\b', user_message) or re.search(r'\(\d{2}\)\s?\d{4,5}-?\d{4}', user_message):
-            phone_match = re.search(r'(\(?\d{2}\)?\s?\d{4,5}-?\d{4})', user_message)
-            if phone_match:
-                phone = phone_match.group(1)
-                return {
-                    "message": f"📞 **Telefone confirmado: {phone}**\n\n✅ **Resumo do seu agendamento:**\n\n• **Médico:** {context.get('medico_nome', 'Médico selecionado')}\n• **Data/Hora:** {context.get('datetime_slot', 'Horário selecionado')}\n• **Nome:** {context.get('user_name', 'Nome informado')}\n• **Email:** {context.get('user_email', 'Email informado')}\n• **Telefone:** {phone}\n\n🎉 **Digite \"CONFIRMAR\" para finalizar o agendamento!**",
-                    "action": "confirm_booking",
-                    "data": {
-                        "patient_phone": phone
-                    }
-                }
-        
-        # Perguntas sobre médicos
-        elif any(word in message_lower for word in ['médico', 'medico', 'doutor', 'doutora', 'profissional', 'equipe', 'staff']):
-            doctors_data = self.get_doctors_by_specialty()
-            if doctors_data:
-                doctors_text = "\n".join([f"👨‍⚕️ **Dr(a). {doc['nome']}** - CRM: {doc['crm']}\n   📋 {', '.join(doc['especialidades'])}\n   📝 {doc.get('bio', 'Médico especialista em ginecologia e obstetrícia')}\n" for doc in doctors_data[:3]])
-                return {
-                    "message": f"👨‍⚕️ **Nossa Equipe Médica Especializada:**\n\n{doctors_text}\n✨ **E temos mais profissionais disponíveis!**\n\n🎯 **Para ver médicos de uma especialidade específica**, me diga qual área você precisa:\n🔹 Ginecologia\n🔹 Obstetrícia\n🔹 Consulta Pré-natal\n🔹 Planejamento Familiar\n🔹 Medicina Preventiva\n\n📅 Quer agendar com algum médico específico?",
-                    "action": "show_doctors", 
-                    "data": doctors_data
-                }
-            else:
-                return {
-                    "message": "👨‍⚕️ **Nossa equipe médica especializada está pronta para atendê-lo!**\n\n🎯 Para mostrar os médicos disponíveis, me diga qual especialidade você precisa:\n🔹 Ginecologia\n🔹 Obstetrícia\n🔹 Consulta Pré-natal\n🔹 Planejamento Familiar\n🔹 Medicina Preventiva",
-                    "action": "show_doctors", 
-                    "data": []
-                }
-        
-        # Agendamento
-        elif any(word in message_lower for word in ['agendar', 'consulta', 'horário', 'horario', 'marcar', 'appointment', 'reservar', 'agendar']):
-            return {
-                "message": f"Que ótimo, {user_name}! Vou te ajudar a agendar sua consulta de forma rápida e tranquila 💙\n\n**O processo é bem simples:**\n1️⃣ Você escolhe a especialidade que precisa\n2️⃣ Seleciona o médico de sua preferência\n3️⃣ Escolhe a data e horário que melhor se encaixa na sua agenda\n4️⃣ Confirma seus dados e pronto! ✅\n\n📋 **Para começar, qual especialidade você precisa?**\n\n🩺 **Ginecologia** - Consultas preventivas, tratamentos ginecológicos, exames de rotina\n🤰 **Obstetrícia** - Acompanhamento completo da sua gravidez\n💊 **Pré-natal de Alto Risco** - Gestações que necessitam de cuidado especial\n👶 **Planejamento Familiar** - Orientação contraceptiva, DIU hormonal (Mirena/Kyleena)\n🔬 **Medicina Preventiva** - Check-ups e cuidados preventivos\n\n💬 **Digite o nome da especialidade** ou me conte um pouco mais sobre o que você precisa!\n\n💡 *Dica: Somos referência nacional em inserção de DIU hormonal!*",
-                "action": "get_specialties",
-                "data": self.get_specialties()
-            }
-            
-        # Confirmação de agendamento (adicionar lógica para rule-based)
-        elif any(word in message_lower for word in ['confirmar', 'sim', 'confirmo', 'ok', 'agendar agora', 'finalizar']):
-            # Verificar se temos contexto completo para agendamento
-            if (context and context.get('medico_id') and context.get('datetime_slot') and 
-                (context.get('patient_name') or context.get('user_name')) and 
-                (context.get('patient_email') or context.get('user_email'))):
-                
-                # Criar dados completos para o agendamento
-                booking_data = {
-                    'medico_id': context.get('medico_id'),
-                    'especialidade_id': context.get('especialidade_id'),
-                    'data_hora': context.get('datetime_slot'),
-                    'nome': context.get('patient_name') or context.get('user_name'),
-                    'email': context.get('patient_email') or context.get('user_email'),
-                    'telefone': context.get('patient_phone', ''),
-                }
-                
-                return {
-                    "message": "🎉 **Perfeito! Finalizando seu agendamento...**\n\nAguarde um momento enquanto confirmo sua consulta no sistema.",
-                    "action": "create_booking",
-                    "data": booking_data
-                }
-            else:
-                missing_data = []
-                if not context or not context.get('medico_id'):
-                    missing_data.append("médico")
-                if not context or not context.get('datetime_slot'):
-                    missing_data.append("horário")
-                if not context or not (context.get('patient_name') or context.get('user_name')):
-                    missing_data.append("nome")
-                if not context or not (context.get('patient_email') or context.get('user_email')):
-                    missing_data.append("email")
-                    
-                return {
-                    "message": f"📋 **Para confirmar o agendamento, ainda preciso de:** {', '.join(missing_data)}\n\n💬 Digite \"agendar\" para começar o processo completo!",
-                    "action": "get_specialties",
-                    "data": self.get_specialties()
-                }
-        
-        # Horários
-        elif any(word in message_lower for word in ['horário', 'horario', 'disponível', 'disponivel', 'livre', 'vaga', 'vagas', 'quando']):
-            return {
-                "message": "⏰ **Vamos encontrar o melhor horário para você!**\n\n📋 Para mostrar os horários mais adequados, preciso de algumas informações rápidas:\n\n1️⃣ **Qual especialidade você precisa?**\n   🔹 Ginecologia | 🔹 Obstetrícia | 🔹 Pré-natal\n   🔹 Planejamento Familiar | 🔹 Medicina Preventiva\n\n2️⃣ **Tem preferência por algum médico específico?**\n   (ou posso sugerir o próximo disponível)\n\n3️⃣ **Prefere que período?**\n   🌅 Manhã | 🌞 Tarde | 🌙 Qualquer horário\n\n💬 **Me conte essas informações** e vou buscar as melhores opções de horários para você!",
-                "action": "general_chat",
-                "data": {}
-            }
-        
-        # Perguntas sobre preços/valores
-        elif any(word in message_lower for word in ['preço', 'preco', 'valor', 'custo', 'quanto', 'custa', 'pagamento', 'convênio', 'convenio', 'plano']):
-            return {
-                "message": "💰 **Informações sobre Valores e Pagamento:**\n\n🏥 Para informações detalhadas sobre:\n   • Valores das consultas\n   • Formas de pagamento aceitas\n   • Convênios médicos\n   • Promoções especiais\n\n📞 **Recomendo entrar em contato com nossa recepção**, onde nossa equipe pode dar informações atualizadas e personalizadas para seu caso.\n\n✨ **Enquanto isso, posso ajudar você a:**\n🔹 Agendar sua consulta\n🔹 Conhecer nossas especialidades\n🔹 Ver horários disponíveis\n\n💬 O que você gostaria de fazer?",
-                "action": "general_chat", 
-                "data": {}
-            }
-        
-        # Localização
-        elif any(word in message_lower for word in ['onde', 'endereço', 'endereco', 'localização', 'localizacao', 'local', 'chegar', 'fica']):
-            return {
-                "message": "📍 **Localização da Clínica Dr. Raimundo Nunes:**\n\n🏥 Nossa clínica está estrategicamente localizada em um **endereço de fácil acesso**, pensando no seu conforto e conveniência.\n\n🚗 **Facilidades:**\n   • Estacionamento disponível\n   • Transporte público próximo\n   • Fácil acesso para pessoas com mobilidade reduzida\n\n📞 **Para informações detalhadas sobre:**\n   • Endereço completo\n   • Como chegar de sua região\n   • Pontos de referência\n   • Estacionamento\n\n**Entre em contato com nossa recepção** - eles terão prazer em orientá-lo!\n\n📅 **Enquanto isso, quer agendar sua consulta?**",
-                "action": "general_chat",
-                "data": {}
-            }
-        
-        # Informações sobre exames
-        elif any(word in message_lower for word in ['exame', 'exames', 'ultrassom', 'papanicolau', 'preventivo', 'laboratório', 'laboratorio']):
-            return {
-                "message": "🔬 **Exames e Procedimentos:**\n\nNossa clínica realiza diversos exames importantes para sua saúde:\n\n🔹 **Exame Preventivo (Papanicolau)**\n🔹 **Ultrassom Ginecológico/Obstétrico**\n🔹 **Exames de rotina ginecológica**\n🔹 **Acompanhamento pré-natal completo**\n\n📋 **Para informações específicas sobre:**\n   • Preparação para exames\n   • Procedimentos realizados\n   • Agendamento de exames\n\n💬 **Me diga qual exame você precisa** ou posso ajudar você a agendar uma consulta para avaliação médica!\n\n🎯 Qual especialidade você gostaria de consultar?",
-                "action": "general_chat",
-                "data": {}
-            }
-        
-        # Urgência e emergência
-        elif any(word in message_lower for word in ['urgente', 'urgência', 'urgencia', 'emergência', 'emergencia', 'rápido', 'rapido', 'hoje']):
-            return {
-                "message": "🚨 **Atendimento Urgente:**\n\n⚠️ **Para emergências médicas**, procure imediatamente:\n   • Pronto Socorro mais próximo\n   • SAMU: 192\n   • Hospital de referência\n\n🏥 **Para consultas com urgência** (não emergência):\n   • Entre em contato diretamente com nossa recepção\n   • Podemos verificar encaixes na agenda\n   • Orientação por telefone se necessário\n\n📞 **Nossa equipe pode te orientar** sobre a melhor forma de atendimento para seu caso específico.\n\n💬 **Se não for emergência**, posso ajudar você a agendar uma consulta. Qual especialidade você precisa?",
-                "action": "general_chat",
-                "data": {}
-            }
-        
-        # Gravidez e pré-natal
-        elif any(word in message_lower for word in ['grávida', 'gravida', 'gravidez', 'gestante', 'bebê', 'bebe', 'pré-natal', 'prenatal', 'gestação', 'gestacao']):
-            return {
-                "message": "🤱 **Acompanhamento da Gravidez - Bem-vinda!**\n\n💖 **Parabéns por essa fase especial!** Nossa equipe está preparada para cuidar de você e seu bebê com todo carinho e expertise.\n\n🏥 **Nossos serviços incluem:**\n\n🔹 **Consultas de Pré-natal**\n   • Acompanhamento completo da gestação\n   • Orientações nutricionais e de cuidados\n   • Exames de rotina\n\n🔹 **Obstetrícia Especializada**\n   • Médicos experientes em gestação\n   • Ultrassom obstétrico\n   • Preparação para o parto\n\n🔹 **Consultas Preventivas**\n   • Planejamento da gravidez\n   • Cuidados pós-parto\n\n📅 **Quer agendar sua consulta de pré-natal?** Posso te ajudar a encontrar o melhor horário com nossos obstetras!\n\n💬 Me diga se prefere algum médico específico ou posso sugerir o próximo disponível!",
-                "action": "get_specialties",
-                "data": self.get_specialties()
-            }
-        
-        # Primeira consulta
-        elif any(word in message_lower for word in ['primeira', 'primeiro', 'primeira vez', 'nunca', 'novo', 'nova', 'paciente novo']):
-            return {
-                "message": "🌟 **Seja muito bem-vindo(a) como novo(a) paciente!**\n\n✨ **Para sua primeira consulta**, vamos tornar tudo mais fácil e acolhedor:\n\n📋 **O que trazer:**\n   • Documento de identidade\n   • Cartão do convênio (se tiver)\n   • Exames anteriores (se houver)\n   • Lista de medicamentos em uso\n\n⏰ **Recomendamos chegar 15 minutos antes** para fazer seu cadastro tranquilamente.\n\n🏥 **Nossas especialidades principais:**\n🔹 **Ginecologia** - Consultas preventivas e tratamentos\n🔹 **Obstetrícia** - Acompanhamento da gravidez\n🔹 **Pré-natal** - Cuidados durante a gestação\n🔹 **Planejamento Familiar** - Orientações contraceptivas\n🔹 **Medicina Preventiva** - Check-ups e prevenção\n\n💬 **Qual especialidade você precisa para sua primeira consulta?**\n\n📅 Posso te ajudar a agendar no melhor horário para você!",
-                "action": "get_specialties",
-                "data": self.get_specialties()
-            }
-        
-        # Cancelar/remarcar
-        elif any(word in message_lower for word in ['cancelar', 'remarcar', 'mudar', 'alterar', 'trocar', 'adiar']):
-            return {
-                "message": "📅 **Alteração de Consulta:**\n\n🔄 **Para cancelar ou remarcar sua consulta:**\n\n📞 **Entre em contato diretamente com nossa recepção** - eles podem:\n   • Cancelar sua consulta atual\n   • Remarcar para nova data/horário\n   • Verificar disponibilidade\n   • Fazer alterações no seu agendamento\n\n⚠️ **Importante:**\n   • Cancelamentos com 24h de antecedência são mais fáceis\n   • Nossa equipe pode encontrar novos horários rapidamente\n   • Evite faltas para não prejudicar outros pacientes\n\n💬 **Se quiser agendar uma nova consulta**, posso te ajudar agora mesmo!\n\n🎯 Qual especialidade você precisa?",
-                "action": "general_chat",
-                "data": {}
-            }
-        
-        # Agradecimento
-        elif any(word in message_lower for word in ['obrigado', 'obrigada', 'obrigadão', 'valeu', 'brigado', 'brigada', 'thanks']):
-            return {
-                "message": "💖 **Por nada! Foi um prazer ajudar você!**\n\n🌟 **Estou sempre aqui quando precisar:**\n   • Agendar consultas\n   • Tirar dúvidas sobre especialidades\n   • Conhecer nossos médicos\n   • Ver horários disponíveis\n\n🏥 **Clínica Dr. Raimundo Nunes** está sempre pronta para cuidar da sua saúde com excelência e carinho.\n\n💬 **Tem mais alguma coisa que posso ajudar?**\n\n✨ Ou se quiser, pode voltar a qualquer momento - estarei aqui para você!",
-                "action": "general_chat",
-                "data": {}
-            }
-        
-        # Mensagem padrão melhorada
-        else:
-            return {
-                "message": f"Olá, {user_name}! Vi sua mensagem e estou aqui para ajudar 💙\n\nSou a Sofia, assistente virtual da **Clínica Dr. Raimundo Nunes**, e posso te auxiliar em várias coisas!\n\n✨ **Principais formas que posso ajudar você:**\n\n📅 **Agendar consulta** - Te guio pelo processo todo, é rápido e fácil!\n🩺 **Especialidades** - Conheça nossos serviços de ginecologia, obstetrícia e mais\n👨‍⚕️ **Nossa equipe** - Médicos experientes e dedicados à sua saúde\n⏰ **Horários** - Veja as vagas disponíveis e escolha o melhor para você\n🏥 **Sobre a clínica** - Mais de 30 anos cuidando da saúde feminina\n💡 **Procedimentos** - DIU, ultrassom, exames preventivos e outros\n\n💬 **Para facilitar, você pode:**\n• Digitar \"agendar\" para marcar sua consulta\n• Perguntar sobre alguma especialidade específica\n• Pedir para conhecer nossos médicos\n• Tirar dúvidas sobre exames ou procedimentos\n• Ou simplesmente me contar o que você precisa!\n\n🤗 **Fique à vontade para conversar comigo!** O que você gostaria de fazer?",
-                "action": "general_chat",
-                "data": {}
-            }
-
-    def get_specialties(self):
-        """Busca especialidades disponíveis no banco de dados"""
-        try:
-            print(f"[DEBUG] Buscando especialidades ativas...")
-            especialidades = Especialidade.query.filter_by(ativo=True).all()
-            print(f"[DEBUG] Encontradas {len(especialidades)} especialidades ativas")
-            
-            resultado = [
-                {
-                    "id": esp.id,
-                    "nome": esp.nome,
-                    "descricao": esp.descricao or "Especialidade médica de qualidade",
-                    "duracao": esp.duracao_padrao
-                }
-                for esp in especialidades
-            ]
-            return resultado
-        except Exception as e:
-            print(f"Erro ao buscar especialidades: {e}")
-            import traceback
-            traceback.print_exc()
-            return []
-
-    def get_doctors_by_specialty(self, specialty_id=None):
-        """Busca médicos por especialidade no banco de dados"""
-        try:
-            print(f"[DEBUG] Buscando médicos - specialty_id: {specialty_id}")
-            
-            if specialty_id:
-                # Usar relacionamento SQLAlchemy para buscar médicos por especialidade
-                especialidade = Especialidade.query.get(specialty_id)
-                if especialidade:
-                    print(f"[DEBUG] Especialidade encontrada: {especialidade.nome}")
-                    # Filtrar médicos ativos da especialidade
-                    medicos = [medico for medico in especialidade.medicos if medico.ativo]
-                    print(f"[DEBUG] Médicos ativos encontrados: {len(medicos)}")
-                else:
-                    print(f"[DEBUG] Especialidade não encontrada com ID {specialty_id}")
-                    medicos = []
-            else:
-                # Buscar todos os médicos ativos
-                medicos = Medico.query.filter_by(ativo=True).all()
-                print(f"[DEBUG] Buscando todos médicos ativos: {len(medicos)}")
-            
-            resultado = []
-            for medico in medicos:
-                user = User.query.get(medico.user_id)
-                if user:
-                    resultado.append({
-                        "id": medico.id,
-                        "nome": user.nome,
-                        "crm": medico.crm,
-                        "bio": medico.bio or "Médico especialista em ginecologia e obstetrícia",
-                        "especialidades": [esp.nome for esp in medico.especialidades]
-                    })
-            
-            print(f"[DEBUG] Retornando {len(resultado)} médicos")
-            return resultado
-            
-        except Exception as e:
-            print(f"Erro ao buscar médicos: {e}")
-            import traceback
-            traceback.print_exc()
-            return []
-
-    def get_doctor_schedules(self, doctor_id, days_ahead=14):
-        """Busca horários disponíveis de um médico na tabela Agenda"""
-        try:
-            if not doctor_id:
-                print(f"[DEBUG] doctor_id vazio")
-                return []
-                
-            from models import Agenda
-            
-            medico = Medico.query.get(doctor_id)
-            if not medico:
-                print(f"[DEBUG] Médico não encontrado com ID {doctor_id}")
-                return []
-            
-            data_inicio = datetime.now().date()
-            data_fim = data_inicio + timedelta(days=days_ahead)
-            
-            print(f"[DEBUG] Buscando agendas para médico ID {doctor_id} de {data_inicio} até {data_fim}")
-            
-            # Buscar agendas disponíveis na tabela Agenda
-            agendas = Agenda.query.filter(
-                Agenda.medico_id == doctor_id,
-                Agenda.data >= data_inicio,
-                Agenda.data <= data_fim,
-                Agenda.ativo == True
-            ).order_by(Agenda.data, Agenda.hora_inicio).all()
-            
-            print(f"[DEBUG] Encontradas {len(agendas)} agendas no banco de dados")
-            
-            horarios_disponiveis = []
-            for agenda in agendas:
-                # Combinar data e hora para criar datetime
-                datetime_slot = datetime.combine(agenda.data, agenda.hora_inicio)
-                
-                # Verificar se já existe agendamento neste horário
-                agendamento_existente = Agendamento.query.filter_by(
-                    medico_id=doctor_id,
-                    inicio=datetime_slot
-                ).first()
-                
-                # Só adicionar se não houver agendamento e o horário for futuro
-                if not agendamento_existente and datetime_slot > datetime.now():
-                    horarios_disponiveis.append({
-                        "data": agenda.data.strftime("%d/%m/%Y"),
-                        "hora": agenda.hora_inicio.strftime("%H:%M"),
-                        "duracao": agenda.duracao_minutos,
-                        "tipo": agenda.tipo,
-                        "datetime": datetime_slot.isoformat()
-                    })
-                    
-                    # Limitar a 20 horários
-                    if len(horarios_disponiveis) >= 20:
-                        break
-            
-            print(f"[DEBUG] Retornando {len(horarios_disponiveis)} horários disponíveis")
-            return horarios_disponiveis
-            
-        except Exception as e:
-            print(f"Erro ao buscar horários: {e}")
-            import traceback
-            traceback.print_exc()
-            return []
-
-
-# Instância global do serviço
-try:
-    chatbot_service = ChatbotService()
-except Exception as e:
-    print(f"Aviso: Chatbot inicializando sem OpenAI: {e}")
-    # Criar instância básica mesmo sem OpenAI
-    class BasicChatbotService:
-        def __init__(self):
-            self.use_openai = False
-            self.client = None
-        
-        def chat_response(self, user_message, context=None):
-            # Instanciar temporariamente para usar os métodos
-            temp_service = ChatbotService()
-            return temp_service._rule_based_response(user_message, context)
-        
-        def get_specialties(self):
-            temp_service = ChatbotService()
-            return temp_service.get_specialties()
-        
-        def get_doctors_by_specialty(self, specialty_id=None):
-            temp_service = ChatbotService()
-            return temp_service.get_doctors_by_specialty(specialty_id)
-        
-        def get_doctor_schedules(self, doctor_id, days_ahead=14):
-            temp_service = ChatbotService()
-            return temp_service.get_doctor_schedules(doctor_id, days_ahead)
     
-    chatbot_service = BasicChatbotService()
+    def cancel_appointment(self, appointment_id: int, user_id: Optional[int] = None) -> Dict[str, Any]:
+        """Cancela um agendamento"""
+        try:
+            agendamento = Agendamento.query.get(appointment_id)
+            if not agendamento:
+                return {"success": False, "error": "Agendamento não encontrado"}
+            
+            # Verificar permissão
+            if user_id and agendamento.paciente_id != user_id:
+                return {"success": False, "error": "Você não tem permissão para cancelar este agendamento"}
+            
+            # Verificar se pode cancelar
+            if not agendamento.pode_ser_cancelado():
+                return {
+                    "success": False,
+                    "error": "Agendamento não pode ser cancelado (menos de 24h de antecedência)"
+                }
+            
+            agendamento.status = 'cancelado'
+            agendamento.observacoes = f"{agendamento.observacoes}\nCancelado via chatbot em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+            
+            db.session.commit()
+            
+            return {
+                "success": True,
+                "message": "Agendamento cancelado com sucesso",
+                "appointment_id": appointment_id
+            }
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"[CHATBOT] Erro ao cancelar: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def reschedule_appointment(self, appointment_id: int, new_datetime: str, 
+                              user_id: Optional[int] = None) -> Dict[str, Any]:
+        """Remarca um agendamento"""
+        try:
+            agendamento = Agendamento.query.get(appointment_id)
+            if not agendamento:
+                return {"success": False, "error": "Agendamento não encontrado"}
+            
+            # Verificar permissão
+            if user_id and agendamento.paciente_id != user_id:
+                return {"success": False, "error": "Sem permissão"}
+            
+            # Converter nova data
+            try:
+                novo_inicio_naive = datetime.fromisoformat(new_datetime)
+                if novo_inicio_naive.tzinfo is None:
+                    brasilia_offset = timezone(timedelta(hours=-3))
+                    novo_inicio_brasilia = novo_inicio_naive.replace(tzinfo=brasilia_offset)
+                    novo_inicio = novo_inicio_brasilia.astimezone(timezone.utc).replace(tzinfo=None)
+                else:
+                    novo_inicio = novo_inicio_naive.astimezone(timezone.utc).replace(tzinfo=None)
+            except ValueError:
+                return {"success": False, "error": "Data inválida"}
+            
+            # Verificar conflito
+            conflito = Agendamento.query.filter(
+                Agendamento.medico_id == agendamento.medico_id,
+                Agendamento.inicio == novo_inicio,
+                Agendamento.id != appointment_id
+            ).first()
+            
+            if conflito:
+                return {"success": False, "error": "Novo horário não disponível"}
+            
+            # Salvar data antiga nas observações
+            data_antiga = agendamento.inicio.strftime('%d/%m/%Y %H:%M')
+            agendamento.observacoes = f"{agendamento.observacoes}\nRemarcado de {data_antiga} para {novo_inicio.strftime('%d/%m/%Y %H:%M')}"
+            
+            # Atualizar datas
+            duracao = agendamento.fim - agendamento.inicio
+            agendamento.inicio = novo_inicio
+            agendamento.fim = novo_inicio + duracao
+            
+            db.session.commit()
+            
+            return {
+                "success": True,
+                "message": "Agendamento remarcado com sucesso",
+                "new_date": novo_inicio.strftime('%d/%m/%Y'),
+                "new_time": novo_inicio.strftime('%H:%M')
+            }
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"[CHATBOT] Erro ao remarcar: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def get_clinic_info(self) -> Dict[str, Any]:
+        """Retorna informações gerais da clínica"""
+        return {
+            "nome": "Clínica Dr. Raimundo Nunes",
+            "especialidade_principal": "Ginecologia e Obstetrícia",
+            "anos_experiencia": "30+",
+            "diferenciais": [
+                "Referência nacional em inserção de DIU hormonal",
+                "Atendimento humanizado e personalizado",
+                "Equipamentos de última geração",
+                "Equipe altamente qualificada"
+            ],
+            "unidades": [
+                {"nome": "Itaim Bibi", "cidade": "São Paulo"},
+                {"nome": "Itapeva", "cidade": "São Paulo"}
+            ],
+            "horario_funcionamento": "Segunda a Sexta: 8h às 18h",
+            "total_medicos": Medico.query.filter_by(ativo=True).count(),
+            "total_especialidades": Especialidade.query.filter_by(ativo=True).count()
+        }
+
+
+# Instância singleton do serviço de chatbot
+chatbot_service = ChatbotService()
