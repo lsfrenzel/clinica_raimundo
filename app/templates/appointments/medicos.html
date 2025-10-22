@@ -43,6 +43,61 @@
             <p class="text-lg text-gray-600">Escolha o profissional e veja os próximos horários disponíveis</p>
         </div>
 
+        <!-- Filtros Avançados de Busca -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-12">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-clinic-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Pesquisar Horários Disponíveis
+            </h3>
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="data_busca" class="block text-sm font-medium text-gray-700 mb-2">Data Desejada</label>
+                    <input type="date" 
+                           id="data_busca" 
+                           name="data_busca" 
+                           value="{{ data_busca if data_busca else datetime.now().strftime('%Y-%m-%d') }}"
+                           min="{{ datetime.now().strftime('%Y-%m-%d') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-clinic-primary focus:border-transparent">
+                </div>
+                <div>
+                    <label for="periodo" class="block text-sm font-medium text-gray-700 mb-2">Período do Dia</label>
+                    <select id="periodo" 
+                            name="periodo" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-clinic-primary focus:border-transparent">
+                        <option value="" {% if not periodo %}selected{% endif %}>Todos os períodos</option>
+                        <option value="manha" {% if periodo == 'manha' %}selected{% endif %}>🌅 Manhã (6h - 12h)</option>
+                        <option value="tarde" {% if periodo == 'tarde' %}selected{% endif %}>☀️ Tarde (12h - 18h)</option>
+                        <option value="noite" {% if periodo == 'noite' %}selected{% endif %}>🌙 Noite (18h - 24h)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2 opacity-0">Buscar</label>
+                    <button type="submit" class="w-full bg-clinic-primary hover:bg-clinic-primary-dark text-white px-6 py-2 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        Buscar Horários
+                    </button>
+                </div>
+            </form>
+            
+            {% if data_busca or periodo %}
+            <div class="mt-4 flex items-center text-sm text-gray-600">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Exibindo horários 
+                {% if periodo == 'manha' %}de manhã{% elif periodo == 'tarde' %}de tarde{% elif periodo == 'noite' %}de noite{% endif %}
+                {% if data_busca %}a partir de {{ datetime.strptime(data_busca, '%Y-%m-%d').strftime('%d/%m/%Y') }}{% endif %}
+                <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" class="ml-4 text-clinic-primary hover:text-clinic-accent font-medium">
+                    Limpar filtros
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
         {% if medicos %}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {% for medico in medicos %}
@@ -90,30 +145,68 @@
                         <!-- Próximos horários disponíveis -->
                         {% if medico.proximos_horarios %}
                             <div class="mt-6 pt-6 border-t border-gray-200">
-                                <h4 class="text-sm font-medium text-gray-700 mb-3">Próximos horários disponíveis:</h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    {% for horario in medico.proximos_horarios[:3] %}
-                                        <a href="{{ url_for('appointments.confirmar', medico_id=medico.id, data_hora=horario.data.strftime('%Y-%m-%d') + 'T' + horario.hora.strftime('%H:%M')) }}" 
-                                           class="block bg-clinic-light hover:bg-clinic-primary hover:text-white text-center py-2 px-3 rounded-md text-sm font-medium transition-colors duration-200">
-                                            <div class="font-semibold">{{ horario.data.strftime('%d/%m') }}</div>
-                                            <div class="text-xs">{{ horario.hora.strftime('%H:%M') }}</div>
+                                <h4 class="text-sm font-medium text-gray-700 mb-3">
+                                    Horários disponíveis encontrados ({{ medico.proximos_horarios|length }}):
+                                </h4>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
+                                    {% for horario in medico.proximos_horarios[:8] %}
+                                        <a href="{{ url_for('appointments.confirmar', medico_id=medico.id, data_hora=horario.data_hora_completa) }}" 
+                                           class="block bg-gradient-to-br from-clinic-light to-white hover:from-clinic-primary hover:to-clinic-primary hover:text-white text-center py-3 px-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md border border-clinic-light hover:border-clinic-primary group">
+                                            <div class="font-bold text-base">{{ horario.data.strftime('%d/%m') }}</div>
+                                            <div class="text-xs opacity-75">{{ horario.data.strftime('%a').upper() }}</div>
+                                            <div class="text-sm font-semibold mt-1">{{ horario.hora.strftime('%H:%M') }}</div>
                                         </a>
                                     {% endfor %}
                                 </div>
                                 
-                                <div class="mt-4">
+                                {% if medico.proximos_horarios|length > 8 %}
+                                <p class="text-xs text-gray-500 mb-3 text-center">
+                                    + {{ medico.proximos_horarios|length - 8 }} horários adicionais disponíveis
+                                </p>
+                                {% endif %}
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
-                                       class="w-full btn-clinic-primary text-white py-2 px-4 rounded-md text-sm font-medium text-center block">
-                                        Ver todos os horários disponíveis
+                                       class="w-full bg-clinic-primary hover:bg-clinic-primary-dark text-white py-2.5 px-4 rounded-lg text-sm font-semibold text-center transition-colors duration-200 flex items-center justify-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        Ver Agenda Completa
                                     </a>
+                                    {% if medico.proximos_horarios|length > 0 %}
+                                    <a href="{{ url_for('appointments.confirmar', medico_id=medico.id, data_hora=medico.proximos_horarios[0].data_hora_completa) }}" 
+                                       class="w-full bg-clinic-accent hover:bg-clinic-accent-dark text-white py-2.5 px-4 rounded-lg text-sm font-semibold text-center transition-colors duration-200 flex items-center justify-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Agendar Próximo Horário
+                                    </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         {% else %}
                             <div class="mt-6 pt-6 border-t border-gray-200">
-                                <p class="text-gray-500 text-sm mb-4">Nenhum horário disponível nos próximos dias.</p>
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                    <p class="text-yellow-800 text-sm flex items-start">
+                                        <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                        </svg>
+                                        <span>
+                                            Nenhum horário disponível para os filtros selecionados.
+                                            {% if data_busca or periodo %}
+                                            <a href="{{ url_for('appointments.medicos_por_especialidade', especialidade_id=especialidade.id) }}" class="font-semibold underline">Tente limpar os filtros</a>
+                                            ou
+                                            {% endif %}
+                                            verifique a agenda completa.
+                                        </span>
+                                    </p>
+                                </div>
                                 <a href="{{ url_for('appointments.horarios_medico', medico_id=medico.id) }}" 
-                                   class="w-full bg-gray-500 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-600 transition-colors duration-200 text-center block">
-                                    Verificar agenda completa
+                                   class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2.5 px-4 rounded-lg text-sm font-semibold transition-colors duration-200 text-center block flex items-center justify-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    Verificar Agenda Completa
                                 </a>
                             </div>
                         {% endif %}

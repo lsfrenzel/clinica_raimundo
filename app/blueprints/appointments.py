@@ -22,73 +22,183 @@ def agendar_logado():
 @bp.route('/medicos/<int:especialidade_id>')
 def medicos_por_especialidade(especialidade_id):
     """Passo 2: Escolher médico da especialidade"""
-    from models import Especialidade
+    from models import Especialidade, Agenda, Agendamento
     especialidade = Especialidade.query.get_or_404(especialidade_id)
     medicos = especialidade.medicos.filter_by(ativo=True).all()
     
-    # Buscar próximos horários disponíveis para cada médico
+    # Parâmetros de busca
+    data_busca = request.args.get('data_busca')
+    periodo = request.args.get('periodo', '')
+    
+    # Definir data de busca
+    if data_busca:
+        try:
+            data_inicial = datetime.strptime(data_busca, '%Y-%m-%d').date()
+        except ValueError:
+            data_inicial = datetime.now().date()
+    else:
+        data_inicial = datetime.now().date()
+    
+    # Garantir que data_busca tenha valor padrão para o template
+    if not data_busca:
+        data_busca = data_inicial.strftime('%Y-%m-%d')
+    
+    # Buscar próximos horários disponíveis para cada médico com filtros
     for medico in medicos:
-        medico.proximos_horarios = medico.get_proximos_horarios_livres(limite=3)
+        medico.proximos_horarios = []
+        
+        # Buscar horários nos próximos 14 dias
+        horarios_encontrados = []
+        for dia_offset in range(14):
+            data = data_inicial + timedelta(days=dia_offset)
+            
+            # Buscar agenda do médico para este dia
+            agendas_dia = Agenda.query.filter(
+                Agenda.medico_id == medico.id,
+                Agenda.data == data,
+                Agenda.ativo == True
+            ).order_by(Agenda.hora_inicio).all()
+            
+            # Buscar agendamentos já existentes
+            agendamentos_existentes = set()
+            agendamentos = Agendamento.query.filter(
+                Agendamento.medico_id == medico.id,
+                db.func.date(Agendamento.inicio) == data,
+                Agendamento.status.in_(['agendado', 'confirmado'])
+            ).all()
+            
+            for agendamento in agendamentos:
+                agendamentos_existentes.add(agendamento.inicio.time())
+            
+            # Verificar horários livres
+            for agenda in agendas_dia:
+                if agenda.hora_inicio not in agendamentos_existentes:
+                    # Filtrar por período se especificado
+                    hora = agenda.hora_inicio.hour
+                    if periodo == 'manha' and (hora < 6 or hora >= 12):
+                        continue
+                    elif periodo == 'tarde' and (hora < 12 or hora >= 18):
+                        continue
+                    elif periodo == 'noite' and (hora < 18 or hora >= 24):
+                        continue
+                    
+                    # Só mostrar horários futuros
+                    data_hora = datetime.combine(data, agenda.hora_inicio)
+                    if data_hora > datetime.now():
+                        horarios_encontrados.append({
+                            'data': data,
+                            'hora': agenda.hora_inicio,
+                            'data_hora_completa': data_hora.isoformat()
+                        })
+                    
+                    # Limitar a 10 horários por médico
+                    if len(horarios_encontrados) >= 10:
+                        break
+            
+            if len(horarios_encontrados) >= 10:
+                break
+        
+        medico.proximos_horarios = horarios_encontrados
     
     return render_template('appointments/medicos.html', 
-                         especialidade=especialidade, medicos=medicos)
+                         especialidade=especialidade, 
+                         medicos=medicos,
+                         data_busca=data_busca,
+                         periodo=periodo,
+                         datetime=datetime)
 
 @bp.route('/horarios/<int:medico_id>')
 def horarios_medico(medico_id):
-    """Passo 3: Escolher horário específico do médico"""
+    """Passo 3: Escolher horário específico do médico com filtros avançados"""
     from models import Medico, Agenda, Agendamento
     medico = Medico.query.get_or_404(medico_id)
+    
+    # Parâmetros de busca
     data_param = request.args.get('data')
+    periodo = request.args.get('periodo', '')
+    
+    # Validar e limitar parâmetro dias
+    try:
+        dias = int(request.args.get('dias', 1))
+        # Limitar a valores permitidos
+        if dias not in [1, 3, 7]:
+            dias = 1
+    except (ValueError, TypeError):
+        dias = 1
     
     # Definir a data de busca
     if data_param:
         try:
-            data_selecionada = datetime.strptime(data_param, '%Y-%m-%d').date()
+            data_inicial = datetime.strptime(data_param, '%Y-%m-%d').date()
         except ValueError:
-            data_selecionada = datetime.now().date()
+            data_inicial = datetime.now().date()
     else:
-        data_selecionada = datetime.now().date()
+        data_inicial = datetime.now().date()
     
-    # Buscar horários disponíveis do dia específico
-    horarios_disponiveis = []
+    # Buscar horários disponíveis para múltiplos dias
+    horarios_por_dia = {}
     
-    # Buscar todas as agendas do médico para o dia selecionado
-    agendas_dia = Agenda.query.filter(
-        Agenda.medico_id == medico.id,
-        Agenda.data == data_selecionada,
-        Agenda.ativo == True
-    ).order_by(Agenda.hora_inicio).all()
+    for dia_offset in range(dias):
+        data_atual = data_inicial + timedelta(days=dia_offset)
+        horarios_disponiveis = []
+        
+        # Buscar todas as agendas do médico para este dia
+        agendas_dia = Agenda.query.filter(
+            Agenda.medico_id == medico.id,
+            Agenda.data == data_atual,
+            Agenda.ativo == True
+        ).order_by(Agenda.hora_inicio).all()
+        
+        # Buscar agendamentos já existentes para este dia
+        agendamentos_existentes = set()
+        agendamentos = Agendamento.query.filter(
+            Agendamento.medico_id == medico.id,
+            db.func.date(Agendamento.inicio) == data_atual,
+            Agendamento.status.in_(['agendado', 'confirmado'])
+        ).all()
+        
+        for agendamento in agendamentos:
+            agendamentos_existentes.add(agendamento.inicio.time())
+        
+        # Filtrar apenas horários livres
+        for agenda in agendas_dia:
+            if agenda.hora_inicio not in agendamentos_existentes:
+                # Filtrar por período se especificado
+                hora = agenda.hora_inicio.hour
+                if periodo == 'manha' and (hora < 6 or hora >= 12):
+                    continue
+                elif periodo == 'tarde' and (hora < 12 or hora >= 18):
+                    continue
+                elif periodo == 'noite' and (hora < 18 or hora >= 24):
+                    continue
+                
+                # Combinar data e hora para criar datetime completo
+                data_hora = datetime.combine(data_atual, agenda.hora_inicio)
+                
+                # Só mostrar horários futuros
+                if data_hora > datetime.now():
+                    horarios_disponiveis.append({
+                        'data': data_atual,
+                        'hora': agenda.hora_inicio,
+                        'duracao': agenda.duracao_minutos,
+                        'data_hora_completa': data_hora.isoformat(),
+                        'periodo_dia': 'Manhã' if hora < 12 else ('Tarde' if hora < 18 else 'Noite')
+                    })
+        
+        if horarios_disponiveis:
+            horarios_por_dia[data_atual] = horarios_disponiveis
     
-    # Buscar agendamentos já existentes para este dia
-    agendamentos_existentes = set()
-    agendamentos = Agendamento.query.filter(
-        Agendamento.medico_id == medico.id,
-        db.func.date(Agendamento.inicio) == data_selecionada,
-        Agendamento.status.in_(['agendado', 'confirmado'])
-    ).all()
+    # Preparar variáveis para o template
+    horarios_disponiveis = horarios_por_dia.get(data_inicial, []) if dias == 1 else []
     
-    for agendamento in agendamentos:
-        agendamentos_existentes.add(agendamento.inicio.time())
-    
-    # Filtrar apenas horários livres
-    for agenda in agendas_dia:
-        if agenda.hora_inicio not in agendamentos_existentes:
-            # Combinar data e hora para criar datetime completo
-            data_hora = datetime.combine(data_selecionada, agenda.hora_inicio)
-            
-            # Só mostrar horários futuros
-            if data_hora > datetime.now():
-                horarios_disponiveis.append({
-                    'data': data_selecionada,
-                    'hora': agenda.hora_inicio,
-                    'duracao': agenda.duracao_minutos,
-                    'data_hora_completa': data_hora.isoformat()
-                })
-    
+    # Retornar template com todas as variáveis necessárias
     return render_template('appointments/horarios.html', 
                          medico=medico, 
                          horarios_disponiveis=horarios_disponiveis,
-                         data_selecionada=data_selecionada,
+                         horarios_por_dia=horarios_por_dia if dias > 1 else {},
+                         data_selecionada=data_inicial,
+                         periodo=periodo,
+                         dias=dias,
                          datetime=datetime)
 
 @bp.route('/confirmar', methods=['GET', 'POST'])
