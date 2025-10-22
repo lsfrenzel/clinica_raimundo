@@ -94,8 +94,10 @@ def painel_medico():
     logger.info(f"Agendamentos futuros: {len(agendamentos_futuros)}")
     logger.info(f"Agendamentos passados: {len(agendamentos_passados)}")
     
-    # Estatísticas básicas (todos os agendamentos futuros)
-    total_agendamentos = len(agendamentos_futuros)
+    # Estatísticas completas
+    total_geral = len(agendamentos)
+    total_futuros = len(agendamentos_futuros)
+    total_passados = len(agendamentos_passados)
     confirmados = len([a for a in agendamentos_futuros if a.status == 'confirmado'])
     pendentes = len([a for a in agendamentos_futuros if a.status == 'agendado'])
     
@@ -103,6 +105,8 @@ def painel_medico():
                          medico=medico,
                          agendamentos=agendamentos_futuros,
                          agendamentos_passados=agendamentos_passados,
-                         total_agendamentos=total_agendamentos,
+                         total_geral=total_geral,
+                         total_futuros=total_futuros,
+                         total_passados=total_passados,
                          confirmados=confirmados,
                          pendentes=pendentes)

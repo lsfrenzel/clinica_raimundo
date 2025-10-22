@@ -16,11 +16,11 @@
         </div>
 
         <!-- Estatísticas -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="card-elegant bg-white p-6 text-center">
-                <div class="text-4xl font-bold text-teal mb-3 font-display">{{ total_agendamentos }}</div>
-                <div class="text-gray-600 font-body font-medium">Total de Agendamentos</div>
-                <div class="text-sm text-gray-500 mt-1">Próximos 30 dias</div>
+                <div class="text-4xl font-bold text-teal mb-3 font-display">{{ total_futuros }}</div>
+                <div class="text-gray-600 font-body font-medium">Futuros</div>
+                <div class="text-sm text-gray-500 mt-1">Agendamentos futuros</div>
             </div>
             <div class="card-elegant bg-white p-6 text-center">
                 <div class="text-4xl font-bold text-emerald mb-3 font-display">{{ confirmados }}</div>
@@ -32,14 +32,19 @@
                 <div class="text-gray-600 font-body font-medium">Pendentes</div>
                 <div class="text-sm text-gray-500 mt-1">Aguardando confirmação</div>
             </div>
+            <div class="card-elegant bg-white p-6 text-center">
+                <div class="text-4xl font-bold text-gray-600 mb-3 font-display">{{ total_passados }}</div>
+                <div class="text-gray-600 font-body font-medium">Histórico</div>
+                <div class="text-sm text-gray-500 mt-1">Consultas realizadas</div>
+            </div>
         </div>
 
-        <!-- Lista de Agendamentos -->
-        <div class="card-elegant bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Lista de Agendamentos Futuros -->
+        <div class="card-elegant bg-white rounded-3xl shadow-2xl overflow-hidden mb-8">
             <!-- Header -->
             <div class="gradient-teal text-white px-8 py-6">
                 <h2 class="text-xl font-bold font-heading">Próximos Agendamentos</h2>
-                <p class="text-white/80 font-body">Consultas agendadas para os próximos 30 dias</p>
+                <p class="text-white/80 font-body">Consultas futuras agendadas</p>
             </div>
 
             <!-- Agendamentos -->
@@ -138,10 +143,10 @@
                         {% endfor %}
                     </div>
 
-                    <!-- Paginação (futuro) -->
+                    <!-- Resumo -->
                     <div class="mt-8 text-center">
                         <p class="text-sm text-gray-500">
-                            Mostrando {{ agendamentos|length }} agendamentos dos próximos 30 dias
+                            Mostrando {{ agendamentos|length }} agendamentos futuros
                         </p>
                     </div>
                 {% else %}
@@ -153,10 +158,144 @@
                             </svg>
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2 font-heading">
-                            Nenhum agendamento encontrado
+                            Nenhum agendamento futuro
                         </h3>
                         <p class="text-gray-600 font-body">
-                            Você não possui agendamentos para os próximos 30 dias.
+                            Você não possui agendamentos futuros no momento.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Histórico de Agendamentos Passados -->
+        <div class="card-elegant bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gray-700 text-white px-8 py-6">
+                <h2 class="text-xl font-bold font-heading">Histórico de Agendamentos</h2>
+                <p class="text-white/80 font-body">Consultas realizadas e passadas</p>
+            </div>
+
+            <!-- Agendamentos Passados -->
+            <div class="p-6">
+                {% if agendamentos_passados %}
+                    <div class="space-y-4">
+                        {% for agendamento in agendamentos_passados %}
+                            <div class="border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow duration-200 bg-gray-50">
+                                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                                    <div class="flex-1">
+                                        <!-- Data e Hora -->
+                                        <div class="flex items-center space-x-4 mb-4">
+                                            <div class="w-12 h-12 bg-gray-400 rounded-xl flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="text-lg font-semibold text-gray-700 font-heading">
+                                                    {{ agendamento.inicio_local.strftime('%d/%m/%Y') }}
+                                                </div>
+                                                <div class="text-gray-600 font-medium font-body">
+                                                    {{ agendamento.inicio_local.strftime('%H:%M') }} - {{ agendamento.fim_local.strftime('%H:%M') }}
+                                                    <span class="text-xs text-gray-500">(horário de Brasília)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dados do Paciente -->
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <div class="text-sm text-gray-500 mb-1">Paciente</div>
+                                                <div class="font-semibold text-gray-800 font-body">
+                                                    {{ agendamento.nome_paciente }}
+                                                </div>
+                                                {% if agendamento.email_paciente %}
+                                                <div class="text-sm text-gray-600 mt-1">
+                                                    {{ agendamento.email_paciente }}
+                                                </div>
+                                                {% endif %}
+                                                {% if agendamento.telefone_paciente %}
+                                                <div class="text-sm text-gray-600">
+                                                    {{ agendamento.telefone_paciente }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <div>
+                                                <div class="text-sm text-gray-500 mb-1">Especialidade</div>
+                                                <div class="font-semibold text-gray-800 font-body">
+                                                    {{ agendamento.especialidade.nome }}
+                                                </div>
+                                                {% if agendamento.observacoes %}
+                                                <div class="text-sm text-gray-600 mt-2">
+                                                    <strong>Observações:</strong> {{ agendamento.observacoes }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status e Ações -->
+                                    <div class="mt-4 lg:mt-0 lg:ml-6 lg:text-right">
+                                        <!-- Status Badge -->
+                                        <div class="mb-3">
+                                            {% if agendamento.status == 'realizado' %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <div class="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                                                    Realizado
+                                                </span>
+                                            {% elif agendamento.status == 'cancelado' %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                                    Cancelado
+                                                </span>
+                                            {% elif agendamento.status == 'confirmado' %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                                                    <div class="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
+                                                    Confirmado (Passado)
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                                                    <div class="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
+                                                    {{ agendamento.status|title }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Origem -->
+                                        <div class="text-xs text-gray-500 mb-2">
+                                            Origem: {{ agendamento.origem|title }}
+                                        </div>
+
+                                        <!-- ID do Agendamento -->
+                                        <div class="text-xs text-gray-400">
+                                            ID: #{{ agendamento.id }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Resumo -->
+                    <div class="mt-8 text-center">
+                        <p class="text-sm text-gray-500">
+                            Mostrando {{ agendamentos_passados|length }} agendamentos do histórico
+                        </p>
+                    </div>
+                {% else %}
+                    <!-- Estado vazio -->
+                    <div class="text-center py-12">
+                        <div class="w-24 h-24 mx-auto bg-gray-300 rounded-3xl flex items-center justify-center mb-6">
+                            <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2 font-heading">
+                            Nenhum histórico encontrado
+                        </h3>
+                        <p class="text-gray-600 font-body">
+                            Ainda não há agendamentos passados.
                         </p>
                     </div>
                 {% endif %}
