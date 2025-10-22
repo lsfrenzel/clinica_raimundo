@@ -770,15 +770,17 @@ def api_agenda_eventos():
     
     eventos = []
     for agenda in agendas:
-        agendamento = Agendamento.query.filter_by(
-            agenda_id=agenda.id,
-            status='confirmado'
+        data_hora_inicio = datetime.combine(agenda.data, agenda.hora_inicio)
+        data_hora_fim = datetime.combine(agenda.data, agenda.hora_fim)
+        
+        # Buscar agendamento que corresponde a este horário específico
+        agendamento = Agendamento.query.filter(
+            Agendamento.medico_id == agenda.medico_id,
+            Agendamento.inicio == data_hora_inicio,
+            Agendamento.status.in_(['agendado', 'confirmado'])
         ).first()
         
         disponivel = agendamento is None
-        
-        data_hora_inicio = datetime.combine(agenda.data, agenda.hora_inicio)
-        data_hora_fim = datetime.combine(agenda.data, agenda.hora_fim)
         
         duracao = (agenda.hora_fim.hour * 60 + agenda.hora_fim.minute) - (agenda.hora_inicio.hour * 60 + agenda.hora_inicio.minute)
         
@@ -794,8 +796,9 @@ def api_agenda_eventos():
         else:
             titulo = f"{hora_inicio_str} - Dr(a). {medico_nome_curto} (Ocupado)"
             tooltip = f"Dr(a). {medico_nome_completo}\n{hora_inicio_str} - {hora_fim_str}\nOcupado"
-            if agendamento and agendamento.paciente:
-                tooltip += f"\nPaciente: {agendamento.paciente.nome}"
+            paciente_nome = agendamento.nome_paciente if agendamento else None
+            if paciente_nome:
+                tooltip += f"\nPaciente: {paciente_nome}"
         
         evento = {
             'id': f'agenda_{agenda.id}',
@@ -811,7 +814,8 @@ def api_agenda_eventos():
                 'medico_nome': f"Dr(a). {medico_nome_completo}",
                 'disponivel': disponivel,
                 'duracao': duracao,
-                'paciente_nome': agendamento.paciente.nome if agendamento and agendamento.paciente else None,
+                'paciente_nome': agendamento.nome_paciente if agendamento else None,
+                'agendamento_id': agendamento.id if agendamento else None,
                 'tooltip': tooltip
             }
         }

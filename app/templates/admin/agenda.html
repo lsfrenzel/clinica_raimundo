@@ -250,13 +250,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 </form>
             `;
         } else {
+            var botoesAgendamento = '';
+            if (extendedProps.agendamento_id) {
+                botoesAgendamento = `
+                    <a href="/admin/agendamentos/detalhes/${extendedProps.agendamento_id}" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-block">
+                        📋 Ver Detalhes
+                    </a>
+                    <form method="POST" action="/admin/agendamentos/cancelar/${extendedProps.agendamento_id}" 
+                          class="inline" 
+                          onsubmit="return confirm('⚠️ Tem certeza que deseja CANCELAR este agendamento?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                            ❌ Cancelar Agendamento
+                        </button>
+                    </form>
+                `;
+            } else {
+                botoesAgendamento = `
+                    <a href="/admin/agendamentos" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-block">
+                        Ver Todos
+                    </a>
+                `;
+            }
+            
             acoes.innerHTML = `
                 <button onclick="fecharModal()" class="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium">
                     Fechar
                 </button>
-                <a href="/admin/agendamentos" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-block">
-                    Ver Agendamentos
-                </a>
+                ${botoesAgendamento}
             `;
         }
         

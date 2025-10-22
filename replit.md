@@ -124,6 +124,47 @@ Usuário → Especialidade → Médico → Horário → Dados → Confirmação 
 
 ## Resolução de Problemas Recentes
 
+### ✅ Problema: Calendário não exibia agendamentos dos médicos (22/10/2025)
+**Causa**: 
+- Bug na API `api_agenda_eventos()`: tentava buscar agendamentos usando campo `agenda_id` que **não existe** no modelo `Agendamento`
+- Banco de dados estava vazio (sem médicos, especialidades ou horários cadastrados)
+
+**Solução**:
+- ✅ Corrigida query para buscar agendamentos comparando `medico_id` e `inicio` (DateTime)
+- ✅ Executado script `popular_railway.py` para popular banco com 5 médicos, 9 especialidades e 990 slots
+- ✅ Criados agendamentos de teste para demonstrar funcionamento
+- ✅ Melhorado modal de gerenciamento com botões para ver detalhes e cancelar agendamentos
+- ✅ Adicionado `agendamento_id` aos `extendedProps` para facilitar navegação
+
+**Código Corrigido**:
+```python
+# Antes (ERRADO - campo não existia)
+agendamento = Agendamento.query.filter_by(
+    agenda_id=agenda.id,
+    status='confirmado'
+).first()
+
+# Depois (CORRETO - compara médico e horário)
+data_hora_inicio = datetime.combine(agenda.data, agenda.hora_inicio)
+agendamento = Agendamento.query.filter(
+    Agendamento.medico_id == agenda.medico_id,
+    Agendamento.inicio == data_hora_inicio,
+    Agendamento.status.in_(['agendado', 'confirmado'])
+).first()
+```
+
+**Resultados**:
+- ✅ Calendário exibe 270 eventos nos próximos 7 dias
+- ✅ Horários disponíveis em verde 🟢, ocupados em vermelho 🔴
+- ✅ Modal clicável com opções de gerenciamento
+- ✅ Informações do paciente exibidas quando ocupado
+- ✅ Compatível com PostgreSQL do Railway
+
+**Scripts Criados**:
+- `verificar_agenda.py`: Diagnóstico completo do sistema
+- `criar_agendamentos_teste.py`: Criar agendamentos rapidamente
+- `CORRECAO_CALENDARIO.md`: Documentação completa da correção
+
 ### ✅ Problema: Painel Médico não mostrava agendamentos (21/10/2025)
 **Causa**: 
 - Query com filtro de data no SQL sem considerar timezone UTC
