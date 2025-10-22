@@ -72,7 +72,6 @@ def painel_medico():
     
     # Usar UTC para comparação consistente (como funciona em Meus Agendamentos)
     agora = datetime.utcnow()
-    limite_30_dias = agora + timedelta(days=30)
     
     # Converter horários de UTC para timezone de Brasília para exibição
     brasilia_offset = tz(timedelta(hours=-3))
@@ -84,17 +83,18 @@ def painel_medico():
         if agendamento.fim:
             agendamento.fim_local = agendamento.fim.replace(tzinfo=tz.utc).astimezone(brasilia_offset).replace(tzinfo=None)
     
-    # Separar agendamentos futuros (próximos 30 dias) e passados (usando UTC)
-    agendamentos_futuros = [a for a in agendamentos if agora <= a.inicio <= limite_30_dias]
+    # Separar agendamentos futuros e passados (usando UTC)
+    # Mostrar TODOS os agendamentos futuros, não apenas próximos 30 dias
+    agendamentos_futuros = [a for a in agendamentos if a.inicio >= agora]
     agendamentos_passados = [a for a in agendamentos if a.inicio < agora]
     
     # Ordenar agendamentos futuros por data (próximos primeiro)
     agendamentos_futuros.sort(key=lambda a: a.inicio)
     
-    logger.info(f"Agendamentos futuros (próximos 30 dias): {len(agendamentos_futuros)}")
+    logger.info(f"Agendamentos futuros: {len(agendamentos_futuros)}")
     logger.info(f"Agendamentos passados: {len(agendamentos_passados)}")
     
-    # Estatísticas básicas (apenas futuros nos próximos 30 dias)
+    # Estatísticas básicas (todos os agendamentos futuros)
     total_agendamentos = len(agendamentos_futuros)
     confirmados = len([a for a in agendamentos_futuros if a.status == 'confirmado'])
     pendentes = len([a for a in agendamentos_futuros if a.status == 'agendado'])
