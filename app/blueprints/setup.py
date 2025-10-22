@@ -344,14 +344,14 @@ def setup_database():
         agenda_count = 0
         
         for medico in medicos:
-            for dia_offset in range(30):
+            for dia_offset in range(60):  # Próximos 60 dias
                 data = hoje + timedelta(days=dia_offset)
                 # Pular fins de semana
                 if data.weekday() >= 5:
                     continue
                 
-                # Criar slots de 1 hora das 8h às 17h
-                for hora in range(8, 17):
+                # Criar slots de 1 hora das 8h às 20h (8h, 9h, ..., 19h)
+                for hora in range(8, 20):
                     agenda = Agenda()
                     agenda.medico_id = medico.id
                     agenda.data = data
@@ -365,6 +365,7 @@ def setup_database():
         
         db.session.commit()
         resultado['mensagens'].append(f'✅ {agenda_count} slots de agenda criados!')
+        resultado['mensagens'].append('   • Horário: 08:00 às 20:00 (Segunda a Sexta)')
         
         # 7. Criar paciente Ana Silva
         resultado['mensagens'].append('👥 Criando paciente Ana Silva...')
@@ -421,6 +422,90 @@ def setup_database():
         resultado['mensagens'].append(f'❌ ERRO: {str(e)}')
         import traceback
         resultado['mensagens'].append(traceback.format_exc())
+        return jsonify(resultado), 500
+
+@bp.route('/popular-horarios')
+def popular_horarios():
+    """
+    Cria horários das 08:00 às 20:00 para todos os médicos (Segunda a Sexta)
+    Acesse: /popular-horarios
+    """
+    from models import Medico, Agenda
+    
+    resultado = {
+        'status': 'criando',
+        'mensagens': [],
+        'horarios_criados': 0
+    }
+    
+    try:
+        # Buscar todos os médicos
+        medicos = Medico.query.filter_by(ativo=True).all()
+        if not medicos:
+            resultado['status'] = 'erro'
+            resultado['mensagens'].append('❌ Nenhum médico encontrado. Execute /setup-database primeiro')
+            return jsonify(resultado), 404
+        
+        # Limpar agendas antigas (opcional - comentar se quiser manter as existentes)
+        # Agenda.query.delete()
+        # db.session.commit()
+        # resultado['mensagens'].append('🗑️ Agendas antigas removidas')
+        
+        resultado['mensagens'].append(f'📅 Criando horários para {len(medicos)} médicos...')
+        
+        # Criar horários para os próximos 60 dias
+        hoje = datetime.now().date()
+        horarios_criados = 0
+        
+        for medico in medicos:
+            for dia_offset in range(60):  # Próximos 60 dias
+                data = hoje + timedelta(days=dia_offset)
+                
+                # Apenas Segunda a Sexta (0 = Segunda, 4 = Sexta)
+                if data.weekday() >= 5:
+                    continue
+                
+                # Criar slots de 1 hora das 8h às 20h
+                for hora in range(8, 20):  # 8h, 9h, 10h, ..., 19h
+                    # Verificar se já existe
+                    existe = Agenda.query.filter_by(
+                        medico_id=medico.id,
+                        data=data,
+                        hora_inicio=time(hora, 0)
+                    ).first()
+                    
+                    if not existe:
+                        agenda = Agenda()
+                        agenda.medico_id = medico.id
+                        agenda.data = data
+                        agenda.hora_inicio = time(hora, 0)
+                        agenda.hora_fim = time(hora + 1, 0)
+                        agenda.duracao_minutos = 60
+                        agenda.tipo = 'presencial'
+                        agenda.ativo = True
+                        db.session.add(agenda)
+                        horarios_criados += 1
+        
+        db.session.commit()
+        
+        resultado['status'] = 'sucesso'
+        resultado['horarios_criados'] = horarios_criados
+        resultado['mensagens'].append(f'✅ {horarios_criados} horários criados com sucesso!')
+        resultado['mensagens'].append(f'📊 Total de horários no banco: {Agenda.query.count()}')
+        resultado['mensagens'].append('')
+        resultado['mensagens'].append('ℹ️ Horários criados:')
+        resultado['mensagens'].append('   • Período: Segunda a Sexta')
+        resultado['mensagens'].append('   • Horário: 08:00 às 20:00 (slots de 1 hora)')
+        resultado['mensagens'].append('   • Próximos 60 dias')
+        
+        return jsonify(resultado), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        resultado['status'] = 'erro'
+        resultado['mensagens'].append(f'❌ ERRO: {str(e)}')
+        import traceback
+        resultado['traceback'] = traceback.format_exc()
         return jsonify(resultado), 500
 
 @bp.route('/criar-agendamentos-teste')
