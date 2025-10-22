@@ -1,4 +1,4 @@
-modules = ["web", "python-3.11", "bash", "postgresql-16"]
+modules = ["web", "python-3.11", "bash"]
 [agent]
 expertMode = true
 integrations = ["python_gemini:1.0.0"]
@@ -23,13 +23,13 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "/home/runner/workspace/.pythonlibs/bin/gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
@@ -70,6 +70,10 @@ externalPort = 8008
 [[ports]]
 localPort = 44435
 externalPort = 3001
+
+[[ports]]
+localPort = 45077
+externalPort = 8080
 
 [[ports]]
 localPort = 45299
