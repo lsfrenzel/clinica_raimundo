@@ -46,19 +46,37 @@ class ChatbotService:
         
     def get_system_prompt(self):
         """Define o contexto e comportamento do chatbot"""
-        return """Você é um assistente virtual inteligente da Clínica Dr. Raimundo Nunes, especializada em ginecologia e obstetrícia.
+        return """Você é Sofia, assistente virtual inteligente e empática da Clínica Dr. Raimundo Nunes, especializada em ginecologia e obstetrícia com mais de 30 anos de experiência em saúde da mulher.
 
-Seu objetivo é ajudar pacientes a agendarem consultas de forma natural e eficiente, guiando-os através de todo o processo.
+SOBRE A CLÍNICA:
+• Fundada há mais de 30 anos pelo Dr. Raimundo Nunes
+• Especializada em ginecologia, obstetrícia e saúde feminina
+• Referência nacional em inserção de DIU hormonal (Mirena e Kyleena)
+• Atendimento humanizado e personalizado
+• Equipamentos de última geração
+• Duas unidades em São Paulo: Itaim Bibi e Itapeva
 
-DIRETRIZES:
-1. Seja sempre cordial, empático e profissional
-2. Use linguagem clara e acessível
-3. Guie o paciente passo a passo no processo de agendamento
-4. Explique as especialidades quando solicitado
-5. Apresente os médicos disponíveis com seus horários
-6. Confirme todos os dados antes de finalizar o agendamento
-7. Responda SEMPRE em português brasileiro
-8. Use JSON estruturado conforme especificado para ações específicas
+ESPECIALIDADES OFERECIDAS:
+• Ginecologia Geral - Consultas preventivas, exames, tratamentos
+• Obstetrícia - Acompanhamento completo da gravidez e parto
+• Pré-natal de Alto Risco - Gestações que requerem cuidados especiais
+• Planejamento Familiar - Orientação contraceptiva e DIU
+• Medicina Preventiva - Check-ups e prevenção de doenças
+• Ultrassom Ginecológico e Obstétrico
+
+SUA MISSÃO:
+Ajudar pacientes a agendarem consultas de forma natural, acolhedora e eficiente, demonstrando empatia e profissionalismo.
+
+DIRETRIZES DE COMUNICAÇÃO:
+1. Seja sempre empática, acolhedora e profissional - lembre-se que saúde é um tema sensível
+2. Use linguagem clara, acessível e natural - evite jargões médicos complexos
+3. Seja proativa em ajudar, mas sem ser insistente
+4. Mostre conhecimento sobre a clínica e seus diferenciais
+5. Personalize respostas usando o nome do paciente quando disponível
+6. Demonstre compreensão das necessidades da paciente
+7. Explique processos de forma didática e tranquilizadora
+8. Responda SEMPRE em português brasileiro
+9. Use emojis com moderação para tornar a conversa mais amigável
 
 FLUXO COMPLETO DE AGENDAMENTO:
 1. Cumprimente e identifique a necessidade de agendamento
@@ -550,8 +568,9 @@ Responda sempre em formato JSON com esta estrutura:
         
         # Cumprimentos e saudações
         if any(word in message_lower for word in ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hello', 'alo', 'alô']):
+            greeting_time = "Bom dia" if datetime.now().hour < 12 else "Boa tarde" if datetime.now().hour < 18 else "Boa noite"
             return {
-                "message": f"Olá, {user_name}! Seja muito bem-vindo(a) à Clínica Dr. Raimundo Nunes! 👋\n\n🏥 **Especialista em Ginecologia e Obstetrícia**\n\nSou seu assistente virtual e estou aqui para tornar seu atendimento mais ágil e conveniente.\n\n📋 **Como posso ajudar você hoje?**\n\n🔹 **Agendar uma consulta** - Vamos encontrar o melhor horário para você\n🔹 **Conhecer especialidades** - Descubra todos os nossos serviços\n🔹 **Ver nossos médicos** - Conheça nossa equipe especializada\n🔹 **Horários disponíveis** - Consulte as próximas vagas\n\nDigite sua necessidade ou escolha uma das opções acima! ✨",
+                "message": f"{greeting_time}, {user_name}! Eu sou a Sofia, sua assistente virtual 💙\n\nSeja muito bem-vindo(a) à **Clínica Dr. Raimundo Nunes** - há mais de 30 anos cuidando da saúde da mulher com excelência, humanização e carinho.\n\n✨ **Nossos diferenciais:**\n• Especialistas em ginecologia e obstetrícia\n• Referência nacional em DIU hormonal (Mirena e Kyleena)\n• Equipamentos de última geração\n• Atendimento acolhedor e personalizado\n• Duas unidades em São Paulo (Itaim Bibi e Itapeva)\n\n🎯 **Estou aqui para ajudar você com:**\n\n• 📅 **Agendar sua consulta** - Rápido e fácil, em poucos passos\n• 🩺 **Conhecer nossas especialidades** - Ginecologia, obstetrícia, pré-natal, planejamento familiar e mais\n• 👨‍⚕️ **Nossa equipe médica** - Profissionais experientes e dedicados\n• ⏰ **Verificar horários** - Encontre o melhor dia e horário para você\n• 💡 **Tirar dúvidas** - Sobre procedimentos, exames ou a clínica\n\n💬 **Me conte: o que você precisa hoje?** Pode ficar à vontade!",
                 "action": "general_chat",
                 "data": {}
             }
@@ -685,7 +704,7 @@ Responda sempre em formato JSON com esta estrutura:
         # Agendamento
         elif any(word in message_lower for word in ['agendar', 'consulta', 'horário', 'horario', 'marcar', 'appointment', 'reservar', 'agendar']):
             return {
-                "message": f"🎉 **Ótimo, {user_name}! Vou ajudar você a agendar sua consulta de forma rápida e fácil!**\n\n📋 **Primeiro passo**: Qual especialidade você precisa?\n\n🔹 **Ginecologia** - Consultas preventivas, exames, tratamentos\n🔹 **Obstetrícia** - Acompanhamento da gravidez\n🔹 **Consulta Pré-natal** - Cuidados durante a gestação\n🔹 **Planejamento Familiar** - Métodos contraceptivos, orientações\n🔹 **Medicina Preventiva** - Check-ups e prevenção\n\n💬 **Digite o nome da especialidade** ou **clique em uma das opções** acima!\n\n⚡ Em seguida, vou mostrar nossos médicos e horários disponíveis para você escolher o que for mais conveniente!",
+                "message": f"Que ótimo, {user_name}! Vou te ajudar a agendar sua consulta de forma rápida e tranquila 💙\n\n**O processo é bem simples:**\n1️⃣ Você escolhe a especialidade que precisa\n2️⃣ Seleciona o médico de sua preferência\n3️⃣ Escolhe a data e horário que melhor se encaixa na sua agenda\n4️⃣ Confirma seus dados e pronto! ✅\n\n📋 **Para começar, qual especialidade você precisa?**\n\n🩺 **Ginecologia** - Consultas preventivas, tratamentos ginecológicos, exames de rotina\n🤰 **Obstetrícia** - Acompanhamento completo da sua gravidez\n💊 **Pré-natal de Alto Risco** - Gestações que necessitam de cuidado especial\n👶 **Planejamento Familiar** - Orientação contraceptiva, DIU hormonal (Mirena/Kyleena)\n🔬 **Medicina Preventiva** - Check-ups e cuidados preventivos\n\n💬 **Digite o nome da especialidade** ou me conte um pouco mais sobre o que você precisa!\n\n💡 *Dica: Somos referência nacional em inserção de DIU hormonal!*",
                 "action": "get_specialties",
                 "data": self.get_specialties()
             }
@@ -804,7 +823,7 @@ Responda sempre em formato JSON com esta estrutura:
         # Mensagem padrão melhorada
         else:
             return {
-                "message": f"💬 **Olá, {user_name}! Entendi sua mensagem.**\n\n🤖 Sou o assistente virtual da **Clínica Dr. Raimundo Nunes** e estou aqui para tornar seu atendimento mais ágil e conveniente!\n\n🎯 **Posso ajudar você com:**\n\n🔹 **Agendar consultas** - Vamos encontrar o melhor horário\n🔹 **Informações sobre especialidades** - Conheça nossos serviços\n🔹 **Conhecer nossos médicos** - Equipe especializada\n🔹 **Ver horários disponíveis** - Consulte as próximas vagas\n🔹 **Informações gerais** - Localização, valores, exames\n\n💡 **Dicas rápidas:**\n   • Digite \"agendar\" para marcar uma consulta\n   • Digite \"especialidades\" para ver nossos serviços\n   • Digite \"médicos\" para conhecer nossa equipe\n\n💬 **O que você gostaria de fazer hoje?**",
+                "message": f"Olá, {user_name}! Vi sua mensagem e estou aqui para ajudar 💙\n\nSou a Sofia, assistente virtual da **Clínica Dr. Raimundo Nunes**, e posso te auxiliar em várias coisas!\n\n✨ **Principais formas que posso ajudar você:**\n\n📅 **Agendar consulta** - Te guio pelo processo todo, é rápido e fácil!\n🩺 **Especialidades** - Conheça nossos serviços de ginecologia, obstetrícia e mais\n👨‍⚕️ **Nossa equipe** - Médicos experientes e dedicados à sua saúde\n⏰ **Horários** - Veja as vagas disponíveis e escolha o melhor para você\n🏥 **Sobre a clínica** - Mais de 30 anos cuidando da saúde feminina\n💡 **Procedimentos** - DIU, ultrassom, exames preventivos e outros\n\n💬 **Para facilitar, você pode:**\n• Digitar \"agendar\" para marcar sua consulta\n• Perguntar sobre alguma especialidade específica\n• Pedir para conhecer nossos médicos\n• Tirar dúvidas sobre exames ou procedimentos\n• Ou simplesmente me contar o que você precisa!\n\n🤗 **Fique à vontade para conversar comigo!** O que você gostaria de fazer?",
                 "action": "general_chat",
                 "data": {}
             }
