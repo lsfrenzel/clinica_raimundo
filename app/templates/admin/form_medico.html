@@ -111,7 +111,7 @@
                                        name="especialidades" 
                                        value="{{ especialidade.id }}"
                                        {% if medico and especialidade in medico.especialidades %}checked{% endif %}
-                                       class="form-checkbox h-5 w-5 text-teal rounded focus:ring-teal focus:ring-offset-0">
+                                       class="form-checkbox h-5 w-5 text-accent-600 rounded focus:ring-teal focus:ring-offset-0">
                                 <div>
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ especialidade.nome }}
@@ -127,7 +127,7 @@
                         <div class="text-center py-6 bg-gray-50 rounded-xl">
                             <p class="text-gray-500 mb-4">Nenhuma especialidade cadastrada</p>
                             <a href="{{ url_for('admin.nova_especialidade') }}" 
-                               class="text-teal hover:text-teal-dark transition-colors">
+                               class="text-accent-600 hover:text-accent-600-dark transition-colors">
                                 Criar primeira especialidade →
                             </a>
                         </div>
@@ -157,7 +157,7 @@
                             <input type="checkbox" 
                                    name="ativo"
                                    {% if medico.ativo %}checked{% endif %}
-                                   class="form-checkbox h-5 w-5 text-teal rounded focus:ring-teal focus:ring-offset-0">
+                                   class="form-checkbox h-5 w-5 text-accent-600 rounded focus:ring-teal focus:ring-offset-0">
                             <span class="text-sm font-medium text-gray-700">
                                 Médico ativo
                             </span>
@@ -176,7 +176,7 @@
                         ← Cancelar
                     </a>
                     <button type="submit" 
-                            class="btn-teal px-8 py-3 rounded-xl">
+                            class="btn-gold px-8 py-3 rounded-xl">
                         {% if medico %}
                             💾 Salvar Alterações
                         {% else %}

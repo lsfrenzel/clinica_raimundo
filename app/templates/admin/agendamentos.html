@@ -121,7 +121,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="w-8 h-8 gradient-teal rounded-full flex items-center justify-center">
+                                    <div class="w-8 h-8 gradient-accent rounded-full flex items-center justify-center">
                                         <span class="text-white text-xs font-bold">
                                             {{ agendamento.medico.usuario.nome.split()[0][0] }}{{ agendamento.medico.usuario.nome.split()[-1][0] if agendamento.medico.usuario.nome.split()|length > 1 else '' }}
                                         </span>
@@ -134,7 +134,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold bg-emerald/10 text-emerald-dark rounded-full">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold bg-emerald/10 text-accent-600-dark rounded-full">
                                     {{ agendamento.especialidade.nome }}
                                 </span>
                             </td>

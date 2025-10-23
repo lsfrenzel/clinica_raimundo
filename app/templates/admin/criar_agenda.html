@@ -39,7 +39,7 @@
                                          src="{{ medico.foto_url }}" 
                                          alt="{{ medico.usuario.nome }}">
                                     {% else %}
-                                    <div class="w-10 h-10 gradient-teal rounded-full flex items-center justify-center">
+                                    <div class="w-10 h-10 gradient-accent rounded-full flex items-center justify-center">
                                         <span class="text-white font-bold text-sm">
                                             {{ medico.usuario.nome.split()[0][0] }}{{ medico.usuario.nome.split()[-1][0] if medico.usuario.nome.split()|length > 1 else '' }}
                                         </span>
@@ -61,7 +61,7 @@
                         <div class="text-center py-8 bg-gray-50 rounded-xl">
                             <p class="text-gray-500 mb-4">Nenhum médico ativo encontrado</p>
                             <a href="{{ url_for('admin.criar_medico') }}" 
-                               class="text-teal hover:text-teal-dark transition-colors">
+                               class="text-accent-600 hover:text-accent-600-dark transition-colors">
                                 Criar primeiro médico →
                             </a>
                         </div>
@@ -192,9 +192,9 @@
                 </p>
             </div>
             
-            <div class="card-elegant bg-green-50 border border-green-200 rounded-2xl p-6">
+            <div class="card-elegant bg-accent-50 border border-green-200 rounded-2xl p-6">
                 <h3 class="text-sm font-semibold text-green-800 mb-2">⚡ Exemplo</h3>
-                <p class="text-sm text-green-700">
+                <p class="text-sm text-accent-700">
                     Das 08:00 às 17:00 com intervalos de 30 minutos = 18 horários por dia.
                 </p>
             </div>

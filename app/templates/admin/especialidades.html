@@ -55,7 +55,7 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
-                                    <div class="w-10 h-10 gradient-emerald rounded-xl flex items-center justify-center">
+                                    <div class="w-10 h-10 gradient-accent rounded-xl flex items-center justify-center">
                                         <span class="text-white font-bold text-sm">
                                             {{ especialidade.nome[0].upper() }}
                                         </span>
@@ -84,7 +84,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                 <a href="{{ url_for('admin.editar_especialidade', id=especialidade.id) }}" 
-                                   class="text-teal hover:text-teal-dark transition-colors">
+                                   class="text-accent-600 hover:text-accent-600-dark transition-colors">
                                     ✏️ Editar
                                 </a>
                                 <form method="POST" action="{{ url_for('admin.excluir_especialidade', id=especialidade.id) }}" 
@@ -103,7 +103,7 @@
             </div>
             {% else %}
             <div class="text-center py-12">
-                <div class="w-24 h-24 mx-auto gradient-emerald rounded-3xl flex items-center justify-center mb-4">
+                <div class="w-24 h-24 mx-auto gradient-accent rounded-3xl flex items-center justify-center mb-4">
                     <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
