@@ -58,27 +58,12 @@ class ChatbotService:
     
     def get_system_prompt(self, database_context: Optional[Dict] = None) -> str:
         """
-        System prompt avançado com contexto do banco de dados em tempo real
+        System prompt otimizado - carrega informações essenciais sem queries desnecessárias
         """
-        # Obter informações do banco de dados
-        total_medicos = Medico.query.filter_by(ativo=True).count()
-        total_especialidades = Especialidade.query.filter_by(ativo=True).count()
-        
-        # Obter especialidades disponíveis
-        especialidades = Especialidade.query.filter_by(ativo=True).all()
-        especialidades_list = ", ".join([esp.nome for esp in especialidades])
-        
-        # Obter médicos disponíveis
-        medicos = Medico.query.filter_by(ativo=True).limit(10).all()
-        medicos_info = []
-        for medico in medicos:
-            especialidades_medico = [esp.nome for esp in medico.especialidades]
-            medicos_info.append(f"Dr(a). {medico.usuario.nome} - CRM {medico.crm} - Especialidades: {', '.join(especialidades_medico)}")
-        medicos_list = "\n".join(medicos_info)
-        
-        # Contexto adicional do usuário se disponível
+        # Contexto do usuário (apenas se disponível e necessário)
         user_context = ""
-        if database_context and database_context.get('user_id'):
+        if database_context and database_context.get('user_id') and database_context.get('include_user_appointments'):
+            # Carregar agendamentos apenas se explicitamente solicitado
             user_agendamentos = Agendamento.query.filter_by(
                 paciente_id=database_context['user_id']
             ).filter(
@@ -86,11 +71,12 @@ class ChatbotService:
             ).order_by(Agendamento.inicio.desc()).limit(3).all()
             
             if user_agendamentos:
-                user_context = f"\n\nAGENDAMENTOS DO USUÁRIO ATUAL:\n"
+                user_context = f"\n\nAGENDAMENTOS ATIVOS DO USUÁRIO:\n"
                 for ag in user_agendamentos:
                     medico = Medico.query.get(ag.medico_id)
                     esp = Especialidade.query.get(ag.especialidade_id)
-                    user_context += f"- {ag.inicio.strftime('%d/%m/%Y %H:%M')} - {medico.usuario.nome} - {esp.nome} - Status: {ag.status}\n"
+                    if medico and esp:
+                        user_context += f"- {ag.inicio.strftime('%d/%m/%Y %H:%M')} - {medico.usuario.nome} - {esp.nome}\n"
         
         return f"""Você é Sofia, a assistente virtual inteligente e empática da Clínica Dr. Raimundo Nunes.
 
@@ -111,15 +97,9 @@ SOBRE A CLÍNICA DR. RAIMUNDO NUNES
 • Filosofia: Atendimento humanizado, personalizado e baseado em evidências
 • Tecnologia: Equipamentos de última geração e protocolos atualizados
 • Localização: São Paulo - Unidades no Itaim Bibi e Itapeva
-• Equipe: {total_medicos} médicos especializados em {total_especialidades} especialidades
+• Equipe: Médicos especializados e altamente qualificados
 
-═══════════════════════════════════════════════════════════════════
-ESPECIALIDADES E SERVIÇOS DISPONÍVEIS
-═══════════════════════════════════════════════════════════════════
-{especialidades_list}
-
-MÉDICOS DISPONÍVEIS (Principais):
-{medicos_list}
+NOTA: Use a ação 'get_specialties' para ver especialidades disponíveis e 'get_doctors' para ver médicos.
 
 ═══════════════════════════════════════════════════════════════════
 SUAS CAPACIDADES AVANÇADAS
@@ -187,7 +167,7 @@ AÇÕES DISPONÍVEIS (Use conforme necessário)
 - get_specialties: Listar todas as especialidades
 - get_doctors: Listar médicos (pode filtrar por especialidade)
 - get_doctor_details: Detalhes completos de um médico específico
-- search_availability: Buscar horários disponíveis
+- search_availability: Buscar horários disponíveis (retorna formato otimizado)
 - get_my_appointments: Ver agendamentos do usuário atual
 - get_appointment_details: Detalhes de um agendamento específico
 
@@ -200,6 +180,46 @@ AÇÕES DISPONÍVEIS (Use conforme necessário)
 💬 GERAL:
 - general_chat: Conversa geral, perguntas, informações
 - need_more_info: Solicitar mais informações do usuário
+
+═══════════════════════════════════════════════════════════════════
+INSTRUÇÕES PARA APRESENTAR HORÁRIOS DISPONÍVEIS
+═══════════════════════════════════════════════════════════════════
+
+Quando usar search_availability, você receberá:
+{{
+  "slots": [
+    {{"slot": "2024-10-25T14:30:00-03:00", "display": "25/10/2024 às 14:30", "duration_min": 30}},
+    ...
+  ],
+  "count": 10
+}}
+
+IMPORTANTE - Como apresentar ao usuário:
+1. Mostre os TOP 5-7 horários mais próximos de forma CLARA e ORGANIZADA
+2. Agrupe por dia quando possível
+3. Use o campo "display" para mostrar ao usuário (formato brasileiro)
+4. Use o campo "slot" (ISO 8601) quando criar agendamento
+5. Se houver muitos slots, informe quantos há e mostre apenas os primeiros
+
+EXEMPLO DE BOA APRESENTAÇÃO:
+"Encontrei vários horários disponíveis! Aqui estão os mais próximos:
+
+📅 Segunda, 25/10:
+   • 14:30
+   • 16:00
+
+📅 Terça, 26/10:
+   • 09:00
+   • 10:30
+   • 14:00
+
+Temos mais 15 horários disponíveis. Qual desses prefere?"
+
+NÃO faça:
+❌ Listar todos os 50 horários
+❌ Mostrar apenas datas sem horários
+❌ Formato confuso ou técnico
+❌ Pedir novamente se já tem os horários
 
 ═══════════════════════════════════════════════════════════════════
 FORMATO DE RESPOSTA OBRIGATÓRIO
@@ -685,7 +705,11 @@ inteligente e sempre busque a melhor experiência para a paciente!
     def search_availability(self, doctor_id: Optional[int] = None, 
                            specialty_id: Optional[int] = None,
                            date_start: Optional[str] = None) -> Dict[str, Any]:
-        """Busca horários disponíveis"""
+        """Busca horários disponíveis com formato otimizado para Gemini
+        
+        Retorna horários em formato ISO 8601 padronizado (YYYY-MM-DDTHH:MM:SS-03:00)
+        com payload compacto para facilitar interpretação do Gemini.
+        """
         try:
             if date_start:
                 try:
@@ -700,17 +724,17 @@ inteligente e sempre busque a melhor experiência para a paciente!
                 if medico:
                     horarios = medico.get_proximos_horarios_livres(data_inicio, limite=15)
                     return {
-                        "schedules": [
+                        "slots": [
                             {
-                                "data": h['data'].strftime('%d/%m/%Y'),
-                                "hora": h['hora'].strftime('%H:%M'),
-                                "datetime": f"{h['data']}T{h['hora']}",
-                                "duracao": h['duracao']
+                                "slot": datetime.combine(h['data'], h['hora']).strftime('%Y-%m-%dT%H:%M:%S-03:00'),
+                                "display": f"{h['data'].strftime('%d/%m/%Y')} às {h['hora'].strftime('%H:%M')}",
+                                "duration_min": h['duracao']
                             }
                             for h in horarios
                         ],
-                        "medico_id": doctor_id,
-                        "medico_nome": medico.usuario.nome
+                        "doctor_id": doctor_id,
+                        "doctor_name": medico.usuario.nome,
+                        "count": len(horarios)
                     }
                     
             elif specialty_id:
@@ -722,20 +746,24 @@ inteligente e sempre busque a melhor experiência para a paciente!
                         horarios = medico.get_proximos_horarios_livres(data_inicio, limite=3)
                         for h in horarios:
                             all_schedules.append({
-                                "data": h['data'].strftime('%d/%m/%Y'),
-                                "hora": h['hora'].strftime('%H:%M'),
-                                "datetime": f"{h['data']}T{h['hora']}",
-                                "duracao": h['duracao'],
-                                "medico_id": medico.id,
-                                "medico_nome": medico.usuario.nome
+                                "slot": datetime.combine(h['data'], h['hora']).strftime('%Y-%m-%dT%H:%M:%S-03:00'),
+                                "display": f"{h['data'].strftime('%d/%m/%Y')} às {h['hora'].strftime('%H:%M')}",
+                                "duration_min": h['duracao'],
+                                "doctor_id": medico.id,
+                                "doctor_name": medico.usuario.nome
                             })
-                    return {"schedules": all_schedules[:15]}
+                    return {
+                        "slots": all_schedules[:15],
+                        "count": len(all_schedules[:15])
+                    }
             
-            return {"schedules": []}
+            return {"slots": [], "count": 0}
             
         except Exception as e:
             print(f"[CHATBOT] Erro ao buscar disponibilidade: {e}")
-            return {"schedules": [], "error": str(e)}
+            import traceback
+            traceback.print_exc()
+            return {"slots": [], "count": 0, "error": str(e)}
     
     def get_user_appointments(self, user_id: int) -> Dict[str, Any]:
         """Retorna agendamentos do usuário"""
@@ -899,9 +927,8 @@ inteligente e sempre busque a melhor experiência para a paciente!
             
             agenda_disponivel = Agenda.query.filter(
                 Agenda.medico_id == booking_data['medico_id'],
-                Agenda.dia_semana == data_agendamento.weekday(),
-                Agenda.hora_inicio <= hora_agendamento,
-                Agenda.hora_fim > hora_agendamento,
+                Agenda.data == data_agendamento,
+                Agenda.hora_inicio == hora_agendamento,
                 Agenda.ativo == True
             ).first()
             

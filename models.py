@@ -95,39 +95,59 @@ class Medico(db.Model):
     agendamentos = db.relationship('Agendamento', backref='medico', lazy='dynamic')
     
     def get_proximos_horarios_livres(self, data_inicio=None, limite=10):
-        """Retorna os próximos horários disponíveis para este médico"""
+        """Retorna os próximos horários disponíveis para este médico
+        
+        Otimizado para usar uma única query SQL com LEFT JOIN para detectar conflitos,
+        eliminando o problema N+1 e reduzindo drasticamente queries ao banco de dados.
+        Compatível com PostgreSQL.
+        """
         if not data_inicio:
             data_inicio = datetime.now()
         
-        # Buscar agendas futuras com limite maior para garantir encontrar horários livres
-        agendas = self.agendas.filter(
+        # Query otimizada: LEFT JOIN para encontrar agendas SEM agendamentos conflitantes
+        # Usando CAST para compatibilidade com PostgreSQL
+        from sqlalchemy import func, and_, cast, Date, Time
+        
+        subquery = db.session.query(
+            Agenda.id.label('agenda_id'),
+            Agenda.data,
+            Agenda.hora_inicio,
+            Agenda.duracao_minutos,
+            func.count(Agendamento.id).label('agendamentos_count')
+        ).outerjoin(
+            Agendamento,
+            and_(
+                Agendamento.medico_id == Agenda.medico_id,
+                cast(Agendamento.inicio, Date) == Agenda.data,
+                cast(Agendamento.inicio, Time) == Agenda.hora_inicio,
+                Agendamento.status.in_(['agendado', 'confirmado'])
+            )
+        ).filter(
+            Agenda.medico_id == self.id,
             Agenda.data >= data_inicio.date(),
             Agenda.ativo == True
-        ).order_by(Agenda.data, Agenda.hora_inicio).limit(limite * 5).all()
+        ).group_by(
+            Agenda.id,
+            Agenda.data,
+            Agenda.hora_inicio,
+            Agenda.duracao_minutos
+        ).having(
+            func.count(Agendamento.id) == 0  # Apenas slots sem agendamentos
+        ).order_by(
+            Agenda.data,
+            Agenda.hora_inicio
+        ).limit(limite)
         
-        # Buscar todos agendamentos deste médico a partir da data de início de uma vez
-        agendamentos_existentes = set()
-        agendamentos = Agendamento.query.filter(
-            Agendamento.medico_id == self.id,
-            Agendamento.inicio >= datetime.combine(data_inicio.date(), datetime.min.time()),
-            Agendamento.status.in_(['agendado', 'confirmado'])
-        ).all()
+        # Executar query e formatar resultados
+        resultados = subquery.all()
         
-        for agendamento in agendamentos:
-            agendamentos_existentes.add(agendamento.inicio)
-        
-        # Filtrar horários livres
         horarios_livres = []
-        for agenda in agendas:
-            inicio_agendamento = datetime.combine(agenda.data, agenda.hora_inicio)
-            if inicio_agendamento not in agendamentos_existentes:
-                horarios_livres.append({
-                    'data': agenda.data,
-                    'hora': agenda.hora_inicio,
-                    'duracao': agenda.duracao_minutos
-                })
-                if len(horarios_livres) >= limite:
-                    break
+        for resultado in resultados:
+            horarios_livres.append({
+                'data': resultado.data,
+                'hora': resultado.hora_inicio,
+                'duracao': resultado.duracao_minutos
+            })
         
         return horarios_livres
     
