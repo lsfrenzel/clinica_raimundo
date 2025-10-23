@@ -114,9 +114,24 @@
             scroll-behavior: smooth;
         }
         
+        html {
+            height: 100%;
+        }
+        
         body { 
             font-family: 'Inter', system-ui, sans-serif;
             overflow-x: hidden;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        main {
+            flex: 1 0 auto;
+        }
+        
+        footer {
+            flex-shrink: 0;
         }
         
         /* Gradient Backgrounds */
@@ -408,6 +423,135 @@
         .hover\:border-clinic-primary:hover {
             border-color: #8D6E63;
         }
+        
+        /* Mobile Responsiveness Improvements */
+        @media (max-width: 640px) {
+            /* Typography adjustments for mobile */
+            h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            h2 {
+                font-size: 1.75rem !important;
+                line-height: 1.3 !important;
+            }
+            
+            h3 {
+                font-size: 1.25rem !important;
+                line-height: 1.4 !important;
+            }
+            
+            /* Hero sections */
+            .min-h-screen {
+                min-height: 80vh !important;
+            }
+            
+            /* Buttons */
+            .btn-primary, .btn-accent, .btn-outline {
+                padding: 0.75rem 1.5rem !important;
+                font-size: 0.875rem !important;
+            }
+            
+            /* Cards */
+            .card, .card-interactive {
+                border-radius: 1rem !important;
+            }
+            
+            /* Padding adjustments */
+            .py-24 {
+                padding-top: 3rem !important;
+                padding-bottom: 3rem !important;
+            }
+            
+            .py-20 {
+                padding-top: 2.5rem !important;
+                padding-bottom: 2.5rem !important;
+            }
+            
+            .py-16 {
+                padding-top: 2rem !important;
+                padding-bottom: 2rem !important;
+            }
+            
+            /* Footer adjustments */
+            footer .grid {
+                grid-template-columns: 1fr !important;
+                gap: 2rem !important;
+            }
+            
+            footer img {
+                max-width: 180px !important;
+            }
+            
+            /* Navigation logo */
+            nav img {
+                height: 3rem !important;
+            }
+            
+            /* Spacing for mobile */
+            .gap-12 {
+                gap: 1.5rem !important;
+            }
+            
+            .gap-16 {
+                gap: 2rem !important;
+            }
+            
+            /* Text sizes */
+            .text-xl {
+                font-size: 1rem !important;
+            }
+            
+            .text-2xl {
+                font-size: 1.25rem !important;
+            }
+            
+            .text-4xl {
+                font-size: 1.75rem !important;
+            }
+            
+            .text-5xl {
+                font-size: 2rem !important;
+            }
+            
+            .text-6xl {
+                font-size: 2.25rem !important;
+            }
+            
+            .text-7xl {
+                font-size: 2.5rem !important;
+            }
+            
+            /* WhatsApp button size on mobile */
+            .whatsapp-float {
+                width: 3.5rem !important;
+                height: 3.5rem !important;
+                bottom: 1rem !important;
+                right: 1rem !important;
+            }
+            
+            .whatsapp-float svg {
+                width: 1.75rem !important;
+                height: 1.75rem !important;
+            }
+        }
+        
+        /* Tablet responsiveness */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .text-6xl {
+                font-size: 3rem !important;
+            }
+            
+            .text-7xl {
+                font-size: 3.5rem !important;
+            }
+            
+            .py-24 {
+                padding-top: 4rem !important;
+                padding-bottom: 4rem !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -547,7 +691,7 @@
     </main>
     
     <!-- Footer -->
-    <footer class="bg-gradient-to-br from-gray-900 via-primary-900 to-gray-900 text-white mt-20 relative overflow-hidden" data-aos="fade-up">
+    <footer class="bg-gradient-to-br from-gray-900 via-primary-900 to-gray-900 text-white relative overflow-hidden" data-aos="fade-up">
         <!-- Decorative Elements -->
         <div class="absolute inset-0 opacity-5">
             <div class="absolute top-0 left-0 w-96 h-96 bg-primary-400 rounded-full blur-3xl"></div>
